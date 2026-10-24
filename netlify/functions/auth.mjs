@@ -1,3 +1,5 @@
+import nodemailer from 'nodemailer';
+
 const json = (status, body) => new Response(JSON.stringify(body), {
   status,
   headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
@@ -19,34 +21,32 @@ async function sb(path, { method = 'GET', body } = {}) {
   return { ok: res.ok, data };
 }
 
-async function sendEmailViaResend(to, subject, html) {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    console.error('RESEND_API_KEY not set');
+let transporter;
+function getTransporter() {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+    });
+  }
+  return transporter;
+}
+
+async function sendEmail(to, subject, html) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    console.error('GMAIL_USER / GMAIL_APP_PASSWORD not set');
     return { ok: false, error: 'Servis email belum disediakan.' };
   }
-  const from = process.env.RESEND_FROM || 'Minda Optima <onboarding@resend.dev>';
-
   try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from, to: [to], subject, html }),
+    await getTransporter().sendMail({
+      from: `Minda Optima <${process.env.GMAIL_USER}>`,
+      to,
+      subject,
+      html,
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      console.error('Resend rejected:', res.status, JSON.stringify(data));
-      const testOnly = res.status === 403 && /own email|verify a domain/i.test(data?.message || '');
-      return {
-        ok: false,
-        error: testOnly
-          ? 'Domain email belum disahkan di Resend. Buat masa ini hanya boleh hantar ke emel pemilik akaun Resend.'
-          : 'Gagal hantar email. Sila cuba lagi.',
-      };
-    }
-    return { ok: true, data };
+    return { ok: true };
   } catch (e) {
-    console.error('Resend fetch failed:', e.message);
+    console.error('Gmail send failed:', e.code, e.message);
     return { ok: false, error: 'Gagal hantar email. Sila cuba lagi.' };
   }
 }
@@ -75,10 +75,9 @@ async function sendOtp(body) {
     <p>Kod ini akan luput dalam 10 minit.</p>
   `;
 
-  const emailRes = await sendEmailViaResend(normalizedEmail, 'Kod OTP — Minda Optima', emailHtml);
+  const emailRes = await sendEmail(normalizedEmail, 'Kod OTP — Minda Optima', emailHtml);
   if (!emailRes.ok) {
-    console.error('Email send failed:', emailRes.error, 'Data:', JSON.stringify(emailRes.data));
-    return json(502, { error: emailRes.error || 'Gagal hantar email. Sila cuba lagi.' });
+    return json(502, { error: emailRes.error });
   }
 
   return json(200, { ok: true, phone: normalizedPhone, email: normalizedEmail });
@@ -138,10 +137,9 @@ async function sendConfirmation(body) {
     <p><a href="https://minda-optima-referral.netlify.app/dashboard.html">Buka Dashboard</a></p>
   `;
 
-  const emailRes = await sendEmailViaResend(email, 'Pendaftaran Berjaya — Minda Optima', emailHtml);
+  const emailRes = await sendEmail(email, 'Pendaftaran Berjaya — Minda Optima', emailHtml);
   if (!emailRes.ok) {
-    console.error('Confirmation email error:', emailRes.error);
-    return json(502, { error: 'Gagal hantar email.' });
+    return json(502, { error: emailRes.error });
   }
 
   return json(200, { ok: true });
