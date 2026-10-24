@@ -4,27 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Pasukan — Rujukan Minda Optima</title>
+  <title>Admin Rujukan — Minda Optima</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="js/common.js"></script>
-  <script src="js/config.js"></script>
 </head>
 <body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
 
   <header class="bg-brand text-white">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <span class="font-extrabold text-lg tracking-tight">Minda<span class="text-gold">Optima</span> <span class="font-medium text-white/70 text-sm">· Pasukan Rujukan</span></span>
-      <button id="logout" class="hidden text-sm text-white/80 hover:text-white">Log keluar</button>
+      <span class="font-extrabold text-lg tracking-tight">Minda<span class="text-gold">Optima</span> <span class="font-medium text-white/70 text-sm">· Admin Rujukan</span></span>
+      <button id="logout" class="hidden text-sm text-white/80 hover:text-white">Keluar</button>
     </div>
   </header>
 
   <main class="max-w-6xl mx-auto px-4 py-8">
 
     <form id="login-form" class="max-w-sm mx-auto rounded-2xl bg-white p-6 shadow-sm border border-slate-200">
-      <h1 class="text-xl font-extrabold text-brand">Log masuk pasukan</h1>
-      <label for="email" class="mt-5 block text-sm font-semibold">Emel</label>
-      <input id="email" type="email" autocomplete="username" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand">
-      <label for="password" class="mt-4 block text-sm font-semibold">Kata laluan</label>
+      <h1 class="text-xl font-extrabold text-brand">Masuk admin</h1>
+      <label for="password" class="mt-5 block text-sm font-semibold">Kata laluan admin</label>
       <input id="password" type="password" autocomplete="current-password" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand">
       <p id="login-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
       <button type="submit" class="mt-5 w-full rounded-xl bg-brand py-3 text-white font-bold hover:bg-brand-light disabled:opacity-60">Masuk</button>
@@ -35,17 +32,23 @@
 
       <section id="cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></section>
 
-      <section>
-        <h2 class="text-lg font-bold text-brand">Corong setiap penjemput</h2>
-        <p class="text-sm text-slate-500">Buka pautan → tekan Daftar → siap daftar. Jurang besar antara dua langkah bermaksud ada yang tersangkut.</p>
-        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-          <table class="w-full text-sm">
-            <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-              <tr><th class="px-4 py-3">Penjemput</th><th class="px-3 py-3">Kod</th><th class="px-3 py-3 text-right">Buka pautan</th><th class="px-3 py-3 text-right">Tekan Daftar</th><th class="px-3 py-3 text-right">Siap daftar</th><th class="px-3 py-3 text-right">Menunggu</th><th class="px-3 py-3 text-right">Layak</th><th class="px-3 py-3 text-right">Dibayar</th></tr>
-            </thead>
-            <tbody id="funnel-rows" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
+      <section class="rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 class="text-lg font-bold text-brand">Tambah rujukan</h2>
+        <p class="text-sm text-slate-500">Masukkan satu rakan yang dah daftar guna kod rujukan. Kod mesti wujud dalam sistem.</p>
+        <form id="add-form" class="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
+          <label class="block text-sm font-semibold">Kod rujukan
+            <input id="add-code" required placeholder="MO-6789-HKSG" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-mono uppercase outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Nombor telefon rakan
+            <input id="add-phone" required inputmode="tel" placeholder="0176629820" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Nama rakan
+            <input id="add-name" placeholder="(pilihan)" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-brand">
+          </label>
+          <button type="submit" class="rounded-xl bg-brand px-6 py-2.5 text-white font-bold hover:bg-brand-light disabled:opacity-60">Simpan</button>
+        </form>
+        <p id="add-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+        <p id="add-ok" class="mt-3 hidden rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700" role="status">Rekod disimpan.</p>
       </section>
 
       <section>
@@ -68,6 +71,19 @@
       </section>
 
       <section>
+        <h2 class="text-lg font-bold text-brand">Corong setiap penjemput</h2>
+        <p class="text-sm text-slate-500">Buka pautan → tekan Daftar → siap daftar. Jurang besar antara dua langkah bermaksud ada yang tersangkut.</p>
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr><th class="px-4 py-3">Penjemput</th><th class="px-3 py-3">Kod</th><th class="px-3 py-3 text-right">Buka pautan</th><th class="px-3 py-3 text-right">Tekan Daftar</th><th class="px-3 py-3 text-right">Siap daftar</th><th class="px-3 py-3 text-right">Menunggu</th><th class="px-3 py-3 text-right">Layak</th><th class="px-3 py-3 text-right">Dibayar</th></tr>
+            </thead>
+            <tbody id="funnel-rows" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
         <h2 class="text-lg font-bold text-brand">Kod tidak dikenali (20 terkini)</h2>
         <p class="text-sm text-slate-500">Seseorang buka pautan dengan kod yang tiada dalam sistem. Biasanya kod ditaip salah atau pautan terpotong.</p>
         <ul id="unknown-rows" class="mt-3 rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 text-sm"></ul>
@@ -76,67 +92,43 @@
   </main>
 
   <script>
-    const cfg = window.MO_CONFIG;
-    const base = cfg.SUPABASE_URL.replace(/\/+$/, '');
-    const SESSION_KEY = 'mo_admin_session';
+    const API = '/.netlify/functions/admin';
+    const PW_KEY = 'mo_admin_pw';
     const $ = (id) => document.getElementById(id);
     const esc = MO.escapeHtml;
     const rm = (n) => `RM${Number(n).toLocaleString('ms-MY')}`;
     const dt = new Intl.DateTimeFormat('ms-MY', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' });
     const STATUS = { pending: 'Menunggu', approved: 'Layak', paid: 'Dibayar', rejected: 'Ditolak' };
+    const fmtPhone = (p) => (p && p.length > 3 ? `${p.slice(0, 3)}-${p.slice(3)}` : p || '');
+    const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '–');
     let referrals = [];
 
-    // Sesi disimpan dalam sessionStorage: tamat bila tab ditutup.
-    const session = {
-      get() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { return null; } },
-      set(s) { try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch { /* ignore */ } },
-      clear() { try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ } },
+    // Kata laluan disimpan dalam sessionStorage: hilang bila tab ditutup.
+    const pwStore = {
+      get() { try { return sessionStorage.getItem(PW_KEY); } catch { return null; } },
+      set(v) { try { sessionStorage.setItem(PW_KEY, v); } catch { /* ignore */ } },
+      clear() { try { sessionStorage.removeItem(PW_KEY); } catch { /* ignore */ } },
     };
 
-    async function auth(grantType, body) {
-      const res = await fetch(`${base}/auth/v1/token?grant_type=${grantType}`, {
+    async function call(payload) {
+      const res = await fetch(API, {
         method: 'POST',
-        headers: { apikey: cfg.SUPABASE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, password: pwStore.get() }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error_description || data.msg || 'Log masuk gagal.');
-      session.set({ access_token: data.access_token, refresh_token: data.refresh_token });
+      if (!res.ok) throw Object.assign(new Error(data.error || 'Ralat pelayan.'), { status: res.status });
       return data;
     }
 
-    async function api(path, { method = 'GET', body, prefer } = {}, retried = false) {
-      const s = session.get();
-      if (!s) throw Object.assign(new Error('Sesi tamat.'), { status: 401 });
-      const res = await fetch(`${base}${path}`, {
-        method,
-        headers: {
-          apikey: cfg.SUPABASE_KEY,
-          Authorization: `Bearer ${s.access_token}`,
-          'Content-Type': 'application/json',
-          ...(prefer ? { Prefer: prefer } : {}),
-        },
-        body: body ? JSON.stringify(body) : undefined,
-      });
-      if (res.status === 401 && !retried) {
-        await auth('refresh_token', { refresh_token: s.refresh_token });
-        return api(path, { method, body, prefer }, true);
-      }
-      if (!res.ok) throw Object.assign(new Error('Ralat pelayan. Cuba muat semula halaman.'), { status: res.status });
-      return res.status === 204 ? null : res.json();
-    }
-
     function showLogin(message) {
-      session.clear();
+      pwStore.clear();
       $('app').classList.add('hidden');
       $('logout').classList.add('hidden');
       $('login-form').classList.remove('hidden');
       $('login-error').textContent = message || '';
       $('login-error').classList.toggle('hidden', !message);
     }
-
-    const fmtPhone = (p) => (p && p.length > 3 ? `${p.slice(0, 3)}-${p.slice(3)}` : p || '');
-    const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '–');
 
     function renderCards(funnel) {
       const sum = (k) => funnel.reduce((n, r) => n + Number(r[k]), 0);
@@ -183,50 +175,79 @@
       </tr>`).join('');
     }
 
+    function showAppError(message) {
+      $('app-error').textContent = message;
+      $('app-error').classList.toggle('hidden', !message);
+    }
+
     async function load() {
       $('login-form').classList.add('hidden');
       $('app').classList.remove('hidden');
       $('logout').classList.remove('hidden');
-      $('app-error').classList.add('hidden');
+      showAppError('');
       try {
-        if ((await api('/rest/v1/rpc/is_team', { method: 'POST', body: {} })) !== true) {
-          return showLogin('Akaun ini bukan ahli pasukan. Minta admin tambah emel anda.');
-        }
-        const [funnel, refs, unknown] = await Promise.all([
-          api('/rest/v1/referral_funnel?select=*&order=registrations.desc,landings.desc'),
-          api('/rest/v1/referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone)&order=registered_at.desc&limit=500'),
-          api('/rest/v1/referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
-        ]);
-        referrals = refs;
-        renderCards(funnel);
-        renderFunnel(funnel);
+        const data = await call({ action: 'list' });
+        referrals = data.referrals;
+        renderCards(data.funnel);
+        renderFunnel(data.funnel);
         renderReferrals();
-        $('unknown-rows').innerHTML = unknown.map((e) => `<li class="flex justify-between px-4 py-2"><span class="font-mono">${esc(e.code)}</span><span class="text-slate-500">${esc(dt.format(new Date(e.created_at)))}</span></li>`).join('')
+        $('unknown-rows').innerHTML = data.unknown.map((e) => `<li class="flex justify-between px-4 py-2"><span class="font-mono">${esc(e.code)}</span><span class="text-slate-500">${esc(dt.format(new Date(e.created_at)))}</span></li>`).join('')
           || '<li class="px-4 py-6 text-center text-slate-500">Tiada.</li>';
       } catch (err) {
-        if (err.status === 401) return showLogin('Sesi tamat. Sila log masuk semula.');
-        $('app-error').textContent = err.message;
-        $('app-error').classList.remove('hidden');
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        showAppError(err.message);
       }
     }
+
+    $('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      pwStore.set($('password').value);
+      try {
+        await call({ action: 'list' });
+        $('password').value = '';
+        await load();
+      } catch (err) {
+        pwStore.clear();
+        showLogin(err.status === 401 ? 'Kata laluan salah.' : err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $('add-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      $('add-error').classList.add('hidden');
+      $('add-ok').classList.add('hidden');
+      try {
+        await call({ action: 'add', code: $('add-code').value, phone: $('add-phone').value, name: $('add-name').value });
+        e.target.reset();
+        $('add-ok').classList.remove('hidden');
+        await load();
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        $('add-error').textContent = err.message;
+        $('add-error').classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    });
 
     $('referral-rows').addEventListener('change', async (e) => {
       const sel = e.target.closest('select.status');
       if (!sel) return;
       sel.disabled = true;
       try {
-        const rows = await api(`/rest/v1/referrals?id=eq.${encodeURIComponent(sel.dataset.id)}`, {
-          method: 'PATCH', body: { status: sel.value }, prefer: 'return=representation',
-        });
-        if (!rows.length) throw new Error('Tiada kebenaran untuk tukar status.');
-        const r = referrals.find((x) => String(x.id) === sel.dataset.id);
-        if (r) r.status = sel.value;
+        await call({ action: 'status', id: sel.dataset.id, status: sel.value });
         sel.dataset.prev = sel.value;
-        load();
+        await load();
       } catch (err) {
         sel.value = sel.dataset.prev;
-        $('app-error').textContent = err.message;
-        $('app-error').classList.remove('hidden');
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        showAppError(err.message);
       } finally {
         sel.disabled = false;
       }
@@ -251,24 +272,9 @@
       URL.revokeObjectURL(a.href);
     });
 
-    $('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = e.target.querySelector('button[type=submit]');
-      btn.disabled = true;
-      try {
-        await auth('password', { email: $('email').value.trim(), password: $('password').value });
-        $('password').value = '';
-        await load();
-      } catch (err) {
-        showLogin(err.message);
-      } finally {
-        btn.disabled = false;
-      }
-    });
-
     $('logout').addEventListener('click', () => showLogin());
 
-    if (session.get()) load();
+    if (pwStore.get()) load();
   </script>
 </body>
 </html>

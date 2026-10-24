@@ -44,7 +44,6 @@ const pages = {
     from: extra,
     edits: [
       ['<script src="/js/common.js"></script>', '<script src="js/common.js"></script>', true],
-      ['<script src="/js/config.js"></script>', '<script src="js/config.js"></script>', true],
     ],
   },
 };
