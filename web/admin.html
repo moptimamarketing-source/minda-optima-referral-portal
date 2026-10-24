@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ms">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Admin Rujukan — Minda Optima</title>
+  <title>Referral Admin — Minda Optima</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="js/common.js"></script>
 </head>
@@ -12,19 +12,19 @@
 
   <header class="bg-brand text-white">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <span class="font-extrabold text-lg tracking-tight">Minda<span class="text-gold">Optima</span> <span class="font-medium text-white/70 text-sm">· Admin Rujukan</span></span>
-      <button id="logout" class="hidden text-sm text-white/80 hover:text-white">Keluar</button>
+      <span class="font-extrabold text-lg tracking-tight">Minda<span class="text-gold">Optima</span> <span class="font-medium text-white/70 text-sm">· Referral Admin</span></span>
+      <button id="logout" class="hidden text-sm text-white/80 hover:text-white">Logout</button>
     </div>
   </header>
 
   <main class="max-w-6xl mx-auto px-4 py-8">
 
     <form id="login-form" class="max-w-sm mx-auto rounded-2xl bg-white p-6 shadow-sm border border-slate-200">
-      <h1 class="text-xl font-extrabold text-brand">Masuk admin</h1>
-      <label for="password" class="mt-5 block text-sm font-semibold">Kata laluan admin</label>
+      <h1 class="text-xl font-extrabold text-brand">Admin Login</h1>
+      <label for="password" class="mt-5 block text-sm font-semibold">Admin Password</label>
       <input id="password" type="password" autocomplete="current-password" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand">
       <p id="login-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
-      <button type="submit" class="mt-5 w-full rounded-xl bg-brand py-3 text-white font-bold hover:bg-brand-light disabled:opacity-60">Masuk</button>
+      <button type="submit" class="mt-5 w-full rounded-xl bg-brand py-3 text-white font-bold hover:bg-brand-light disabled:opacity-60">Login</button>
     </form>
 
     <div id="app" class="hidden space-y-8">
@@ -33,50 +33,50 @@
       <section id="cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></section>
 
       <section class="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 class="text-lg font-bold text-brand">Tambah rujukan</h2>
-        <p class="text-sm text-slate-500">Masukkan satu rakan yang dah daftar guna kod rujukan. Kod mesti wujud dalam sistem.</p>
+        <h2 class="text-lg font-bold text-brand">Add Referral</h2>
+        <p class="text-sm text-slate-500">Enter a referee who has registered using a referral code. The code must exist in the system.</p>
         <form id="add-form" class="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
-          <label class="block text-sm font-semibold">Kod rujukan
+          <label class="block text-sm font-semibold">Referral Code
             <input id="add-code" required placeholder="MO-6789-HKSG" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-mono uppercase outline-none focus:border-brand">
           </label>
-          <label class="block text-sm font-semibold">Nombor telefon rakan
+          <label class="block text-sm font-semibold">Referee Phone
             <input id="add-phone" required inputmode="tel" placeholder="0176629820" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-brand">
           </label>
-          <label class="block text-sm font-semibold">Nama rakan
-            <input id="add-name" placeholder="(pilihan)" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-brand">
+          <label class="block text-sm font-semibold">Referee Name
+            <input id="add-name" placeholder="(optional)" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-brand">
           </label>
-          <button type="submit" class="rounded-xl bg-brand px-6 py-2.5 text-white font-bold hover:bg-brand-light disabled:opacity-60">Simpan</button>
+          <button type="submit" class="rounded-xl bg-brand px-6 py-2.5 text-white font-bold hover:bg-brand-light disabled:opacity-60">Save</button>
         </form>
         <p id="add-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
-        <p id="add-ok" class="mt-3 hidden rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700" role="status">Rekod disimpan.</p>
+        <p id="add-ok" class="mt-3 hidden rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700" role="status">Record saved.</p>
       </section>
 
       <section>
         <div class="flex items-end justify-between gap-3">
           <div>
-            <h2 class="text-lg font-bold text-brand">Senarai rujukan</h2>
-            <p class="text-sm text-slate-500">Tukar status selepas sahkan anak benar-benar mendaftar dan hadir kelas percubaan.</p>
+            <h2 class="text-lg font-bold text-brand">Referral List</h2>
+            <p class="text-sm text-slate-500">Change status after confirming the referee has registered and attended the trial class.</p>
           </div>
-          <button id="export" class="shrink-0 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">Muat turun CSV</button>
+          <button id="export" class="shrink-0 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">Download CSV</button>
         </div>
         <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
           <table class="w-full text-sm">
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-              <tr><th class="px-4 py-3">Rakan yang daftar</th><th class="px-3 py-3">Dijemput oleh</th><th class="px-3 py-3">Tarikh</th><th class="px-3 py-3 text-right">Ganjaran</th><th class="px-3 py-3">Status</th></tr>
+              <tr><th class="px-4 py-3">Referee</th><th class="px-3 py-3">Referred By</th><th class="px-3 py-3">Date</th><th class="px-3 py-3 text-right">Reward</th><th class="px-3 py-3">Status</th></tr>
             </thead>
             <tbody id="referral-rows" class="divide-y divide-slate-100"></tbody>
           </table>
-          <p id="referral-empty" class="hidden px-4 py-8 text-center text-slate-500">Belum ada rujukan.</p>
+          <p id="referral-empty" class="hidden px-4 py-8 text-center text-slate-500">No referrals yet.</p>
         </div>
       </section>
 
       <section>
-        <h2 class="text-lg font-bold text-brand">Corong setiap penjemput</h2>
-        <p class="text-sm text-slate-500">Buka pautan → tekan Daftar → siap daftar. Jurang besar antara dua langkah bermaksud ada yang tersangkut.</p>
+        <h2 class="text-lg font-bold text-brand">Referrer Funnel</h2>
+        <p class="text-sm text-slate-500">Link click → Register button click → Completed registration. Large gaps between steps indicate drop-offs.</p>
         <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
           <table class="w-full text-sm">
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-              <tr><th class="px-4 py-3">Penjemput</th><th class="px-3 py-3">Kod</th><th class="px-3 py-3 text-right">Buka pautan</th><th class="px-3 py-3 text-right">Tekan Daftar</th><th class="px-3 py-3 text-right">Siap daftar</th><th class="px-3 py-3 text-right">Menunggu</th><th class="px-3 py-3 text-right">Layak</th><th class="px-3 py-3 text-right">Dibayar</th></tr>
+              <tr><th class="px-4 py-3">Referrer</th><th class="px-3 py-3">Code</th><th class="px-3 py-3 text-right">Link Clicks</th><th class="px-3 py-3 text-right">Register Clicks</th><th class="px-3 py-3 text-right">Registered</th><th class="px-3 py-3 text-right">Pending</th><th class="px-3 py-3 text-right">Approved</th><th class="px-3 py-3 text-right">Paid</th></tr>
             </thead>
             <tbody id="funnel-rows" class="divide-y divide-slate-100"></tbody>
           </table>
@@ -84,8 +84,8 @@
       </section>
 
       <section>
-        <h2 class="text-lg font-bold text-brand">Kod tidak dikenali (20 terkini)</h2>
-        <p class="text-sm text-slate-500">Seseorang buka pautan dengan kod yang tiada dalam sistem. Biasanya kod ditaip salah atau pautan terpotong.</p>
+        <h2 class="text-lg font-bold text-brand">Unknown Codes (20 Latest)</h2>
+        <p class="text-sm text-slate-500">Someone clicked a link with a code that doesn't exist in the system. Usually the code was mistyped or the link was cut off.</p>
         <ul id="unknown-rows" class="mt-3 rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 text-sm"></ul>
       </section>
     </div>
@@ -97,8 +97,8 @@
     const $ = (id) => document.getElementById(id);
     const esc = MO.escapeHtml;
     const rm = (n) => `RM${Number(n).toLocaleString('ms-MY')}`;
-    const dt = new Intl.DateTimeFormat('ms-MY', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' });
-    const STATUS = { pending: 'Menunggu', approved: 'Layak', paid: 'Dibayar', rejected: 'Ditolak' };
+    const dt = new Intl.DateTimeFormat('en-MY', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' });
+    const STATUS = { pending: 'Pending', approved: 'Approved', paid: 'Paid', rejected: 'Rejected' };
     const fmtPhone = (p) => (p && p.length > 3 ? `${p.slice(0, 3)}-${p.slice(3)}` : p || '');
     const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '–');
     let referrals = [];
@@ -117,7 +117,7 @@
         body: JSON.stringify({ ...payload, password: pwStore.get() }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw Object.assign(new Error(data.error || 'Ralat pelayan.'), { status: res.status });
+      if (!res.ok) throw Object.assign(new Error(data.error || 'Server error.'), { status: res.status });
       return data;
     }
 
@@ -134,10 +134,10 @@
       const sum = (k) => funnel.reduce((n, r) => n + Number(r[k]), 0);
       const money = (status) => referrals.filter((r) => r.status === status).reduce((n, r) => n + r.reward, 0);
       const cards = [
-        ['Buka pautan', sum('landings'), ''],
-        ['Tekan Daftar', sum('cta_clicks'), `${pct(sum('cta_clicks'), sum('landings'))} daripada buka`],
-        ['Siap daftar', sum('registrations'), `${pct(sum('registrations'), sum('cta_clicks'))} daripada tekan`],
-        ['Perlu dibayar', rm(money('approved')), `Menunggu semakan: ${rm(money('pending'))} · Dibayar: ${rm(money('paid'))}`],
+        ['Link Clicks', sum('landings'), ''],
+        ['Register Clicks', sum('cta_clicks'), `${pct(sum('cta_clicks'), sum('landings'))} of clicks`],
+        ['Registered', sum('registrations'), `${pct(sum('registrations'), sum('cta_clicks'))} of button clicks`],
+        ['To Pay', rm(money('approved')), `Pending: ${rm(money('pending'))} · Paid: ${rm(money('paid'))}`],
       ];
       $('cards').innerHTML = cards.map(([label, value, sub]) => `
         <div class="rounded-2xl border border-slate-200 bg-white p-4">
@@ -157,7 +157,7 @@
         <td class="px-3 py-3 text-right tabular-nums">${esc(r.pending)}</td>
         <td class="px-3 py-3 text-right tabular-nums">${esc(r.approved)}</td>
         <td class="px-3 py-3 text-right tabular-nums">${esc(r.paid)}</td>
-      </tr>`).join('') || '<tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">Belum ada penjemput.</td></tr>';
+      </tr>`).join('') || '<tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No referrers yet.</td></tr>';
     }
 
     function renderReferrals() {
@@ -192,9 +192,9 @@
         renderFunnel(data.funnel);
         renderReferrals();
         $('unknown-rows').innerHTML = data.unknown.map((e) => `<li class="flex justify-between px-4 py-2"><span class="font-mono">${esc(e.code)}</span><span class="text-slate-500">${esc(dt.format(new Date(e.created_at)))}</span></li>`).join('')
-          || '<li class="px-4 py-6 text-center text-slate-500">Tiada.</li>';
+          || '<li class="px-4 py-6 text-center text-slate-500">None.</li>';
       } catch (err) {
-        if (err.status === 401) return showLogin('Kata laluan salah.');
+        if (err.status === 401) return showLogin('Wrong password.');
         showAppError(err.message);
       }
     }
@@ -210,7 +210,7 @@
         await load();
       } catch (err) {
         pwStore.clear();
-        showLogin(err.status === 401 ? 'Kata laluan salah.' : err.message);
+        showLogin(err.status === 401 ? 'Wrong password.' : err.message);
       } finally {
         btn.disabled = false;
       }
@@ -228,7 +228,7 @@
         $('add-ok').classList.remove('hidden');
         await load();
       } catch (err) {
-        if (err.status === 401) return showLogin('Kata laluan salah.');
+        if (err.status === 401) return showLogin('Wrong password.');
         $('add-error').textContent = err.message;
         $('add-error').classList.remove('hidden');
       } finally {
@@ -246,7 +246,7 @@
         await load();
       } catch (err) {
         sel.value = sel.dataset.prev;
-        if (err.status === 401) return showLogin('Kata laluan salah.');
+        if (err.status === 401) return showLogin('Wrong password.');
         showAppError(err.message);
       } finally {
         sel.disabled = false;
@@ -260,14 +260,14 @@
       return `"${s.replace(/"/g, '""')}"`;
     };
     $('export').addEventListener('click', () => {
-      const head = ['Tarikh', 'Rakan', 'Telefon rakan', 'Penjemput', 'Telefon penjemput', 'Kod', 'Ganjaran (RM)', 'Status'];
+      const head = ['Date', 'Referee', 'Referee Phone', 'Referrer', 'Referrer Phone', 'Code', 'Reward (RM)', 'Status'];
       const lines = referrals.map((r) => [
         r.registered_at, r.referee_name, r.referee_phone, r.referrers?.name, r.referrers?.phone, r.code, r.reward, STATUS[r.status],
       ].map(csvCell).join(','));
       const blob = new Blob([`﻿${[head.map(csvCell).join(','), ...lines].join('\r\n')}`], { type: 'text/csv;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `rujukan-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `referrals-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(a.href);
     });
