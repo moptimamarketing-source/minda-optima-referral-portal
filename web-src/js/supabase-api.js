@@ -94,10 +94,20 @@
     }
 
     if (method === 'POST' && path === '/api/login') {
-      const r = await rpc('register_referrer', { p_phone: body.phone, p_name: body.name || null });
+      const r = await rpc('register_referrer', {
+        p_phone: body.phone,
+        p_name: body.name || null,
+        p_email: body.email || null,
+        p_bank_account: body.bank_account || null,
+        p_bank_name: body.bank_name || null,
+        p_occupation: body.occupation || null,
+      });
       if (!r.ok) {
         if (r.reason === 'invalid_phone') throw fail(422, 'Nombor telefon tidak sah. Contoh: 012-3456789');
-        if (r.reason === 'name_required') throw fail(422, 'Nombor baru. Sila masukkan nama penuh anda.', { needName: true });
+        if (r.reason === 'name_required') throw fail(422, 'Nombor baru. Sila isi semua butiran di bawah.', { needName: true });
+        if (r.reason === 'email_invalid') throw fail(422, 'Emel tidak sah.', { needName: true });
+        if (r.reason === 'bank_account_invalid') throw fail(422, 'Nombor akaun bank tidak sah (6-20 digit).', { needName: true });
+        if (r.reason === 'bank_name_required') throw fail(422, 'Sila isi nama bank.', { needName: true });
         throw fail(400, 'Tidak dapat meneruskan. Sila cuba lagi.');
       }
       store.set(PHONE_KEY, r.phone);

@@ -62,11 +62,24 @@
         <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
           <table class="w-full text-sm">
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-              <tr><th class="px-4 py-3">Referee</th><th class="px-3 py-3">Referred By</th><th class="px-3 py-3">Date</th><th class="px-3 py-3 text-right">Reward</th><th class="px-3 py-3">Status</th></tr>
+              <tr><th class="px-4 py-3">Referee</th><th class="px-3 py-3">Referred By</th><th class="px-3 py-3">Date</th><th class="px-3 py-3 text-right">Reward</th><th class="px-3 py-3">Status</th><th class="px-3 py-3"></th></tr>
             </thead>
             <tbody id="referral-rows" class="divide-y divide-slate-100"></tbody>
           </table>
           <p id="referral-empty" class="hidden px-4 py-8 text-center text-slate-500">No referrals yet.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-brand">Referrers</h2>
+        <p class="text-sm text-slate-500">Edit a referrer's details (name, phone, email, bank, occupation) if they made a mistake.</p>
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr><th class="px-4 py-3">Referrer</th><th class="px-3 py-3">Code</th><th class="px-3 py-3">Email</th><th class="px-3 py-3">Bank</th><th class="px-3 py-3">Occupation</th><th class="px-3 py-3"></th></tr>
+            </thead>
+            <tbody id="referrer-rows" class="divide-y divide-slate-100"></tbody>
+          </table>
         </div>
       </section>
 
@@ -91,6 +104,18 @@
     </div>
   </main>
 
+  <dialog id="edit-dialog" class="w-[min(28rem,92vw)] rounded-2xl p-0 backdrop:bg-black/40">
+    <form id="edit-form" class="p-6">
+      <h2 id="edit-title" class="text-lg font-extrabold text-brand">Edit</h2>
+      <div id="edit-fields" class="mt-4 space-y-3"></div>
+      <p id="edit-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+      <div class="mt-5 flex justify-end gap-2">
+        <button type="button" id="edit-cancel" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50">Cancel</button>
+        <button type="submit" class="rounded-xl bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-light disabled:opacity-60">Save</button>
+      </div>
+    </form>
+  </dialog>
+
   <script>
     const API = '/.netlify/functions/admin';
     const PW_KEY = 'mo_admin_pw';
@@ -102,6 +127,7 @@
     const fmtPhone = (p) => (p && p.length > 3 ? `${p.slice(0, 3)}-${p.slice(3)}` : p || '');
     const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '–');
     let referrals = [];
+    let referrers = [];
 
     // Kata laluan disimpan dalam sessionStorage: hilang bila tab ditutup.
     const pwStore = {
@@ -172,7 +198,19 @@
             ${Object.entries(STATUS).map(([v, l]) => `<option value="${v}"${v === r.status ? ' selected' : ''}>${l}</option>`).join('')}
           </select>
         </td>
+        <td class="px-3 py-3 text-right"><button data-edit-referee="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button></td>
       </tr>`).join('');
+    }
+
+    function renderReferrers() {
+      $('referrer-rows').innerHTML = referrers.map((r) => `<tr>
+        <td class="px-4 py-3"><div class="font-medium">${esc(r.name)}</div><div class="text-xs text-slate-500 tabular-nums">${esc(fmtPhone(r.phone))}</div></td>
+        <td class="px-3 py-3 font-mono text-xs">${esc(r.code)}</td>
+        <td class="px-3 py-3">${esc(r.email || '—')}</td>
+        <td class="px-3 py-3"><div>${esc(r.bank_name || '—')}</div><div class="text-xs text-slate-500 tabular-nums">${esc(r.bank_account || '')}</div></td>
+        <td class="px-3 py-3">${esc(r.occupation || '—')}</td>
+        <td class="px-3 py-3 text-right"><button data-edit-referrer="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button></td>
+      </tr>`).join('') || '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No referrers yet.</td></tr>';
     }
 
     function showAppError(message) {
@@ -188,9 +226,11 @@
       try {
         const data = await call({ action: 'list' });
         referrals = data.referrals;
+        referrers = data.referrers || [];
         renderCards(data.funnel);
         renderFunnel(data.funnel);
         renderReferrals();
+        renderReferrers();
         $('unknown-rows').innerHTML = data.unknown.map((e) => `<li class="flex justify-between px-4 py-2"><span class="font-mono">${esc(e.code)}</span><span class="text-slate-500">${esc(dt.format(new Date(e.created_at)))}</span></li>`).join('')
           || '<li class="px-4 py-6 text-center text-slate-500">None.</li>';
       } catch (err) {
@@ -270,6 +310,57 @@
       a.download = `referrals-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(a.href);
+    });
+
+    const EDIT_FIELDS = {
+      referrer: [['name', 'Name'], ['phone', 'Phone'], ['email', 'Email'], ['bank_account', 'Bank account number'], ['bank_name', 'Bank name'], ['occupation', 'Occupation']],
+      referee: [['name', 'Name'], ['phone', 'Phone']],
+    };
+    let editing = null;
+
+    function openEdit(kind, id) {
+      const row = kind === 'referrer'
+        ? referrers.find((r) => String(r.id) === id)
+        : referrals.find((r) => String(r.id) === id);
+      if (!row) return;
+      const values = kind === 'referrer'
+        ? row
+        : { name: row.referee_name, phone: row.referee_phone };
+      editing = { kind, id: row.id };
+      $('edit-title').textContent = kind === 'referrer' ? 'Edit referrer' : 'Edit referee';
+      $('edit-fields').innerHTML = EDIT_FIELDS[kind].map(([k, label]) => `
+        <label class="block text-sm font-semibold">${label}
+          <input name="${k}" value="${esc(values[k] ?? '')}" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+        </label>`).join('');
+      $('edit-error').classList.add('hidden');
+      $('edit-dialog').showModal();
+    }
+
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('[data-edit-referrer]');
+      const b = e.target.closest('[data-edit-referee]');
+      if (a) openEdit('referrer', a.dataset.editReferrer);
+      if (b) openEdit('referee', b.dataset.editReferee);
+    });
+    $('edit-cancel').addEventListener('click', () => $('edit-dialog').close());
+
+    $('edit-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!editing) return;
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      const fields = Object.fromEntries(new FormData(e.target).entries());
+      try {
+        await call({ action: editing.kind === 'referrer' ? 'edit-referrer' : 'edit-referee', id: editing.id, fields });
+        $('edit-dialog').close();
+        await load();
+      } catch (err) {
+        if (err.status === 401) { $('edit-dialog').close(); return showLogin('Wrong password.'); }
+        $('edit-error').textContent = err.message;
+        $('edit-error').classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
     });
 
     $('logout').addEventListener('click', () => showLogin());

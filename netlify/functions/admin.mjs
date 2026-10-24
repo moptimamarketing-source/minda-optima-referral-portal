@@ -37,10 +37,11 @@ async function sb(path, { method = 'GET', body, prefer } = {}) {
 }
 
 async function list() {
-  const [funnel, referrals, unknown] = await Promise.all([
+  const [funnel, referrals, unknown, referrers] = await Promise.all([
     sb('referral_funnel?select=*&order=registrations.desc,landings.desc'),
     sb('referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone)&order=registered_at.desc&limit=500'),
     sb('referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
+    sb('referrers?select=*&order=created_at.desc&limit=500'),
   ]);
 
   if (!funnel.ok) {
@@ -56,7 +57,12 @@ async function list() {
     return json(502, { error: `Gagal baca events: ${unknown.data?.message || 'Unknown error'}` });
   }
 
-  return json(200, { funnel: funnel.data, referrals: referrals.data, unknown: unknown.data });
+  if (!referrers.ok) {
+    console.error('referrers error:', referrers.data);
+    return json(502, { error: `Gagal baca referrers: ${referrers.data?.message || 'Unknown error'}` });
+  }
+
+  return json(200, { funnel: funnel.data, referrals: referrals.data, unknown: unknown.data, referrers: referrers.data });
 }
 
 async function add(body) {
@@ -99,6 +105,67 @@ async function setStatus(body) {
   return json(200, { ok: true });
 }
 
+const clean = (v, max) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
+
+async function editReferrer(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  const f = body.fields ?? {};
+  const patch = {};
+
+  if ('name' in f) {
+    patch.name = clean(f.name, 80);
+    if (patch.name.length < 2) return json(422, { error: 'Nama terlalu pendek.' });
+  }
+  if ('phone' in f) {
+    patch.phone = normalizePhone(f.phone);
+    if (!patch.phone) return json(422, { error: 'Nombor telefon tak sah. Contoh: 0176629820' });
+  }
+  if ('email' in f) {
+    patch.email = clean(f.email, 100).toLowerCase() || null;
+    if (patch.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(patch.email)) return json(422, { error: 'Emel tak sah.' });
+  }
+  if ('bank_account' in f) {
+    patch.bank_account = String(f.bank_account ?? '').replace(/\D/g, '').slice(0, 20) || null;
+    if (patch.bank_account && patch.bank_account.length < 6) return json(422, { error: 'Nombor akaun bank tak sah.' });
+  }
+  if ('bank_name' in f) patch.bank_name = clean(f.bank_name, 50) || null;
+  if ('occupation' in f) patch.occupation = clean(f.occupation, 50) || null;
+  if (!Object.keys(patch).length) return json(422, { error: 'Tiada perubahan.' });
+
+  const up = await sb(`referrers?id=eq.${id}`, { method: 'PATCH', prefer: 'return=representation', body: patch });
+  if (!up.ok) {
+    if (up.data?.code === '23505') return json(409, { error: 'Nombor telefon ini sudah digunakan penjemput lain.' });
+    console.error('editReferrer error:', up.data);
+    return json(502, { error: `Gagal kemas kini penjemput: ${up.data?.message || 'Unknown error'}` });
+  }
+  if (!up.data?.length) return json(404, { error: 'Penjemput tak dijumpai.' });
+  return json(200, { ok: true });
+}
+
+async function editReferee(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  const f = body.fields ?? {};
+  const patch = {};
+
+  if ('name' in f) patch.referee_name = clean(f.name, 80) || null;
+  if ('phone' in f) {
+    patch.referee_phone = normalizePhone(f.phone);
+    if (!patch.referee_phone) return json(422, { error: 'Nombor telefon tak sah. Contoh: 0176629820' });
+  }
+  if (!Object.keys(patch).length) return json(422, { error: 'Tiada perubahan.' });
+
+  const up = await sb(`referrals?id=eq.${id}`, { method: 'PATCH', prefer: 'return=representation', body: patch });
+  if (!up.ok) {
+    if (up.data?.code === '23505') return json(409, { error: 'Nombor ini sudah pernah direkod.' });
+    console.error('editReferee error:', up.data);
+    return json(502, { error: `Gagal kemas kini rakan: ${up.data?.message || 'Unknown error'}` });
+  }
+  if (!up.data?.length) return json(404, { error: 'Rujukan tak dijumpai.' });
+  return json(200, { ok: true });
+}
+
 export default async (req) => {
   try {
     if (req.method !== 'POST') return json(405, { error: 'Kaedah tak dibenarkan.' });
@@ -128,6 +195,8 @@ export default async (req) => {
     if (body.action === 'list') return await list();
     if (body.action === 'add') return await add(body);
     if (body.action === 'status') return await setStatus(body);
+    if (body.action === 'edit-referrer') return await editReferrer(body);
+    if (body.action === 'edit-referee') return await editReferee(body);
     return json(400, { error: 'Tindakan tak dikenali.' });
   } catch (e) {
     console.error('Unhandled error:', e);
