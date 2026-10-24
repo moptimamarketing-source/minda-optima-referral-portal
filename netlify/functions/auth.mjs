@@ -34,7 +34,7 @@ async function sendEmailViaResend(to, subject, html) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'noreply@mindaoptima.com',
+        from: 'onboarding@resend.dev',
         to,
         subject,
         html,
