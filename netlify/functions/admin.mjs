@@ -26,7 +26,7 @@ async function sb(path, { method = 'GET', body, prefer } = {}) {
     method,
     headers: {
       apikey: key,
-      ...(key.startsWith('eyJ') ? { Authorization: `Bearer ${key}` } : {}),
+      Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
       ...(prefer ? { Prefer: prefer } : {}),
     },
