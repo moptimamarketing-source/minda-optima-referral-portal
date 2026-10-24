@@ -87,28 +87,37 @@ async function setStatus(body) {
 }
 
 export default async (req) => {
-  if (req.method !== 'POST') return json(405, { error: 'Kaedah tak dibenarkan.' });
-  if (!process.env.ADMIN_PASSWORD || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return json(500, { error: 'Konfigurasi server belum lengkap.' });
-  }
-
-  let body;
   try {
-    body = await req.json();
-  } catch {
-    return json(400, { error: 'Data tak sah.' });
-  }
+    if (req.method !== 'POST') return json(405, { error: 'Kaedah tak dibenarkan.' });
 
-  if (typeof body.password !== 'string' || !samePassword(body.password, process.env.ADMIN_PASSWORD)) {
-    return json(401, { error: 'Kata laluan salah.' });
-  }
+    const missing = [];
+    if (!process.env.ADMIN_PASSWORD) missing.push('ADMIN_PASSWORD');
+    if (!process.env.SUPABASE_URL) missing.push('SUPABASE_URL');
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) missing.push('SUPABASE_SERVICE_ROLE_KEY');
 
-  try {
+    if (missing.length > 0) {
+      console.error('Env vars missing:', missing);
+      return json(500, { error: `Konfigurasi server belum lengkap: ${missing.join(', ')}` });
+    }
+
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      console.error('JSON parse error:', e);
+      return json(400, { error: 'Data tak sah.' });
+    }
+
+    if (typeof body.password !== 'string' || !samePassword(body.password, process.env.ADMIN_PASSWORD)) {
+      return json(401, { error: 'Kata laluan salah.' });
+    }
+
     if (body.action === 'list') return await list();
     if (body.action === 'add') return await add(body);
     if (body.action === 'status') return await setStatus(body);
     return json(400, { error: 'Tindakan tak dikenali.' });
-  } catch {
-    return json(500, { error: 'Ralat pelayan.' });
+  } catch (e) {
+    console.error('Unhandled error:', e);
+    return json(500, { error: `Ralat pelayan: ${e.message}` });
   }
 };
