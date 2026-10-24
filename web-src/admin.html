@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Pasukan — Rujukan Minda Optima</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/config.js"></script>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+
+  <header class="bg-brand text-white">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <span class="font-extrabold text-lg tracking-tight">Minda<span class="text-gold">Optima</span> <span class="font-medium text-white/70 text-sm">· Pasukan Rujukan</span></span>
+      <button id="logout" class="hidden text-sm text-white/80 hover:text-white">Log keluar</button>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8">
+
+    <form id="login-form" class="max-w-sm mx-auto rounded-2xl bg-white p-6 shadow-sm border border-slate-200">
+      <h1 class="text-xl font-extrabold text-brand">Log masuk pasukan</h1>
+      <label for="email" class="mt-5 block text-sm font-semibold">Emel</label>
+      <input id="email" type="email" autocomplete="username" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand">
+      <label for="password" class="mt-4 block text-sm font-semibold">Kata laluan</label>
+      <input id="password" type="password" autocomplete="current-password" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand">
+      <p id="login-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+      <button type="submit" class="mt-5 w-full rounded-xl bg-brand py-3 text-white font-bold hover:bg-brand-light disabled:opacity-60">Masuk</button>
+    </form>
+
+    <div id="app" class="hidden space-y-8">
+      <p id="app-error" class="hidden rounded-xl bg-red-50 p-4 text-red-700" role="alert"></p>
+
+      <section id="cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></section>
+
+      <section>
+        <h2 class="text-lg font-bold text-brand">Corong setiap penjemput</h2>
+        <p class="text-sm text-slate-500">Buka pautan → tekan Daftar → siap daftar. Jurang besar antara dua langkah bermaksud ada yang tersangkut.</p>
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr><th class="px-4 py-3">Penjemput</th><th class="px-3 py-3">Kod</th><th class="px-3 py-3 text-right">Buka pautan</th><th class="px-3 py-3 text-right">Tekan Daftar</th><th class="px-3 py-3 text-right">Siap daftar</th><th class="px-3 py-3 text-right">Menunggu</th><th class="px-3 py-3 text-right">Layak</th><th class="px-3 py-3 text-right">Dibayar</th></tr>
+            </thead>
+            <tbody id="funnel-rows" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <div class="flex items-end justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-brand">Senarai rujukan</h2>
+            <p class="text-sm text-slate-500">Tukar status selepas sahkan anak benar-benar mendaftar dan hadir kelas percubaan.</p>
+          </div>
+          <button id="export" class="shrink-0 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">Muat turun CSV</button>
+        </div>
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr><th class="px-4 py-3">Rakan yang daftar</th><th class="px-3 py-3">Dijemput oleh</th><th class="px-3 py-3">Tarikh</th><th class="px-3 py-3 text-right">Ganjaran</th><th class="px-3 py-3">Status</th></tr>
+            </thead>
+            <tbody id="referral-rows" class="divide-y divide-slate-100"></tbody>
+          </table>
+          <p id="referral-empty" class="hidden px-4 py-8 text-center text-slate-500">Belum ada rujukan.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-brand">Kod tidak dikenali (20 terkini)</h2>
+        <p class="text-sm text-slate-500">Seseorang buka pautan dengan kod yang tiada dalam sistem. Biasanya kod ditaip salah atau pautan terpotong.</p>
+        <ul id="unknown-rows" class="mt-3 rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 text-sm"></ul>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const cfg = window.MO_CONFIG;
+    const base = cfg.SUPABASE_URL.replace(/\/+$/, '');
+    const SESSION_KEY = 'mo_admin_session';
+    const $ = (id) => document.getElementById(id);
+    const esc = MO.escapeHtml;
+    const rm = (n) => `RM${Number(n).toLocaleString('ms-MY')}`;
+    const dt = new Intl.DateTimeFormat('ms-MY', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' });
+    const STATUS = { pending: 'Menunggu', approved: 'Layak', paid: 'Dibayar', rejected: 'Ditolak' };
+    let referrals = [];
+
+    // Sesi disimpan dalam sessionStorage: tamat bila tab ditutup.
+    const session = {
+      get() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { return null; } },
+      set(s) { try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch { /* ignore */ } },
+      clear() { try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ } },
+    };
+
+    async function auth(grantType, body) {
+      const res = await fetch(`${base}/auth/v1/token?grant_type=${grantType}`, {
+        method: 'POST',
+        headers: { apikey: cfg.SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error_description || data.msg || 'Log masuk gagal.');
+      session.set({ access_token: data.access_token, refresh_token: data.refresh_token });
+      return data;
+    }
+
+    async function api(path, { method = 'GET', body, prefer } = {}, retried = false) {
+      const s = session.get();
+      if (!s) throw Object.assign(new Error('Sesi tamat.'), { status: 401 });
+      const res = await fetch(`${base}${path}`, {
+        method,
+        headers: {
+          apikey: cfg.SUPABASE_KEY,
+          Authorization: `Bearer ${s.access_token}`,
+          'Content-Type': 'application/json',
+          ...(prefer ? { Prefer: prefer } : {}),
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (res.status === 401 && !retried) {
+        await auth('refresh_token', { refresh_token: s.refresh_token });
+        return api(path, { method, body, prefer }, true);
+      }
+      if (!res.ok) throw Object.assign(new Error('Ralat pelayan. Cuba muat semula halaman.'), { status: res.status });
+      return res.status === 204 ? null : res.json();
+    }
+
+    function showLogin(message) {
+      session.clear();
+      $('app').classList.add('hidden');
+      $('logout').classList.add('hidden');
+      $('login-form').classList.remove('hidden');
+      $('login-error').textContent = message || '';
+      $('login-error').classList.toggle('hidden', !message);
+    }
+
+    const fmtPhone = (p) => (p && p.length > 3 ? `${p.slice(0, 3)}-${p.slice(3)}` : p || '');
+    const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '–');
+
+    function renderCards(funnel) {
+      const sum = (k) => funnel.reduce((n, r) => n + Number(r[k]), 0);
+      const money = (status) => referrals.filter((r) => r.status === status).reduce((n, r) => n + r.reward, 0);
+      const cards = [
+        ['Buka pautan', sum('landings'), ''],
+        ['Tekan Daftar', sum('cta_clicks'), `${pct(sum('cta_clicks'), sum('landings'))} daripada buka`],
+        ['Siap daftar', sum('registrations'), `${pct(sum('registrations'), sum('cta_clicks'))} daripada tekan`],
+        ['Perlu dibayar', rm(money('approved')), `Menunggu semakan: ${rm(money('pending'))} · Dibayar: ${rm(money('paid'))}`],
+      ];
+      $('cards').innerHTML = cards.map(([label, value, sub]) => `
+        <div class="rounded-2xl border border-slate-200 bg-white p-4">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">${esc(label)}</p>
+          <p class="mt-1 text-2xl font-extrabold text-brand tabular-nums">${esc(value)}</p>
+          <p class="mt-1 text-xs text-slate-500">${esc(sub)}</p>
+        </div>`).join('');
+    }
+
+    function renderFunnel(funnel) {
+      $('funnel-rows').innerHTML = funnel.map((r) => `<tr>
+        <td class="px-4 py-3"><div class="font-medium">${esc(r.name)}</div><div class="text-xs text-slate-500 tabular-nums">${esc(fmtPhone(r.phone))}</div></td>
+        <td class="px-3 py-3 font-mono text-xs">${esc(r.code)}</td>
+        <td class="px-3 py-3 text-right tabular-nums">${esc(r.landings)}</td>
+        <td class="px-3 py-3 text-right tabular-nums">${esc(r.cta_clicks)}</td>
+        <td class="px-3 py-3 text-right tabular-nums font-bold">${esc(r.registrations)}</td>
+        <td class="px-3 py-3 text-right tabular-nums">${esc(r.pending)}</td>
+        <td class="px-3 py-3 text-right tabular-nums">${esc(r.approved)}</td>
+        <td class="px-3 py-3 text-right tabular-nums">${esc(r.paid)}</td>
+      </tr>`).join('') || '<tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">Belum ada penjemput.</td></tr>';
+    }
+
+    function renderReferrals() {
+      $('referral-empty').classList.toggle('hidden', referrals.length > 0);
+      $('referral-rows').innerHTML = referrals.map((r) => `<tr>
+        <td class="px-4 py-3"><div class="font-medium">${esc(r.referee_name || '—')}</div><div class="text-xs text-slate-500 tabular-nums">${esc(fmtPhone(r.referee_phone))}</div></td>
+        <td class="px-3 py-3"><div>${esc(r.referrers?.name || '')}</div><div class="font-mono text-xs text-slate-500">${esc(r.code)}</div></td>
+        <td class="px-3 py-3 whitespace-nowrap text-slate-600">${esc(dt.format(new Date(r.registered_at)))}</td>
+        <td class="px-3 py-3 text-right font-bold tabular-nums">${esc(rm(r.reward))}</td>
+        <td class="px-3 py-3">
+          <select data-id="${esc(r.id)}" data-prev="${esc(r.status)}" class="status rounded-lg border border-slate-300 bg-white px-2 py-1.5">
+            ${Object.entries(STATUS).map(([v, l]) => `<option value="${v}"${v === r.status ? ' selected' : ''}>${l}</option>`).join('')}
+          </select>
+        </td>
+      </tr>`).join('');
+    }
+
+    async function load() {
+      $('login-form').classList.add('hidden');
+      $('app').classList.remove('hidden');
+      $('logout').classList.remove('hidden');
+      $('app-error').classList.add('hidden');
+      try {
+        if ((await api('/rest/v1/rpc/is_team', { method: 'POST', body: {} })) !== true) {
+          return showLogin('Akaun ini bukan ahli pasukan. Minta admin tambah emel anda.');
+        }
+        const [funnel, refs, unknown] = await Promise.all([
+          api('/rest/v1/referral_funnel?select=*&order=registrations.desc,landings.desc'),
+          api('/rest/v1/referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone)&order=registered_at.desc&limit=500'),
+          api('/rest/v1/referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
+        ]);
+        referrals = refs;
+        renderCards(funnel);
+        renderFunnel(funnel);
+        renderReferrals();
+        $('unknown-rows').innerHTML = unknown.map((e) => `<li class="flex justify-between px-4 py-2"><span class="font-mono">${esc(e.code)}</span><span class="text-slate-500">${esc(dt.format(new Date(e.created_at)))}</span></li>`).join('')
+          || '<li class="px-4 py-6 text-center text-slate-500">Tiada.</li>';
+      } catch (err) {
+        if (err.status === 401) return showLogin('Sesi tamat. Sila log masuk semula.');
+        $('app-error').textContent = err.message;
+        $('app-error').classList.remove('hidden');
+      }
+    }
+
+    $('referral-rows').addEventListener('change', async (e) => {
+      const sel = e.target.closest('select.status');
+      if (!sel) return;
+      sel.disabled = true;
+      try {
+        const rows = await api(`/rest/v1/referrals?id=eq.${encodeURIComponent(sel.dataset.id)}`, {
+          method: 'PATCH', body: { status: sel.value }, prefer: 'return=representation',
+        });
+        if (!rows.length) throw new Error('Tiada kebenaran untuk tukar status.');
+        const r = referrals.find((x) => String(x.id) === sel.dataset.id);
+        if (r) r.status = sel.value;
+        sel.dataset.prev = sel.value;
+        load();
+      } catch (err) {
+        sel.value = sel.dataset.prev;
+        $('app-error').textContent = err.message;
+        $('app-error').classList.remove('hidden');
+      } finally {
+        sel.disabled = false;
+      }
+    });
+
+    // Sel yang bermula dengan = + - @ ditandakan supaya Excel tak menjalankannya sebagai formula.
+    const csvCell = (v) => {
+      let s = String(v ?? '');
+      if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+      return `"${s.replace(/"/g, '""')}"`;
+    };
+    $('export').addEventListener('click', () => {
+      const head = ['Tarikh', 'Rakan', 'Telefon rakan', 'Penjemput', 'Telefon penjemput', 'Kod', 'Ganjaran (RM)', 'Status'];
+      const lines = referrals.map((r) => [
+        r.registered_at, r.referee_name, r.referee_phone, r.referrers?.name, r.referrers?.phone, r.code, r.reward, STATUS[r.status],
+      ].map(csvCell).join(','));
+      const blob = new Blob([`﻿${[head.map(csvCell).join(','), ...lines].join('\r\n')}`], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `rujukan-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    $('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      try {
+        await auth('password', { email: $('email').value.trim(), password: $('password').value });
+        $('password').value = '';
+        await load();
+      } catch (err) {
+        showLogin(err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $('logout').addEventListener('click', () => showLogin());
+
+    if (session.get()) load();
+  </script>
+</body>
+</html>
