@@ -1,0 +1,6 @@
+[build]
+  command = ""
+  publish = "web"
+
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL"
