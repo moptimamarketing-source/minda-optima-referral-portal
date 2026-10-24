@@ -20,12 +20,35 @@ async function sb(path, { method = 'GET', body } = {}) {
 }
 
 async function sendEmailViaResend(to, subject, html) {
-  // Mock email for testing - logs OTP to console instead of sending via Resend
-  // In production, implement real Resend API call
-  console.log(`[MOCK EMAIL] To: ${to}, Subject: ${subject}`);
-  console.log(`[MOCK EMAIL] Body: ${html}`);
-  // For now, just return success
-  return { ok: true, data: { id: 'mock_' + Date.now() } };
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    console.error('RESEND_API_KEY not set');
+    return { ok: false, error: 'Servis email belum disediakan.' };
+  }
+  const from = process.env.RESEND_FROM || 'Minda Optima <onboarding@resend.dev>';
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to: [to], subject, html }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      console.error('Resend rejected:', res.status, JSON.stringify(data));
+      const testOnly = res.status === 403 && /own email|verify a domain/i.test(data?.message || '');
+      return {
+        ok: false,
+        error: testOnly
+          ? 'Domain email belum disahkan di Resend. Buat masa ini hanya boleh hantar ke emel pemilik akaun Resend.'
+          : 'Gagal hantar email. Sila cuba lagi.',
+      };
+    }
+    return { ok: true, data };
+  } catch (e) {
+    console.error('Resend fetch failed:', e.message);
+    return { ok: false, error: 'Gagal hantar email. Sila cuba lagi.' };
+  }
 }
 
 async function sendOtp(body) {
