@@ -93,6 +93,34 @@
       return { code: r.code, referrerName: r.referrerName, registerUrl: registerUrl(r.code) };
     }
 
+    // New OTP endpoints — call Netlify auth function
+    if (method === 'POST' && (path === '/api/auth/send-otp' || path === '/api/auth/verify-otp' || path === '/api/auth/send-confirmation')) {
+      let res;
+      try {
+        res = await fetch('/.netlify/functions/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+      } catch {
+        throw fail(0, 'Tiada sambungan internet. Sila cuba lagi.');
+      }
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw fail(res.status, data?.error || 'Ralat pelayan. Sila cuba lagi.');
+      if (!data.ok && data.reason) {
+        const msgs = {
+          invalid_phone: 'Nombor telefon tidak sah. Contoh: 012-3456789',
+          invalid_email: 'Emel tidak sah.',
+          otp_invalid: 'Kod OTP salah.',
+          otp_expired: 'Kod OTP telah luput. Minta kod baru.',
+          no_otp: 'Tiada kod OTP. Sila cuba lagi.',
+        };
+        throw fail(422, msgs[data.reason] || data.error || 'Gagal memproses permintaan.');
+      }
+      if (!data.ok) throw fail(400, data.error || 'Gagal memproses permintaan.');
+      return data;
+    }
+
     if (method === 'POST' && path === '/api/login') {
       const r = await rpc('register_referrer', {
         p_phone: body.phone,
@@ -111,7 +139,7 @@
         throw fail(400, 'Tidak dapat meneruskan. Sila cuba lagi.');
       }
       store.set(PHONE_KEY, r.phone);
-      return { ok: true, redirect: 'dashboard.html' };
+      return { ok: true, code: r.code, redirect: 'dashboard.html' };
     }
 
     if (method === 'GET' && path === '/api/dashboard') {
