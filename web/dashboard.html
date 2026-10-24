@@ -31,6 +31,40 @@
       <p class="mt-1 text-sm font-semibold">⏳ Berakhir dalam <span class="tabular-nums" data-countdown>&nbsp;</span></p>
     </div>
 
+    <!-- Profile card -->
+    <section class="rounded-2xl bg-white border border-slate-200 p-5">
+      <h2 class="font-bold text-brand">Profil Anda</h2>
+      <div id="profile-grid" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Nama Lengkap</p>
+          <p id="profile-name" class="mt-1 font-medium text-slate-800">—</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Nombor Telefon</p>
+          <p id="profile-phone" class="mt-1 font-medium text-slate-800 tabular-nums">—</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Emel</p>
+          <p id="profile-email" class="mt-1 font-medium text-slate-800 break-all">—</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Nama Bank</p>
+          <p id="profile-bank-name" class="mt-1 font-medium text-slate-800">—</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Nombor Akaun Bank</p>
+          <p id="profile-bank-account" class="mt-1 font-medium text-slate-800 tabular-nums">—</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Pekerjaan</p>
+          <p id="profile-occupation" class="mt-1 font-medium text-slate-800">—</p>
+        </div>
+      </div>
+      <p class="mt-5 text-sm text-slate-600 bg-blue-50 p-3 rounded-lg">
+        💬 Untuk mengubah atau membetulkan butiran, sila hubungi sokongan melalui <strong>WhatsApp</strong>.
+      </p>
+    </section>
+
     <!-- Referral code card -->
     <section class="rounded-2xl border-2 border-dashed border-brand bg-white p-6 text-center">
       <p class="text-sm font-semibold uppercase tracking-wider text-slate-500">Kod Rujukan Anda</p>
@@ -125,6 +159,13 @@
       document.getElementById('stat-count').textContent = stats.totalReferrals;
       document.getElementById('stat-pending').textContent = rm(stats.rewardPending);
       document.getElementById('stat-earned').textContent = rm(stats.totalEarned);
+
+      document.getElementById('profile-name').textContent = referrer.name || '—';
+      document.getElementById('profile-phone').textContent = referrer.phone || '—';
+      document.getElementById('profile-email').textContent = referrer.email || '—';
+      document.getElementById('profile-bank-name').textContent = referrer.bank_name || '—';
+      document.getElementById('profile-bank-account').textContent = referrer.bank_account || '—';
+      document.getElementById('profile-occupation').textContent = referrer.occupation || '—';
 
       const message = shareMessage(referrer.code, shareUrl);
       document.getElementById('share-preview').textContent = message;
