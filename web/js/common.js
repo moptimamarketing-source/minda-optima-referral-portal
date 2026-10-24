@@ -87,7 +87,42 @@ const MO = (() => {
     }[c]));
   }
 
-  document.addEventListener('DOMContentLoaded', () => startCountdowns());
+  function initWhatsAppButton(phoneNumber = '601158526817', text = 'Sokongan') {
+    if (document.getElementById('mo-whatsapp-btn')) return; // Already added
+    const btn = document.createElement('a');
+    btn.id = 'mo-whatsapp-btn';
+    btn.href = `https://wa.me/${phoneNumber}?text=Halo,%20saya%20memerlukan%20bantuan`;
+    btn.target = '_blank';
+    btn.rel = 'noopener noreferrer';
+    btn.title = text;
+    btn.innerHTML = '💬 WhatsApp';
+    btn.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #25D366;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    `;
+    btn.onmouseover = () => btn.style.transform = 'scale(1.1)';
+    btn.onmouseout = () => btn.style.transform = 'scale(1)';
+    document.body.appendChild(btn);
+  }
 
-  return { PROMO_DEADLINE, countdownParts, startCountdowns, api, copyText, escapeHtml };
+  document.addEventListener('DOMContentLoaded', () => {
+    startCountdowns();
+    initWhatsAppButton();
+  });
+
+  return { PROMO_DEADLINE, countdownParts, startCountdowns, api, copyText, escapeHtml, initWhatsAppButton };
 })();
