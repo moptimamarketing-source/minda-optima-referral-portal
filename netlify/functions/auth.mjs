@@ -27,23 +27,28 @@ async function sendEmailViaResend(to, subject, html) {
   }
 
   try {
+    const body_payload = {
+      from: 'onboarding@resend.dev',
+      to,
+      subject,
+      html,
+    };
+    console.log('Sending email to:', to, 'Subject:', subject);
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${resendKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: 'onboarding@resend.dev',
-        to,
-        subject,
-        html,
-      }),
+      body: JSON.stringify(body_payload),
     });
     const data = await res.json();
+    if (!res.ok) {
+      console.error('Resend API error:', res.status, JSON.stringify(data));
+    }
     return { ok: res.ok, data };
   } catch (e) {
-    console.error('Resend error:', e);
+    console.error('Resend error:', e.message);
     return { ok: false, error: e.message };
   }
 }
