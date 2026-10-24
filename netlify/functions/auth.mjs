@@ -42,14 +42,19 @@ async function sendEmailViaResend(to, subject, html) {
       },
       body: JSON.stringify(body_payload),
     });
-    const data = await res.json();
-    if (!res.ok) {
-      console.error('Resend API error:', res.status, JSON.stringify(data));
+    console.log('Resend response status:', res.status);
+    let data;
+    try {
+      data = await res.json();
+      console.log('Resend response data:', JSON.stringify(data));
+    } catch (parseErr) {
+      console.error('Failed to parse Resend response:', parseErr.message);
+      data = { error: 'Invalid response' };
     }
-    return { ok: res.ok, data };
+    return { ok: res.ok, data, error: data?.error || (res.ok ? null : 'Unknown error') };
   } catch (e) {
-    console.error('Resend error:', e.message);
-    return { ok: false, error: e.message };
+    console.error('Resend fetch error:', e.message, e.code);
+    return { ok: false, error: `Fetch error: ${e.message}` };
   }
 }
 
@@ -79,8 +84,8 @@ async function sendOtp(body) {
 
   const emailRes = await sendEmailViaResend(normalizedEmail, 'Kod OTP — Minda Optima', emailHtml);
   if (!emailRes.ok) {
-    console.error('Email send error:', emailRes.error);
-    return json(502, { error: 'Gagal hantar email. Sila cuba lagi.' });
+    console.error('Email send failed:', emailRes.error, 'Data:', JSON.stringify(emailRes.data));
+    return json(502, { error: emailRes.error || 'Gagal hantar email. Sila cuba lagi.' });
   }
 
   return json(200, { ok: true, phone: normalizedPhone, email: normalizedEmail });
