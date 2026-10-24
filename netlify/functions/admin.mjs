@@ -42,7 +42,20 @@ async function list() {
     sb('referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone)&order=registered_at.desc&limit=500'),
     sb('referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
   ]);
-  if (!funnel.ok || !referrals.ok || !unknown.ok) return json(502, { error: 'Gagal baca pangkalan data.' });
+
+  if (!funnel.ok) {
+    console.error('referral_funnel error:', funnel.data);
+    return json(502, { error: `Gagal baca funnel: ${funnel.data?.message || 'Unknown error'}` });
+  }
+  if (!referrals.ok) {
+    console.error('referrals error:', referrals.data);
+    return json(502, { error: `Gagal baca referrals: ${referrals.data?.message || 'Unknown error'}` });
+  }
+  if (!unknown.ok) {
+    console.error('referral_events error:', unknown.data);
+    return json(502, { error: `Gagal baca events: ${unknown.data?.message || 'Unknown error'}` });
+  }
+
   return json(200, { funnel: funnel.data, referrals: referrals.data, unknown: unknown.data });
 }
 
