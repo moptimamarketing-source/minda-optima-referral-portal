@@ -118,6 +118,7 @@
         throw fail(422, msgs[data.reason] || data.error || 'Gagal memproses permintaan.');
       }
       if (!data.ok) throw fail(400, data.error || 'Gagal memproses permintaan.');
+      if (path === '/api/auth/verify-otp') store.set(PHONE_KEY, data.phone);
       return data;
     }
 
