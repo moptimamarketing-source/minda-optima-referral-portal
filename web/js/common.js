@@ -119,10 +119,45 @@ const MO = (() => {
     document.body.appendChild(btn);
   }
 
+  function initBgMusic() {
+    const audio = document.getElementById('bg-music');
+    const btn = document.getElementById('music-toggle');
+    if (!audio || !btn) return;
+
+    const KEY = 'mo_music_muted';
+    let muted = localStorage.getItem(KEY) === '1';
+
+    function applyState() {
+      audio.muted = muted;
+      btn.textContent = muted ? '🔇' : '🔊';
+    }
+    applyState();
+
+    function tryPlay() {
+      audio.play().catch(() => {
+        const resume = () => {
+          audio.play().catch(() => {});
+          document.removeEventListener('click', resume);
+          document.removeEventListener('touchstart', resume);
+        };
+        document.addEventListener('click', resume, { once: true });
+        document.addEventListener('touchstart', resume, { once: true });
+      });
+    }
+    tryPlay();
+
+    btn.addEventListener('click', () => {
+      muted = !muted;
+      localStorage.setItem(KEY, muted ? '1' : '0');
+      applyState();
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     startCountdowns();
     initWhatsAppButton();
+    initBgMusic();
   });
 
-  return { PROMO_DEADLINE, countdownParts, startCountdowns, api, copyText, escapeHtml, initWhatsAppButton };
+  return { PROMO_DEADLINE, countdownParts, startCountdowns, api, copyText, escapeHtml, initWhatsAppButton, initBgMusic };
 })();
