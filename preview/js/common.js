@@ -127,29 +127,29 @@ const MO = (() => {
     const KEY = 'mo_music_muted';
     let muted = localStorage.getItem(KEY) === '1';
 
-    function applyState() {
-      audio.muted = muted;
+    function applyIcon() {
       btn.textContent = muted ? '🔇' : '🔊';
     }
-    applyState();
 
-    function tryPlay() {
-      audio.play().catch(() => {
-        const resume = () => {
-          audio.play().catch(() => {});
-          document.removeEventListener('click', resume);
-          document.removeEventListener('touchstart', resume);
-        };
-        document.addEventListener('click', resume, { once: true });
-        document.addEventListener('touchstart', resume, { once: true });
-      });
+    function attemptPlay() {
+      audio.muted = muted;
+      audio.play().catch(() => {});
     }
-    tryPlay();
+
+    applyIcon();
+    attemptPlay();
+
+    // Mobile browsers block audio until the user interacts with the page at least
+    // once; retry on the first tap/click anywhere, using the *current* mute state.
+    ['click', 'touchend', 'pointerdown'].forEach((evt) => {
+      document.addEventListener(evt, attemptPlay, { once: true, passive: true });
+    });
 
     btn.addEventListener('click', () => {
       muted = !muted;
       localStorage.setItem(KEY, muted ? '1' : '0');
-      applyState();
+      applyIcon();
+      attemptPlay();
     });
   }
 
