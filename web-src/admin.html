@@ -198,8 +198,44 @@
             ${Object.entries(STATUS).map(([v, l]) => `<option value="${v}"${v === r.status ? ' selected' : ''}>${l}</option>`).join('')}
           </select>
         </td>
-        <td class="px-3 py-3 text-right"><button data-edit-referee="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button></td>
+        <td class="px-3 py-3 text-right whitespace-nowrap">
+          <button data-edit-referee="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button>
+          ${notifyButtons(r)}
+        </td>
       </tr>`).join('');
+    }
+
+    function waMessage(r) {
+      const name = r.referrers?.name || '';
+      if (r.status === 'paid') {
+        return `Salam ${name}, pembayaran reward RM${r.reward} untuk rujukan anda telah dibuat. Sila semak akaun bank anda. Terima kasih! – Minda Optima`;
+      }
+      return `Salam ${name}, rujukan anda telah disahkan layak. Reward RM${r.reward} akan dibayar selepas proses pembayaran selesai. Kami akan maklumkan semula. – Minda Optima`;
+    }
+
+    function notifyButtons(r) {
+      if (r.status !== 'approved' && r.status !== 'paid') return '';
+      const phone = r.referrers?.phone;
+      const wa = phone ? `https://wa.me/60${phone.replace(/^0/, '')}?text=${encodeURIComponent(waMessage(r))}` : '';
+      return `
+        <button data-notify-email="${esc(r.id)}" class="ml-3 text-sm font-semibold text-brand hover:underline">Email</button>
+        ${wa ? `<a href="${esc(wa)}" target="_blank" rel="noopener" class="ml-3 text-sm font-semibold text-emerald-700 hover:underline">WhatsApp</a>` : ''}`;
+    }
+
+    async function sendNotify(id, btn) {
+      const r = referrals.find((x) => String(x.id) === String(id));
+      if (!r) return;
+      if (!confirm(`Send "${STATUS[r.status]}" email to ${r.referrers?.email || 'this referrer'}?`)) return;
+      btn.disabled = true;
+      try {
+        const d = await call({ action: 'notify-email', id: Number(id) });
+        alert(`Email sent to ${d.to}.`);
+      } catch (err) {
+        if (err.status === 401) return showLogin('Wrong password.');
+        alert(err.message);
+      } finally {
+        btn.disabled = false;
+      }
     }
 
     function renderReferrers() {
@@ -339,6 +375,8 @@
     document.addEventListener('click', (e) => {
       const a = e.target.closest('[data-edit-referrer]');
       const b = e.target.closest('[data-edit-referee]');
+      const n = e.target.closest('[data-notify-email]');
+      if (n) sendNotify(n.dataset.notifyEmail, n);
       if (a) openEdit('referrer', a.dataset.editReferrer);
       if (b) openEdit('referee', b.dataset.editReferee);
     });
