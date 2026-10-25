@@ -104,16 +104,16 @@
 
       <section>
         <h2 class="text-lg font-bold text-brand">Referrers</h2>
-        <p class="text-sm text-slate-500">Edit details referrer (nama, phone, email, bank, kerja) kalau depa typo salah.</p>
+        <p class="text-sm text-slate-500">Edit details referrer (nama, phone, email, kerja) kalau depa typo salah. Phone digunakan untuk transfer reward Touch 'n Go.</p>
         <div class="mt-3">
           <label class="block text-sm font-semibold">Cari
-            <input id="referrer-search" placeholder="Nama, kod, email, bank, kerja..." class="mt-1 w-72 rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand">
+            <input id="referrer-search" placeholder="Nama, kod, email, kerja..." class="mt-1 w-72 rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand">
           </label>
         </div>
         <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
           <table class="w-full text-sm">
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-              <tr><th class="px-4 py-3">Referrer</th><th class="px-3 py-3">Kod</th><th class="px-3 py-3">Email</th><th class="px-3 py-3">Bank</th><th class="px-3 py-3">Kerja</th><th class="px-3 py-3"></th></tr>
+              <tr><th class="px-4 py-3">Referrer</th><th class="px-3 py-3">Kod</th><th class="px-3 py-3">Email</th><th class="px-3 py-3">Kerja</th><th class="px-3 py-3"></th></tr>
             </thead>
             <tbody id="referrer-rows" class="divide-y divide-slate-100"></tbody>
           </table>
@@ -277,7 +277,7 @@
     function waMessage(r) {
       const name = r.referrers?.name || '';
       if (r.status === 'paid') {
-        return `Salam ${name}, pembayaran reward RM${r.reward} untuk rujukan anda telah dibuat. Sila semak akaun bank anda. Terima kasih! – Minda Optima`;
+        return `Salam ${name}, pembayaran reward RM${r.reward} untuk rujukan anda telah dibuat. Sila semak Touch 'n Go anda. Terima kasih! – Minda Optima`;
       }
       return `Salam ${name}, rujukan anda telah disahkan layak. Reward RM${r.reward} akan dibayar selepas proses pembayaran selesai. Kami akan maklumkan semula. – Minda Optima`;
     }
@@ -310,7 +310,7 @@
     function filterReferrers() {
       const q = $('referrer-search').value.trim().toLowerCase();
       if (!q) return referrers;
-      return referrers.filter((r) => [r.name, r.code, r.email, r.bank_name, r.occupation, r.phone]
+      return referrers.filter((r) => [r.name, r.code, r.email, r.occupation, r.phone]
         .join(' ').toLowerCase().includes(q));
     }
 
@@ -320,10 +320,9 @@
         <td class="px-4 py-3"><div class="font-medium">${esc(r.name)}</div><div class="text-xs text-slate-500 tabular-nums">${esc(fmtPhone(r.phone))}</div></td>
         <td class="px-3 py-3 font-mono text-xs">${esc(r.code)}</td>
         <td class="px-3 py-3">${esc(r.email || '—')}</td>
-        <td class="px-3 py-3"><div>${esc(r.bank_name || '—')}</div><div class="text-xs text-slate-500 tabular-nums">${esc(r.bank_account || '')}</div></td>
         <td class="px-3 py-3">${esc(r.occupation || '—')}</td>
         <td class="px-3 py-3 text-right"><button data-edit-referrer="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button></td>
-      </tr>`).join('') || '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Takde referrer lagi.</td></tr>';
+      </tr>`).join('') || '<tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">Takde referrer lagi.</td></tr>';
     }
 
     function showAppError(message) {
@@ -440,7 +439,7 @@
     });
 
     const EDIT_FIELDS = {
-      referrer: [['name', 'Nama'], ['phone', 'Phone'], ['email', 'Email'], ['bank_account', 'Nombor Akaun Bank'], ['bank_name', 'Nama Bank'], ['occupation', 'Kerja']],
+      referrer: [['name', 'Nama'], ['phone', 'Phone (TnG)'], ['email', 'Email'], ['occupation', 'Kerja']],
       referee: [['name', 'Nama'], ['phone', 'Phone']],
     };
     let editing = null;

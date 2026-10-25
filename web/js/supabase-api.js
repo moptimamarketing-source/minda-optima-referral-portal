@@ -124,8 +124,6 @@
         action: 'register',
         token: store.get(SESSION_KEY),
         name: body.name,
-        bank_account: body.bank_account,
-        bank_name: body.bank_name,
         occupation: body.occupation,
       });
       return { ok: true, code: data.code, redirect: 'dashboard.html' };

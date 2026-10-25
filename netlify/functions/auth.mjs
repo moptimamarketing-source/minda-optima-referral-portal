@@ -48,12 +48,11 @@ async function sessionFor(token) {
   return row;
 }
 
-function confirmationEmail({ name, code, phone, email, bankName, bankAccount, occupation }) {
+function confirmationEmail({ name, code, phone, email, occupation }) {
   const share = `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, anak dapat 1 kelas PERCUMA & saya dapat RM100 🎉 👉 ${SITE}/daftar.html?ref=${code}`;
   const waLink = `https://wa.me/?text=${encodeURIComponent(share)}`;
   const tgLink = TELEGRAM_LINK;
   const row = (label, value) => `<tr><td style="padding:6px 0;color:#64748b;width:40%">${label}</td><td style="padding:6px 0;font-weight:600">${esc(value || '—')}</td></tr>`;
-  const masked = bankAccount ? `•••• ${String(bankAccount).slice(-4)}` : '—';
 
   return `
     <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1e293b">
@@ -68,11 +67,9 @@ function confirmationEmail({ name, code, phone, email, bankName, bankAccount, oc
         ${row('Nama', name)}
         ${row('Nombor telefon', phone)}
         ${row('Emel', email)}
-        ${row('Nama bank', bankName)}
-        ${row('Nombor akaun', masked)}
         ${row('Pekerjaan', occupation)}
       </table>
-      <p style="font-size:13px;color:#64748b">Untuk mengubah butiran, sila hubungi sokongan melalui WhatsApp.</p>
+      <p style="font-size:13px;color:#64748b">Reward RM anda akan dihantar ke Touch 'n Go yang dikaitkan dengan nombor telefon di atas. Untuk mengubah butiran, sila hubungi sokongan melalui WhatsApp.</p>
 
       <h3 style="color:#0D2A5C;margin-bottom:4px">Kongsi kod anda</h3>
       <p style="font-size:14px;color:#64748b;margin-top:0">Salin mesej di bawah dan hantar kepada rakan anda:</p>
@@ -163,8 +160,6 @@ async function register(body) {
       p_phone: s.phone,
       p_name: body.name ?? null,
       p_email: s.email,
-      p_bank_account: body.bank_account ?? null,
-      p_bank_name: body.bank_name ?? null,
       p_occupation: body.occupation ?? null,
     },
   });
@@ -173,8 +168,6 @@ async function register(body) {
   const REG_ERRORS = {
     name_required: 'Nama penuh diperlukan (2-80 aksara).',
     email_invalid: 'Emel tidak sah.',
-    bank_account_invalid: 'Nombor akaun bank tidak sah (6-20 digit).',
-    bank_name_required: 'Sila isi nama bank.',
     invalid_phone: 'Nombor telefon tidak sah.',
   };
   if (!r.data?.ok) {
@@ -186,8 +179,6 @@ async function register(body) {
     code: r.data.code,
     phone: s.phone,
     email: s.email,
-    bankName: String(body.bank_name ?? '').trim(),
-    bankAccount: String(body.bank_account ?? '').replace(/\D/g, ''),
     occupation: String(body.occupation ?? '').trim(),
   };
   await sendEmail(s.email, `Pendaftaran Berjaya — Kod Rujukan ${r.data.code}`, confirmationEmail(details));

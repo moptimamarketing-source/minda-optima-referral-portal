@@ -138,12 +138,8 @@
             <p id="profile-email" class="mt-1 font-medium text-slate-800 break-all">—</p>
           </div>
           <div>
-            <p class="text-xs text-slate-500 uppercase tracking-wider">Nama Bank</p>
-            <p id="profile-bank-name" class="mt-1 font-medium text-slate-800">—</p>
-          </div>
-          <div>
-            <p class="text-xs text-slate-500 uppercase tracking-wider">Nombor Akaun Bank</p>
-            <p id="profile-bank-account" class="mt-1 font-medium text-slate-800 tabular-nums">—</p>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Touch 'n Go Payout</p>
+            <p class="mt-1 font-medium text-slate-800">Nombor telefon di atas</p>
           </div>
           <div>
             <p class="text-xs text-slate-500 uppercase tracking-wider">Pekerjaan</p>
@@ -196,8 +192,6 @@
       document.getElementById('profile-name').textContent = referrer.name || '—';
       document.getElementById('profile-phone').textContent = referrer.phone || '—';
       document.getElementById('profile-email').textContent = referrer.email || '—';
-      document.getElementById('profile-bank-name').textContent = referrer.bank_name || '—';
-      document.getElementById('profile-bank-account').textContent = referrer.bank_account || '—';
       document.getElementById('profile-occupation').textContent = referrer.occupation || '—';
 
       if ((MO.settings || {}).community_link) {

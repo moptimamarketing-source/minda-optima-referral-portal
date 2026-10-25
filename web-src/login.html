@@ -34,6 +34,7 @@
                  class="w-full rounded-r-xl bg-transparent px-2 py-3 text-lg tracking-wide outline-none">
         </div>
         <p class="mt-1 text-xs text-slate-400">Format: 01X-XXXXXXX</p>
+        <p class="mt-1 text-xs text-amber-600">⚠️ Pastikan nombor telefon ini betul dan sah, kerana reward Touch 'n Go anda akan dihantar terus ke nombor ini.</p>
 
         <label for="email" class="mt-4 block text-sm font-semibold text-slate-700">Emel</label>
         <input id="email" name="email" type="email" autocomplete="email" placeholder="nama@example.com" required
@@ -78,13 +79,7 @@
         <input id="reg-name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="cth. Siti Aminah" required
                class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
 
-        <label for="reg-bank-name" class="mt-4 block text-sm font-semibold text-slate-700">Nama Bank</label>
-        <input id="reg-bank-name" name="bank_name" type="text" maxlength="50" placeholder="cth. Maybank" required
-               class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
-
-        <label for="reg-bank-account" class="mt-4 block text-sm font-semibold text-slate-700">Nombor Akaun Bank</label>
-        <input id="reg-bank-account" name="bank_account" type="text" inputmode="numeric" placeholder="cth. 123456789012" required
-               class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+        <p class="mt-4 text-xs text-slate-500">Reward RM anda akan dihantar ke Touch 'n Go yang dikaitkan dengan nombor telefon <strong id="reg-tng-phone"></strong> yang anda daftarkan tadi. Sila sahkan nombor tersebut betul sebelum meneruskan.</p>
 
         <label for="reg-occupation" class="mt-4 block text-sm font-semibold text-slate-700">Pekerjaan (Pilihan)</label>
         <input id="reg-occupation" name="occupation" type="text" maxlength="50" placeholder="cth. Guru, Doktor, Entrepreneur"
@@ -201,6 +196,7 @@
         });
         isNew = data.isNewUser;
         if (isNew) {
+          document.getElementById('reg-tng-phone').textContent = data.phone || userPhone;
           showForm(registerForm);
           document.getElementById('reg-name').focus();
         } else {
@@ -217,15 +213,9 @@
       e.preventDefault();
       showError('register-error');
       const name = document.getElementById('reg-name').value.trim();
-      const bankName = document.getElementById('reg-bank-name').value.trim();
-      const bankAccount = document.getElementById('reg-bank-account').value.trim();
       const occupation = document.getElementById('reg-occupation').value.trim();
 
       if (name.length < 2) return showError('register-error', 'Nama penuh diperlukan.');
-      if (!bankName) return showError('register-error', 'Nama bank diperlukan.');
-      if (!bankAccount || bankAccount.replace(/\D/g, '').length < 6) {
-        return showError('register-error', 'Nombor akaun bank tidak sah (6-20 digit).');
-      }
 
       const btn = registerForm.querySelector('button[type=submit]');
       btn.disabled = true;
@@ -234,8 +224,6 @@
           method: 'POST',
           body: {
             name,
-            bank_account: bankAccount.replace(/\D/g, ''),
-            bank_name: bankName,
             occupation: occupation || null,
           },
         });

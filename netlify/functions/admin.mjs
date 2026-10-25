@@ -155,11 +155,6 @@ async function editReferrer(body) {
     patch.email = clean(f.email, 100).toLowerCase() || null;
     if (patch.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(patch.email)) return json(422, { error: 'Emel tak sah.' });
   }
-  if ('bank_account' in f) {
-    patch.bank_account = String(f.bank_account ?? '').replace(/\D/g, '').slice(0, 20) || null;
-    if (patch.bank_account && patch.bank_account.length < 6) return json(422, { error: 'Nombor akaun bank tak sah.' });
-  }
-  if ('bank_name' in f) patch.bank_name = clean(f.bank_name, 50) || null;
   if ('occupation' in f) patch.occupation = clean(f.occupation, 50) || null;
   if (!Object.keys(patch).length) return json(422, { error: 'Tiada perubahan.' });
 
@@ -200,7 +195,7 @@ async function notifyEmail(body) {
   const id = Number(body.id);
   if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
 
-  const r = await sb(`referrals?select=status,reward,referrers(name,email,bank_name,bank_account)&id=eq.${id}`);
+  const r = await sb(`referrals?select=status,reward,referrers(name,email,phone)&id=eq.${id}`);
   if (!r.ok) return json(502, { error: 'Gagal baca rekod.' });
   const row = r.data?.[0];
   if (!row) return json(404, { error: 'Rujukan tak dijumpai.' });
@@ -234,7 +229,7 @@ async function notifyEmail(body) {
       'Pembayaran reward akan diproses dalam 5-7 hari kerja.',
     ]);
   } else {
-    const acc = ref.bank_account ? `${esc(ref.bank_name || 'bank')} •••• ${esc(String(ref.bank_account).slice(-4))}` : 'akaun bank anda';
+    const acc = ref.phone ? `Touch 'n Go •••• ${esc(String(ref.phone).slice(-4))}` : "Touch 'n Go anda";
     const details = [
       '<strong>Status:</strong> ✓ Dibayar (Paid)',
       '<strong>Amount:</strong> RM' + esc(row.reward),
@@ -245,7 +240,7 @@ async function notifyEmail(body) {
     html = wrap('🎉 Pembayaran Reward Selesai', [
       'Pembayaran reward anda telah diproses dengan berjaya.',
       `<div style="background:#fdf4f5;padding:12px;border-radius:8px;font-size:14px;margin:12px 0">${details}</div>`,
-      'Sila semak akaun bank anda dalam 1-2 hari kerja. Terima kasih kerana menjadi bagian dari komuniti Minda Optima!',
+      "Sila semak Touch 'n Go anda dalam 1-2 hari kerja. Terima kasih kerana menjadi bagian dari komuniti Minda Optima!",
     ]);
   }
 
