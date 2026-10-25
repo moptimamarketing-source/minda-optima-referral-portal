@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer';
 import { createHash, randomBytes } from 'node:crypto';
+import { sendEmail, esc, SITE, TELEGRAM_LINK } from '../lib/email.mjs';
 
 const SESSION_DAYS = 30;
 
@@ -48,61 +48,10 @@ async function sessionFor(token) {
   return row;
 }
 
-let transporter;
-function getTransporter() {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
-    });
-  }
-  return transporter;
-}
-
-async function sendViaResend(to, subject, html) {
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: process.env.RESEND_FROM, to: [to], subject, html }),
-    });
-    if (res.ok) return true;
-    console.error('Resend rejected:', res.status, await res.text().catch(() => ''));
-  } catch (e) {
-    console.error('Resend fetch failed:', e.message);
-  }
-  return false;
-}
-
-async function sendViaGmail(to, subject, html) {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return false;
-  try {
-    await getTransporter().sendMail({ from: `Minda Optima <${process.env.GMAIL_USER}>`, to, subject, html });
-    return true;
-  } catch (e) {
-    console.error('Gmail send failed:', e.code, e.message);
-    return false;
-  }
-}
-
-async function sendEmail(to, subject, html) {
-  if (process.env.RESEND_API_KEY && process.env.RESEND_FROM && await sendViaResend(to, subject, html)) {
-    return { ok: true };
-  }
-  if (await sendViaGmail(to, subject, html)) return { ok: true };
-  return { ok: false, error: 'Gagal hantar email. Sila cuba lagi.' };
-}
-
-const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({
-  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-}[c]));
-
-const SITE = (process.env.PUBLIC_SITE_URL || 'https://minda-optima-referral.netlify.app').replace(/\/+$/, '');
-
 function confirmationEmail({ name, code, phone, email, bankName, bankAccount, occupation }) {
   const share = `Anak aku dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, kau dapat 1 kelas PERCUMA & aku dapat RM100 🎉 👉 ${SITE}/daftar.html?ref=${code}`;
   const waLink = `https://wa.me/?text=${encodeURIComponent(share)}`;
-  const tgLink = process.env.TELEGRAM_LINK;
+  const tgLink = TELEGRAM_LINK;
   const row = (label, value) => `<tr><td style="padding:6px 0;color:#64748b;width:40%">${label}</td><td style="padding:6px 0;font-weight:600">${esc(value || '—')}</td></tr>`;
   const masked = bankAccount ? `•••• ${String(bankAccount).slice(-4)}` : '—';
 
@@ -134,7 +83,8 @@ function confirmationEmail({ name, code, phone, email, bankName, bankAccount, oc
 
       ${tgLink ? `
       <h3 style="color:#0D2A5C;margin-bottom:4px">Komuniti Telegram</h3>
-      <p><a href="${esc(tgLink)}" style="color:#0D2A5C;font-weight:600">${esc(tgLink)}</a></p>` : ''}
+      <p style="font-size:14px;color:#64748b;margin-top:0">Dapatkan update, tips dan pengumuman rasmi di sini.</p>
+      <p><a href="${esc(tgLink)}" style="display:inline-block;background:#229ED9;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold">Sertai Komuniti Telegram</a></p>` : ''}
 
       <p style="margin-top:24px"><a href="${SITE}/dashboard.html" style="color:#0D2A5C">Buka dashboard anda</a></p>
     </div>`;

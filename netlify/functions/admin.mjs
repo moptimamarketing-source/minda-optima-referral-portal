@@ -1,4 +1,5 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
+import { sendEmail, esc, SITE } from '../lib/email.mjs';
 
 const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
 
@@ -39,7 +40,7 @@ async function sb(path, { method = 'GET', body, prefer } = {}) {
 async function list() {
   const [funnel, referrals, unknown, referrers] = await Promise.all([
     sb('referral_funnel?select=*&order=registrations.desc,landings.desc'),
-    sb('referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone)&order=registered_at.desc&limit=500'),
+    sb('referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone,email)&order=registered_at.desc&limit=500'),
     sb('referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
     sb('referrers?select=*&order=created_at.desc&limit=500'),
   ]);
@@ -166,6 +167,51 @@ async function editReferee(body) {
   return json(200, { ok: true });
 }
 
+async function notifyEmail(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+
+  const r = await sb(`referrals?select=status,reward,referrers(name,email,bank_name,bank_account)&id=eq.${id}`);
+  if (!r.ok) return json(502, { error: 'Gagal baca rekod.' });
+  const row = r.data?.[0];
+  if (!row) return json(404, { error: 'Rujukan tak dijumpai.' });
+  if (!['approved', 'paid'].includes(row.status)) {
+    return json(422, { error: 'Notification can only be sent for Approved or Paid.' });
+  }
+  const ref = row.referrers;
+  if (!ref?.email) return json(422, { error: 'This referrer has no email on file.' });
+
+  const wrap = (heading, paragraphs) => `
+    <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1e293b">
+      <h2 style="color:#0D2A5C">${heading}</h2>
+      <p>Salam ${esc(ref.name)},</p>
+      ${paragraphs.map((p) => `<p>${p}</p>`).join('')}
+      <p style="margin-top:24px"><a href="${SITE}/dashboard.html" style="color:#0D2A5C">Buka dashboard anda</a></p>
+      <p style="color:#64748b;font-size:13px">Minda Optima</p>
+    </div>`;
+
+  let subject;
+  let html;
+  if (row.status === 'approved') {
+    subject = 'Rujukan anda layak — Minda Optima';
+    html = wrap('Rujukan anda layak', [
+      'Rujukan anda telah disahkan layak.',
+      `Reward <strong>RM${esc(row.reward)}</strong> akan dibayar selepas proses pembayaran selesai. Kami akan maklumkan semula bila pembayaran dibuat.`,
+    ]);
+  } else {
+    const acc = ref.bank_account ? `${esc(ref.bank_name || 'bank')} •••• ${esc(String(ref.bank_account).slice(-4))}` : 'akaun bank anda';
+    subject = 'Pembayaran reward telah dibuat — Minda Optima';
+    html = wrap('Pembayaran telah dibuat', [
+      `Pembayaran reward <strong>RM${esc(row.reward)}</strong> untuk rujukan anda telah dibuat.`,
+      `Sila semak ${acc}. Terima kasih kerana menjemput rakan ke Minda Optima!`,
+    ]);
+  }
+
+  const sent = await sendEmail(ref.email, subject, html);
+  if (!sent.ok) return json(502, { error: sent.error });
+  return json(200, { ok: true, to: ref.email });
+}
+
 export default async (req) => {
   try {
     if (req.method !== 'POST') return json(405, { error: 'Kaedah tak dibenarkan.' });
@@ -197,6 +243,7 @@ export default async (req) => {
     if (body.action === 'status') return await setStatus(body);
     if (body.action === 'edit-referrer') return await editReferrer(body);
     if (body.action === 'edit-referee') return await editReferee(body);
+    if (body.action === 'notify-email') return await notifyEmail(body);
     return json(400, { error: 'Tindakan tak dikenali.' });
   } catch (e) {
     console.error('Unhandled error:', e);
