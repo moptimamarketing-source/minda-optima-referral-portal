@@ -40,12 +40,6 @@
   <use href="#mo-star" x="1390" y="240"/>
   <circle cx="1410" cy="36" r="4" fill="#CFE3FF"/>
 
-  <use href="#mo-plane" x="800" y="460" transform="rotate(14 800 460)"/>
-  <path d="M770 520 Q830 540 870 480" stroke="#CFE3FF" stroke-width="2" fill="none" stroke-dasharray="4 6"/>
-  <use href="#mo-star" x="875" y="518"/>
-  <circle cx="735" cy="480" r="4" fill="#CFE3FF"/>
-  <circle cx="795" cy="550" r="4" fill="#CFE3FF"/>
-
   <use href="#mo-book-open" x="40" y="820"/>
   <use href="#mo-star" x="180" y="720"/>
   <circle cx="115" cy="652" r="4" fill="#CFE3FF"/>
