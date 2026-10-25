@@ -3,7 +3,7 @@
 (() => {
   const cfg = window.MO_CONFIG;
   const base = cfg.SUPABASE_URL.replace(/\/+$/, '');
-  const PHONE_KEY = 'mo_phone';
+  const SESSION_KEY = 'mo_session';
   const VID_KEY = 'mo_vid';
   const CTA_WAIT_MS = 700;
 
@@ -59,6 +59,22 @@
     return u.toString();
   }
 
+  async function callAuth(body) {
+    let res;
+    try {
+      res = await fetch('/.netlify/functions/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    } catch {
+      throw fail(0, 'Tiada sambungan internet. Sila cuba lagi.');
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw fail(res.status, data.error || 'Ralat pelayan. Sila cuba lagi.');
+    return data;
+  }
+
   let landingCode = null;
 
   MO.trackCta = () => {
@@ -93,63 +109,37 @@
       return { code: r.code, referrerName: r.referrerName, registerUrl: registerUrl(r.code) };
     }
 
-    // New OTP endpoints — call Netlify auth function
-    if (method === 'POST' && (path === '/api/auth/send-otp' || path === '/api/auth/verify-otp' || path === '/api/auth/send-confirmation')) {
-      let res;
-      try {
-        res = await fetch('/.netlify/functions/auth', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-      } catch {
-        throw fail(0, 'Tiada sambungan internet. Sila cuba lagi.');
-      }
-      const data = await res.json().catch(() => null);
-      if (!res.ok) throw fail(res.status, data?.error || 'Ralat pelayan. Sila cuba lagi.');
-      if (!data.ok && data.reason) {
-        const msgs = {
-          invalid_phone: 'Nombor telefon tidak sah. Contoh: 012-3456789',
-          invalid_email: 'Emel tidak sah.',
-          otp_invalid: 'Kod OTP salah.',
-          otp_expired: 'Kod OTP telah luput. Minta kod baru.',
-          no_otp: 'Tiada kod OTP. Sila cuba lagi.',
-        };
-        throw fail(422, msgs[data.reason] || data.error || 'Gagal memproses permintaan.');
-      }
-      if (!data.ok) throw fail(400, data.error || 'Gagal memproses permintaan.');
-      if (path === '/api/auth/verify-otp') store.set(PHONE_KEY, data.phone);
+    if (method === 'POST' && path === '/api/auth/send-otp') {
+      return callAuth({ action: 'send-otp', phone: body.phone, email: body.email });
+    }
+
+    if (method === 'POST' && path === '/api/auth/verify-otp') {
+      const data = await callAuth({ action: 'verify-otp', phone: body.phone, otp: body.otp });
+      store.set(SESSION_KEY, data.token);
       return data;
     }
 
     if (method === 'POST' && path === '/api/login') {
-      const r = await rpc('register_referrer', {
-        p_phone: body.phone,
-        p_name: body.name || null,
-        p_email: body.email || null,
-        p_bank_account: body.bank_account || null,
-        p_bank_name: body.bank_name || null,
-        p_occupation: body.occupation || null,
+      const data = await callAuth({
+        action: 'register',
+        token: store.get(SESSION_KEY),
+        name: body.name,
+        bank_account: body.bank_account,
+        bank_name: body.bank_name,
+        occupation: body.occupation,
       });
-      if (!r.ok) {
-        if (r.reason === 'invalid_phone') throw fail(422, 'Nombor telefon tidak sah. Contoh: 012-3456789');
-        if (r.reason === 'name_required') throw fail(422, 'Nombor baru. Sila isi semua butiran di bawah.', { needName: true });
-        if (r.reason === 'email_invalid') throw fail(422, 'Emel tidak sah.', { needName: true });
-        if (r.reason === 'bank_account_invalid') throw fail(422, 'Nombor akaun bank tidak sah (6-20 digit).', { needName: true });
-        if (r.reason === 'bank_name_required') throw fail(422, 'Sila isi nama bank.', { needName: true });
-        throw fail(400, 'Tidak dapat meneruskan. Sila cuba lagi.');
-      }
-      store.set(PHONE_KEY, r.phone);
-      return { ok: true, code: r.code, redirect: 'dashboard.html' };
+      return { ok: true, code: data.code, redirect: 'dashboard.html' };
     }
 
     if (method === 'GET' && path === '/api/dashboard') {
-      const phone = store.get(PHONE_KEY);
-      if (!phone) throw fail(401, 'Sila log masuk.');
-      const d = await rpc('referrer_dashboard', { p_phone: phone });
-      if (!d.ok) {
-        store.del(PHONE_KEY);
-        throw fail(401, 'Sila log masuk.');
+      const token = store.get(SESSION_KEY);
+      if (!token) throw fail(401, 'Sila log masuk.');
+      let d;
+      try {
+        d = await callAuth({ action: 'dashboard', token });
+      } catch (err) {
+        if (err.status === 401) store.del(SESSION_KEY);
+        throw err;
       }
       return {
         referrer: d.referrer, stats: d.stats, referrals: d.referrals, promo: d.promo,
@@ -158,7 +148,9 @@
     }
 
     if (method === 'POST' && path === '/api/logout') {
-      store.del(PHONE_KEY);
+      const token = store.get(SESSION_KEY);
+      store.del(SESSION_KEY);
+      if (token) await callAuth({ action: 'logout', token }).catch(() => {});
       return { ok: true };
     }
 

@@ -231,20 +231,13 @@
         const regData = await MO.api('/api/login', {
           method: 'POST',
           body: {
-            phone: userPhone,
             name,
-            email: userEmail,
             bank_account: bankAccount.replace(/\D/g, ''),
             bank_name: bankName,
             occupation: occupation || null,
           },
         });
-        // Send confirmation email
-        await MO.api('/api/auth/send-confirmation', {
-          method: 'POST',
-          body: { action: 'send-confirmation', name, email: userEmail, code: regData.code },
-        }).catch(() => {});
-        window.location.href = '/dashboard.html';
+        window.location.href = regData.redirect;
       } catch (err) {
         showError('register-error', err.message);
         btn.disabled = false;
