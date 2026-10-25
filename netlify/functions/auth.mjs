@@ -59,23 +59,85 @@ function getTransporter() {
   return transporter;
 }
 
-async function sendEmail(to, subject, html) {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    console.error('GMAIL_USER / GMAIL_APP_PASSWORD not set');
-    return { ok: false, error: 'Servis email belum disediakan.' };
-  }
+async function sendViaResend(to, subject, html) {
   try {
-    await getTransporter().sendMail({
-      from: `Minda Optima <${process.env.GMAIL_USER}>`,
-      to,
-      subject,
-      html,
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: process.env.RESEND_FROM, to: [to], subject, html }),
     });
-    return { ok: true };
+    if (res.ok) return true;
+    console.error('Resend rejected:', res.status, await res.text().catch(() => ''));
+  } catch (e) {
+    console.error('Resend fetch failed:', e.message);
+  }
+  return false;
+}
+
+async function sendViaGmail(to, subject, html) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return false;
+  try {
+    await getTransporter().sendMail({ from: `Minda Optima <${process.env.GMAIL_USER}>`, to, subject, html });
+    return true;
   } catch (e) {
     console.error('Gmail send failed:', e.code, e.message);
-    return { ok: false, error: 'Gagal hantar email. Sila cuba lagi.' };
+    return false;
   }
+}
+
+async function sendEmail(to, subject, html) {
+  if (process.env.RESEND_API_KEY && process.env.RESEND_FROM && await sendViaResend(to, subject, html)) {
+    return { ok: true };
+  }
+  if (await sendViaGmail(to, subject, html)) return { ok: true };
+  return { ok: false, error: 'Gagal hantar email. Sila cuba lagi.' };
+}
+
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+}[c]));
+
+const SITE = (process.env.PUBLIC_SITE_URL || 'https://minda-optima-referral.netlify.app').replace(/\/+$/, '');
+
+function confirmationEmail({ name, code, phone, email, bankName, bankAccount, occupation }) {
+  const share = `Anak aku dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, kau dapat 1 kelas PERCUMA & aku dapat RM100 🎉 👉 ${SITE}/daftar.html?ref=${code}`;
+  const waLink = `https://wa.me/?text=${encodeURIComponent(share)}`;
+  const tgLink = process.env.TELEGRAM_LINK;
+  const row = (label, value) => `<tr><td style="padding:6px 0;color:#64748b;width:40%">${label}</td><td style="padding:6px 0;font-weight:600">${esc(value || '—')}</td></tr>`;
+  const masked = bankAccount ? `•••• ${String(bankAccount).slice(-4)}` : '—';
+
+  return `
+    <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1e293b">
+      <h2 style="color:#0D2A5C">Pendaftaran berjaya</h2>
+      <p>Halo ${esc(name)}, terima kasih kerana mendaftar sebagai rujukan Minda Optima.</p>
+
+      <p style="font-size:14px;color:#64748b;margin-bottom:4px">Kod rujukan anda</p>
+      <p style="font-size:28px;font-weight:800;letter-spacing:2px;color:#0D2A5C;margin-top:0">${esc(code)}</p>
+
+      <h3 style="color:#0D2A5C;margin-bottom:4px">Butiran anda</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:15px">
+        ${row('Nama', name)}
+        ${row('Nombor telefon', phone)}
+        ${row('Emel', email)}
+        ${row('Nama bank', bankName)}
+        ${row('Nombor akaun', masked)}
+        ${row('Pekerjaan', occupation)}
+      </table>
+      <p style="font-size:13px;color:#64748b">Untuk mengubah butiran, sila hubungi sokongan melalui WhatsApp.</p>
+
+      <h3 style="color:#0D2A5C;margin-bottom:4px">Kongsi kod anda</h3>
+      <p style="font-size:14px;color:#64748b;margin-top:0">Salin mesej di bawah dan hantar kepada rakan anda:</p>
+      <div style="background:#ecfdf5;padding:12px;border-radius:8px;white-space:pre-wrap;word-break:break-word">${esc(share)}</div>
+      <p style="margin:16px 0">
+        <a href="${waLink}" style="display:inline-block;background:#25D366;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold">Kongsi di WhatsApp</a>
+      </p>
+
+      ${tgLink ? `
+      <h3 style="color:#0D2A5C;margin-bottom:4px">Komuniti Telegram</h3>
+      <p><a href="${esc(tgLink)}" style="color:#0D2A5C;font-weight:600">${esc(tgLink)}</a></p>` : ''}
+
+      <p style="margin-top:24px"><a href="${SITE}/dashboard.html" style="color:#0D2A5C">Buka dashboard anda</a></p>
+    </div>`;
 }
 
 const OTP_ERRORS = {
@@ -167,15 +229,16 @@ async function register(body) {
     return json(422, { error: REG_ERRORS[r.data?.reason] || 'Tidak dapat meneruskan. Sila cuba lagi.' });
   }
 
-  await sendEmail(
-    s.email,
-    'Pendaftaran Berjaya — Minda Optima',
-    `<h2>Selamat! Anda telah berjaya mendaftar.</h2>
-    <p>Halo ${body.name ? String(body.name).slice(0, 80) : 'Teman'},</p>
-    <p>Kod rujukan anda: <strong>${r.data.code}</strong></p>
-    <p>Mulai berkongsi untuk dapatkan reward!</p>
-    <p><a href="https://minda-optima-referral.netlify.app/dashboard.html">Buka Dashboard</a></p>`,
-  );
+  const details = {
+    name: String(body.name ?? '').trim(),
+    code: r.data.code,
+    phone: s.phone,
+    email: s.email,
+    bankName: String(body.bank_name ?? '').trim(),
+    bankAccount: String(body.bank_account ?? '').replace(/\D/g, ''),
+    occupation: String(body.occupation ?? '').trim(),
+  };
+  await sendEmail(s.email, `Pendaftaran Berjaya — Kod Rujukan ${r.data.code}`, confirmationEmail(details));
 
   return json(200, { ok: true, code: r.data.code });
 }
