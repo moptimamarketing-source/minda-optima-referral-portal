@@ -193,17 +193,30 @@ async function notifyEmail(body) {
   let subject;
   let html;
   if (row.status === 'approved') {
-    subject = 'Rujukan anda layak — Minda Optima';
-    html = wrap('Rujukan anda layak', [
-      'Rujukan anda telah disahkan layak.',
-      `Reward <strong>RM${esc(row.reward)}</strong> akan dibayar selepas proses pembayaran selesai. Kami akan maklumkan semula bila pembayaran dibuat.`,
+    const details = [
+      '<strong>Status:</strong> ✓ Layak (Approved)',
+      '<strong>Reward:</strong> RM' + esc(row.reward),
+      '<strong>Tarikh Disahkan:</strong> ' + new Date().toLocaleDateString('ms-MY'),
+    ].join('<br>');
+    subject = '✓ Rujukan Anda Layak';
+    html = wrap('✓ Rujukan Anda Layak', [
+      'Rujukan anda telah disahkan memenuhi kriteria program kami.',
+      `<div style="background:#f0fdf4;padding:12px;border-radius:8px;font-size:14px;margin:12px 0">${details}</div>`,
+      'Pembayaran reward akan diproses dalam 5-7 hari kerja.',
     ]);
   } else {
     const acc = ref.bank_account ? `${esc(ref.bank_name || 'bank')} •••• ${esc(String(ref.bank_account).slice(-4))}` : 'akaun bank anda';
-    subject = 'Pembayaran reward telah dibuat — Minda Optima';
-    html = wrap('Pembayaran telah dibuat', [
-      `Pembayaran reward <strong>RM${esc(row.reward)}</strong> untuk rujukan anda telah dibuat.`,
-      `Sila semak ${acc}. Terima kasih kerana menjemput rakan ke Minda Optima!`,
+    const details = [
+      '<strong>Status:</strong> ✓ Dibayar (Paid)',
+      '<strong>Amount:</strong> RM' + esc(row.reward),
+      '<strong>Akaun Tujuan:</strong> ' + acc,
+      '<strong>Tarikh Pembayaran:</strong> ' + new Date().toLocaleDateString('ms-MY'),
+    ].join('<br>');
+    subject = '🎉 Pembayaran Reward Selesai';
+    html = wrap('🎉 Pembayaran Reward Selesai', [
+      'Pembayaran reward anda telah diproses dengan berjaya.',
+      `<div style="background:#fdf4f5;padding:12px;border-radius:8px;font-size:14px;margin:12px 0">${details}</div>`,
+      'Sila semak akaun bank anda dalam 1-2 hari kerja. Terima kasih kerana menjadi bagian dari komuniti Minda Optima!',
     ]);
   }
 

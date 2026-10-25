@@ -49,7 +49,7 @@ async function sessionFor(token) {
 }
 
 function confirmationEmail({ name, code, phone, email, bankName, bankAccount, occupation }) {
-  const share = `Anak aku dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, kau dapat 1 kelas PERCUMA & aku dapat RM100 🎉 👉 ${SITE}/daftar.html?ref=${code}`;
+  const share = `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, anak dapat 1 kelas PERCUMA & saya dapat RM100 🎉 👉 ${SITE}/daftar.html?ref=${code}`;
   const waLink = `https://wa.me/?text=${encodeURIComponent(share)}`;
   const tgLink = TELEGRAM_LINK;
   const row = (label, value) => `<tr><td style="padding:6px 0;color:#64748b;width:40%">${label}</td><td style="padding:6px 0;font-weight:600">${esc(value || '—')}</td></tr>`;
@@ -57,8 +57,8 @@ function confirmationEmail({ name, code, phone, email, bankName, bankAccount, oc
 
   return `
     <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1e293b">
-      <h2 style="color:#0D2A5C">Pendaftaran berjaya</h2>
-      <p>Halo ${esc(name)}, terima kasih kerana mendaftar sebagai rujukan Minda Optima.</p>
+      <h2 style="color:#0D2A5C">Pendaftaran Berjaya</h2>
+      <p>Hai Salam Parents! ${esc(name)}, terima kasih kerana mendaftar sebagai Referral Minda Optima.</p>
 
       <p style="font-size:14px;color:#64748b;margin-bottom:4px">Kod rujukan anda</p>
       <p style="font-size:28px;font-weight:800;letter-spacing:2px;color:#0D2A5C;margin-top:0">${esc(code)}</p>
@@ -107,11 +107,13 @@ async function sendOtp(body) {
 
   const emailRes = await sendEmail(
     r.email,
-    'Kod OTP — Minda Optima',
-    `<h2>Kod OTP Anda</h2>
-    <p>Masukkan kod di bawah untuk mengesahkan pendaftaran Minda Optima:</p>
-    <p style="font-size: 32px; font-weight: bold; letter-spacing: 8px;">${r.otp}</p>
-    <p>Kod ini akan luput dalam 10 minit.</p>`,
+    'Kod OTP Referral Anda — Minda Optima',
+    `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1e293b">
+      <h2 style="color:#0D2A5C">Kod OTP Referral Anda</h2>
+      <p>Masukkan kod di bawah untuk mengesahkan pendaftaran Referral Minda Optima:</p>
+      <p style="font-size:32px;font-weight:800;letter-spacing:8px;color:#0D2A5C;text-align:center;margin:24px 0">${r.otp}</p>
+      <p style="color:#64748b">Kod ini akan luput dalam 10 minit.</p>
+    </div>`,
   );
   if (!emailRes.ok) return json(502, { error: emailRes.error });
 
