@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { sendEmail, esc, SITE } from '../lib/email.mjs';
 
 const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
+const SETTINGS_KEYS = ['promo_deadline', 'reward_before', 'reward_after', 'support_phone', 'telegram_url'];
 
 const json = (status, body) => new Response(JSON.stringify(body), {
   status,
@@ -225,6 +226,60 @@ async function notifyEmail(body) {
   return json(200, { ok: true, to: ref.email });
 }
 
+async function getSettings() {
+  const res = await sb('settings?select=key,value');
+  if (!res.ok) {
+    console.error('getSettings error:', res.data);
+    return json(502, { error: 'Gagal baca tetapan.' });
+  }
+  const out = {};
+  for (const row of res.data || []) out[row.key] = row.value;
+  return json(200, { settings: out });
+}
+
+function validateSetting(key, raw) {
+  const v = String(raw ?? '').trim();
+  if (key === 'promo_deadline') {
+    const d = new Date(v);
+    if (Number.isNaN(d.getTime())) return { error: 'Tarikh tamat promo tak sah.' };
+    return { value: d.toISOString() };
+  }
+  if (key === 'reward_before' || key === 'reward_after') {
+    const n = Number(v);
+    if (!Number.isInteger(n) || n < 1 || n > 10000) return { error: 'Jumlah reward tak sah.' };
+    return { value: String(n) };
+  }
+  if (key === 'support_phone') {
+    const d = v.replace(/\D/g, '');
+    if (!/^60\d{8,10}$/.test(d)) return { error: 'Nombor sokongan tak sah. Contoh: 60123456789' };
+    return { value: d };
+  }
+  if (key === 'telegram_url') {
+    if (v && !/^https:\/\/\S+$/.test(v)) return { error: 'Link komuniti tak sah. Kena mula dengan https://' };
+    return { value: v };
+  }
+  return { error: 'Tetapan tak dikenali.' };
+}
+
+async function saveSettings(body) {
+  const fields = body.fields ?? {};
+  const rows = [];
+  for (const key of SETTINGS_KEYS) {
+    if (!(key in fields)) continue;
+    const { value, error } = validateSetting(key, fields[key]);
+    if (error) return json(422, { error });
+    rows.push({ key, value });
+  }
+  if (!rows.length) return json(422, { error: 'Tiada perubahan untuk disimpan.' });
+
+  const up = await sb('settings', { method: 'POST', prefer: 'resolution=merge-duplicates', body: rows });
+  if (!up.ok) {
+    console.error('saveSettings error:', up.data);
+    return json(502, { error: `Gagal simpan tetapan: ${up.data?.message || 'Unknown error'}` });
+  }
+  return json(200, { ok: true });
+}
+
 export default async (req) => {
   try {
     if (req.method !== 'POST') return json(405, { error: 'Kaedah tak dibenarkan.' });
@@ -257,6 +312,8 @@ export default async (req) => {
     if (body.action === 'edit-referrer') return await editReferrer(body);
     if (body.action === 'edit-referee') return await editReferee(body);
     if (body.action === 'notify-email') return await notifyEmail(body);
+    if (body.action === 'get-settings') return await getSettings();
+    if (body.action === 'save-settings') return await saveSettings(body);
     return json(400, { error: 'Tindakan tak dikenali.' });
   } catch (e) {
     console.error('Unhandled error:', e);

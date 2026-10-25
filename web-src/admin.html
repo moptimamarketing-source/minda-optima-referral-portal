@@ -36,6 +36,31 @@
       <section id="cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></section>
 
       <section class="rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 class="text-lg font-bold text-brand">Tetapan Promo</h2>
+        <p class="text-sm text-slate-500">Tukar tarikh tamat promo, jumlah reward, nombor sokongan dan link komuniti dari sini — tak payah edit code atau pergi Netlify.</p>
+        <form id="settings-form" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+          <label class="block text-sm font-semibold">Promo Tamat Pada
+            <input id="set-promo-deadline" type="datetime-local" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Reward Sebelum Tamat (RM)
+            <input id="set-reward-before" type="number" min="1" max="10000" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Reward Lepas Tamat (RM)
+            <input id="set-reward-after" type="number" min="1" max="10000" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Nombor Sokongan (WhatsApp)
+            <input id="set-support-phone" placeholder="60123456789" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Link Komuniti Telegram
+            <input id="set-telegram-url" placeholder="https://t.me/..." class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <button type="submit" class="rounded-xl bg-brand px-6 py-2.5 text-white font-bold hover:bg-brand-light disabled:opacity-60 lg:col-span-5 lg:w-fit">Simpan Tetapan</button>
+        </form>
+        <p id="settings-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+        <p id="settings-ok" class="mt-3 hidden rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700" role="status">Tetapan dah disimpan! Semua page akan guna nilai baru dalam masa seminit.</p>
+      </section>
+
+      <section class="rounded-2xl border border-slate-200 bg-white p-5">
         <h2 class="text-lg font-bold text-brand">Tambah Referral</h2>
         <p class="text-sm text-slate-500">Masukkan referee yang dah register guna kod referral. Kod tu kena wujud dalam sistem.</p>
         <form id="add-form" class="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
@@ -323,13 +348,31 @@
       $('app-error').classList.toggle('hidden', !message);
     }
 
+    function toLocalDatetimeInput(iso) {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '';
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function renderSettings(s) {
+      $('set-promo-deadline').value = toLocalDatetimeInput(s.promo_deadline || new Date());
+      $('set-reward-before').value = s.reward_before || '';
+      $('set-reward-after').value = s.reward_after || '';
+      $('set-support-phone').value = s.support_phone || '';
+      $('set-telegram-url').value = s.telegram_url || '';
+    }
+
     async function load() {
       $('login-form').classList.add('hidden');
       $('app').classList.remove('hidden');
       $('logout').classList.remove('hidden');
       showAppError('');
       try {
-        const data = await call({ action: 'list' });
+        const [data, settingsData] = await Promise.all([
+          call({ action: 'list' }),
+          call({ action: 'get-settings' }),
+        ]);
         referrals = data.referrals;
         referrers = data.referrers || [];
         funnel = data.funnel;
@@ -337,6 +380,7 @@
         renderFunnel();
         renderReferrals();
         renderReferrers();
+        renderSettings(settingsData.settings || {});
         $('unknown-rows').innerHTML = data.unknown.map((e) => `<li class="flex justify-between px-4 py-2"><span class="font-mono">${esc(e.code)}</span><span class="text-slate-500">${esc(dt.format(new Date(e.created_at)))}</span></li>`).join('')
           || '<li class="px-4 py-6 text-center text-slate-500">Takde.</li>';
       } catch (err) {
@@ -390,6 +434,32 @@
         if (err.status === 401) return showLogin('Kata laluan salah.');
         $('add-error').textContent = err.message;
         $('add-error').classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $('settings-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      $('settings-error').classList.add('hidden');
+      $('settings-ok').classList.add('hidden');
+      try {
+        const deadlineLocal = $('set-promo-deadline').value;
+        const fields = {
+          promo_deadline: deadlineLocal ? new Date(deadlineLocal).toISOString() : '',
+          reward_before: $('set-reward-before').value,
+          reward_after: $('set-reward-after').value,
+          support_phone: $('set-support-phone').value,
+          telegram_url: $('set-telegram-url').value,
+        };
+        await call({ action: 'save-settings', fields });
+        $('settings-ok').classList.remove('hidden');
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        $('settings-error').textContent = err.message;
+        $('settings-error').classList.remove('hidden');
       } finally {
         btn.disabled = false;
       }

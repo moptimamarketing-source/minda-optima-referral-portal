@@ -15,8 +15,8 @@ tailwind.config = {
 };
 
 const MO = (() => {
-  // RM100 promo ends 31 Dec 2026, 11:59:59 PM Malaysia time.
-  const PROMO_DEADLINE = new Date('2026-12-31T23:59:59+08:00');
+  // Nilai lalai; ditulis ganti oleh /.netlify/functions/settings (boleh diedit dalam admin.html).
+  let PROMO_DEADLINE = new Date('2026-12-31T23:59:59+08:00');
 
   function countdownParts(target, now = new Date()) {
     const ms = Math.max(0, target.getTime() - now.getTime());
@@ -87,7 +87,7 @@ const MO = (() => {
     }[c]));
   }
 
-  const SUPPORT_PHONE = '601158526817';
+  let SUPPORT_PHONE = '601158526817';
 
   function initSupportLinks() {
     document.querySelectorAll('[data-support-link]').forEach((a) => {
@@ -95,6 +95,41 @@ const MO = (() => {
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
     });
+  }
+
+  let resolveSettingsReady;
+  const settingsReady = new Promise((resolve) => { resolveSettingsReady = resolve; });
+  let lastSettings = {};
+
+  /** Ambil tetapan laman (promo, reward, support, telegram) dari admin dan tulis ganti nilai lalai. */
+  async function loadSiteSettings() {
+    let s = {};
+    try {
+      const res = await fetch('/.netlify/functions/settings', { credentials: 'same-origin' });
+      if (res.ok) s = await res.json();
+    } catch {
+      // guna nilai lalai bila offline / ralat rangkaian
+    }
+
+    if (s.promo_deadline) {
+      const d = new Date(s.promo_deadline);
+      if (!Number.isNaN(d.getTime())) PROMO_DEADLINE = d;
+    }
+    if (s.support_phone) SUPPORT_PHONE = s.support_phone;
+    if (s.telegram_url) {
+      window.MO_CONFIG = window.MO_CONFIG || {};
+      window.MO_CONFIG.TELEGRAM_URL = s.telegram_url;
+    }
+    if (s.reward_before) {
+      document.querySelectorAll('[data-reward-before]').forEach((el) => { el.textContent = s.reward_before; });
+    }
+    if (s.reward_after) {
+      document.querySelectorAll('[data-reward-after]').forEach((el) => { el.textContent = s.reward_after; });
+    }
+
+    lastSettings = s;
+    resolveSettingsReady();
+    return s;
   }
 
   function initBgMusic() {
@@ -131,11 +166,17 @@ const MO = (() => {
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadSiteSettings();
     startCountdowns();
     initSupportLinks();
     initBgMusic();
   });
 
-  return { PROMO_DEADLINE, countdownParts, startCountdowns, api, copyText, escapeHtml, initSupportLinks, initBgMusic };
+  return {
+    countdownParts, startCountdowns, api, copyText, escapeHtml, initSupportLinks, initBgMusic,
+    settingsReady,
+    get PROMO_DEADLINE() { return PROMO_DEADLINE; },
+    get settings() { return lastSettings; },
+  };
 })();
