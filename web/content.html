@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Edit Kandungan — Minda Optima</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/common.js"></script>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+
+  <header class="bg-brand text-white">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-16 w-auto">
+        <span class="font-medium text-white/70 text-sm">· Edit Kandungan</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="admin.html" class="text-sm text-white/80 hover:text-white">← Admin</a>
+        <button id="logout" class="hidden text-sm text-white/80 hover:text-white">Log Keluar</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8">
+
+    <form id="login-form" class="max-w-sm mx-auto rounded-2xl bg-white p-6 shadow-sm border border-slate-200">
+      <h1 class="text-xl font-extrabold text-brand">Log Masuk Admin</h1>
+      <label for="password" class="mt-5 block text-sm font-semibold">Kata Laluan Admin</label>
+      <input id="password" type="password" autocomplete="current-password" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand">
+      <p id="login-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+      <button type="submit" class="mt-5 w-full rounded-xl bg-brand py-3 text-white font-bold hover:bg-brand-light disabled:opacity-60">Masuk</button>
+    </form>
+
+    <form id="app" class="hidden space-y-6">
+      <p id="app-error" class="hidden rounded-xl bg-red-50 p-4 text-red-700" role="alert"></p>
+      <p class="text-sm text-slate-500">Ubah teks, warna & link kat sini. Tekan "Simpan Semua" di bawah — page depan, dashboard akan guna nilai baru dalam masa seminit (tak payah push code).</p>
+
+      <!-- Promo & Reward -->
+      <section class="rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 class="text-lg font-bold text-brand">Promo &amp; Reward</h2>
+        <p class="text-sm text-slate-500">Kawal countdown timer dan jumlah reward sebenar yang dibayar.</p>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <label class="block text-sm font-semibold">Promo Tamat Pada
+            <input id="set-promo-deadline" type="datetime-local" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Reward Sebelum Tamat (RM)
+            <input id="set-reward-before" type="number" min="1" max="10000" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Reward Lepas Tamat (RM)
+            <input id="set-reward-after" type="number" min="1" max="10000" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Nombor Sokongan (WhatsApp)
+            <input id="set-support-phone" placeholder="60123456789" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+        </div>
+      </section>
+
+      <!-- Hero (landing page) -->
+      <section class="rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 class="text-lg font-bold text-brand">Hero &amp; Cara Kerja (Landing Page)</h2>
+        <p class="text-sm text-slate-500">Bahagian atas sekali bila orang buka minda-optima-referral.netlify.app.</p>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+          <label class="block text-sm font-semibold">Tajuk Baris 1
+            <input id="set-hero-title-line1" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Tajuk Baris 2 (emas)
+            <input id="set-hero-title-line2" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold sm:col-span-2">Perenggan Hero
+            <textarea id="set-hero-subtitle" required rows="2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+          </label>
+          <label class="block text-sm font-semibold sm:col-span-2">Teks "Langkah 3" (Dapat RM100)
+            <input id="set-step3-desc" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Tajuk Kotak CTA Bawah
+            <input id="set-cta-heading" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Sub-teks Kotak CTA Bawah
+            <input id="set-cta-sub" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+        </div>
+      </section>
+
+      <!-- Promo banner (dashboard) -->
+      <section class="rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 class="text-lg font-bold text-brand">Kotak Oren (Dashboard)</h2>
+        <p class="text-sm text-slate-500">Banner promo kuning/oren kat atas sekali dashboard parent.</p>
+        <label class="mt-4 block text-sm font-semibold">Teks Banner
+          <input id="set-promo-banner-text" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+        </label>
+      </section>
+
+      <!-- Community card -->
+      <section class="rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 class="text-lg font-bold text-brand">Kad Komuniti (Dashboard)</h2>
+        <p class="text-sm text-slate-500">Boleh tukar jadi WhatsApp Community, Telegram, atau apa-apa link lain. Kosongkan link untuk sembunyikan kad ni terus.</p>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+          <label class="block text-sm font-semibold">Tajuk
+            <input id="set-community-title" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Warna Button
+            <select id="set-community-color" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+              <option value="telegram">Telegram (biru)</option>
+              <option value="whatsapp">WhatsApp (hijau)</option>
+              <option value="brand">Brand (navy)</option>
+            </select>
+          </label>
+          <label class="block text-sm font-semibold sm:col-span-2">Deskripsi
+            <input id="set-community-desc" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Teks Button
+            <input id="set-community-button-label" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Link (kosongkan untuk sembunyi)
+            <input id="set-community-link" placeholder="https://..." class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          </label>
+        </div>
+      </section>
+
+      <!-- Share message -->
+      <section class="rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 class="text-lg font-bold text-brand">Mesej Share WhatsApp (Dashboard)</h2>
+        <p class="text-sm text-slate-500">Mesej yang parent kongsi dekat WhatsApp. <strong>Kekalkan</strong> <code class="rounded bg-slate-100 px-1">{code}</code> dan <code class="rounded bg-slate-100 px-1">{url}</code> — dua tu akan ditukar automatik dengan kod &amp; link rujukan parent tu.</p>
+        <label class="mt-4 block text-sm font-semibold">Template Mesej
+          <textarea id="set-share-message-template" required rows="3" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+        </label>
+      </section>
+
+      <div class="sticky bottom-4 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg">
+        <button type="submit" class="rounded-xl bg-brand px-6 py-3 text-white font-bold hover:bg-brand-light disabled:opacity-60">Simpan Semua</button>
+        <p id="save-error" class="hidden text-sm font-semibold text-red-700" role="alert"></p>
+        <p id="save-ok" class="hidden text-sm font-semibold text-green-700" role="status">Dah disimpan! ✓</p>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const API = '/.netlify/functions/admin';
+    const PW_KEY = 'mo_admin_pw';
+    const $ = (id) => document.getElementById(id);
+
+    const pwStore = {
+      get() { try { return sessionStorage.getItem(PW_KEY); } catch { return null; } },
+      set(v) { try { sessionStorage.setItem(PW_KEY, v); } catch { /* ignore */ } },
+      clear() { try { sessionStorage.removeItem(PW_KEY); } catch { /* ignore */ } },
+    };
+
+    async function call(payload) {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, password: pwStore.get() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw Object.assign(new Error(data.error || 'Ada error kat server.'), { status: res.status });
+      return data;
+    }
+
+    function showLogin(message) {
+      pwStore.clear();
+      $('app').classList.add('hidden');
+      $('logout').classList.add('hidden');
+      $('login-form').classList.remove('hidden');
+      $('login-error').textContent = message || '';
+      $('login-error').classList.toggle('hidden', !message);
+    }
+
+    function showAppError(message) {
+      $('app-error').textContent = message;
+      $('app-error').classList.toggle('hidden', !message);
+    }
+
+    function toLocalDatetimeInput(iso) {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '';
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    const FIELD_MAP = {
+      'set-promo-deadline': 'promo_deadline',
+      'set-reward-before': 'reward_before',
+      'set-reward-after': 'reward_after',
+      'set-support-phone': 'support_phone',
+      'set-hero-title-line1': 'hero_title_line1',
+      'set-hero-title-line2': 'hero_title_line2',
+      'set-hero-subtitle': 'hero_subtitle',
+      'set-step3-desc': 'step3_desc',
+      'set-cta-heading': 'cta_heading',
+      'set-cta-sub': 'cta_sub',
+      'set-promo-banner-text': 'promo_banner_text',
+      'set-community-title': 'community_title',
+      'set-community-color': 'community_color',
+      'set-community-desc': 'community_desc',
+      'set-community-button-label': 'community_button_label',
+      'set-community-link': 'community_link',
+      'set-share-message-template': 'share_message_template',
+    };
+
+    function renderSettings(s) {
+      for (const [id, key] of Object.entries(FIELD_MAP)) {
+        $(id).value = key === 'promo_deadline' ? toLocalDatetimeInput(s[key] || new Date()) : (s[key] ?? '');
+      }
+    }
+
+    async function load() {
+      $('login-form').classList.add('hidden');
+      $('app').classList.remove('hidden');
+      $('logout').classList.remove('hidden');
+      showAppError('');
+      try {
+        const data = await call({ action: 'get-settings' });
+        renderSettings(data.settings || {});
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        showAppError(err.message);
+      }
+    }
+
+    $('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      pwStore.set($('password').value);
+      try {
+        await call({ action: 'get-settings' });
+        $('password').value = '';
+        await load();
+      } catch (err) {
+        pwStore.clear();
+        showLogin(err.status === 401 ? 'Kata laluan salah.' : err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $('app').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      $('save-error').classList.add('hidden');
+      $('save-ok').classList.add('hidden');
+      try {
+        const deadlineLocal = $('set-promo-deadline').value;
+        const fields = {};
+        for (const [id, key] of Object.entries(FIELD_MAP)) {
+          fields[key] = key === 'promo_deadline' ? (deadlineLocal ? new Date(deadlineLocal).toISOString() : '') : $(id).value;
+        }
+        await call({ action: 'save-settings', fields });
+        $('save-ok').classList.remove('hidden');
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        $('save-error').textContent = err.message;
+        $('save-error').classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $('logout').addEventListener('click', () => showLogin());
+
+    if (pwStore.get()) load();
+  </script>
+</body>
+</html>

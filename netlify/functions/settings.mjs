@@ -1,7 +1,13 @@
 // Tetapan laman yang selamat didedahkan kepada semua pelawat (tiada password): tarikh tamat
 // promo, jumlah reward, nombor sokongan, link komuniti. Diedit dari admin.html.
 
-const PUBLIC_KEYS = ['promo_deadline', 'reward_before', 'reward_after', 'support_phone', 'telegram_url'];
+const PUBLIC_KEYS = [
+  'promo_deadline', 'reward_before', 'reward_after', 'support_phone',
+  'hero_title_line1', 'hero_title_line2', 'hero_subtitle', 'step3_desc', 'cta_heading', 'cta_sub',
+  'promo_banner_text',
+  'community_title', 'community_desc', 'community_button_label', 'community_link', 'community_color',
+  'share_message_template',
+];
 
 const json = (status, body, cacheControl) => new Response(JSON.stringify(body), {
   status,

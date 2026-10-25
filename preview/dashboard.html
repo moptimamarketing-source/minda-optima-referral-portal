@@ -36,17 +36,17 @@
 
     <!-- Promo banner -->
     <div class="rounded-2xl bg-gold px-5 py-4 text-brand shadow-sm">
-      <p class="font-extrabold">🔥 TAWARAN TERHAD: Refer sebelum 31 Dis — RM<span data-reward-before>100</span> TnG! Selepas tu RM<span data-reward-after>50</span> je.</p>
+      <p class="font-extrabold" data-content="promo_banner_text">🔥 TAWARAN TERHAD: Refer sebelum 31 Dis — RM100 TnG! Selepas tu RM50 je.</p>
       <p class="mt-1 text-sm font-semibold">⏳ Berakhir dalam <span class="tabular-nums" data-countdown>&nbsp;</span></p>
     </div>
 
-    <!-- Telegram community -->
-    <section id="telegram-card" class="hidden rounded-2xl bg-white border border-slate-200 p-5">
-      <h2 class="font-bold text-brand">Komuniti Telegram</h2>
-      <p class="mt-1 text-sm text-slate-600">Dapatkan update, tips dan pengumuman rasmi Minda Optima.</p>
-      <a id="telegram-link" href="#" target="_blank" rel="noopener"
+    <!-- Community card -->
+    <section id="community-card" class="hidden rounded-2xl bg-white border border-slate-200 p-5">
+      <h2 class="font-bold text-brand" data-content="community_title">Komuniti Telegram</h2>
+      <p class="mt-1 text-sm text-slate-600" data-content="community_desc">Dapatkan update, tips dan pengumuman rasmi Minda Optima.</p>
+      <a id="community-link" href="#" target="_blank" rel="noopener" data-content-link="community_link" data-content-color="community_color"
          class="mt-4 inline-flex items-center justify-center rounded-xl bg-[#229ED9] px-5 py-3 font-bold text-white hover:brightness-95 transition">
-        Sertai Komuniti Telegram
+        <span data-content="community_button_label">Sertai Komuniti Telegram</span>
       </a>
     </section>
 
@@ -171,9 +171,9 @@
     const dateFmt = new Intl.DateTimeFormat('ms-MY', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kuala_Lumpur' });
 
     function shareMessage(code, url) {
-      const reward = (MO.settings || {}).reward_before || '100';
-      return `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, ` +
-        `anak dapat 1 kelas PERCUMA & saya dapat RM${reward} 🎉 👉 ${url}`;
+      const tpl = (MO.settings || {}).share_message_template
+        || "Anak saya dah pandai baca dengan Minda Optima! Guna kod *{code}* bila daftar, anak dapat 1 kelas PERCUMA & saya dapat RM100 🎉 👉 {url}";
+      return tpl.replace(/\{code\}/g, code).replace(/\{url\}/g, url);
     }
 
     function toast(text) {
@@ -199,10 +199,8 @@
       document.getElementById('profile-bank-account').textContent = referrer.bank_account || '—';
       document.getElementById('profile-occupation').textContent = referrer.occupation || '—';
 
-      const telegramUrl = (window.MO_CONFIG || {}).TELEGRAM_URL;
-      if (telegramUrl) {
-        document.getElementById('telegram-link').href = telegramUrl;
-        document.getElementById('telegram-card').classList.remove('hidden');
+      if ((MO.settings || {}).community_link) {
+        document.getElementById('community-card').classList.remove('hidden');
       }
 
       const message = shareMessage(referrer.code, shareUrl);

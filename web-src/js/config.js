@@ -4,5 +4,4 @@ window.MO_CONFIG = {
   SUPABASE_URL: 'https://mfsuywdnqptfmihctelf.supabase.co',
   SUPABASE_KEY: 'sb_publishable_63DY7r0PMBbjSQ_n4ugyVg_w-ZRsrJs',
   REGISTER_URL: 'https://daftarmindaoptima.com/f/referral',
-  TELEGRAM_URL: 'https://t.me/mindaoptimaofficial',
 };

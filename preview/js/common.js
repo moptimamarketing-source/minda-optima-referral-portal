@@ -101,7 +101,12 @@ const MO = (() => {
   const settingsReady = new Promise((resolve) => { resolveSettingsReady = resolve; });
   let lastSettings = {};
 
-  /** Ambil tetapan laman (promo, reward, support, telegram) dari admin dan tulis ganti nilai lalai. */
+  // Preset warna untuk kad komuniti (data-content-color="community_color").
+  const COLOR_PRESETS = { telegram: '#229ED9', whatsapp: '#25D366', brand: '#0D2A5C' };
+
+  /** Ambil tetapan & kandungan page (promo, reward, support, teks, komuniti) dari admin dan
+   * tulis ganti nilai lalai dalam HTML. Elemen guna data-content="<kunci>" untuk teks,
+   * data-content-link="<kunci>" untuk href, data-content-color="<kunci>" untuk warna latar. */
   async function loadSiteSettings() {
     let s = {};
     try {
@@ -116,16 +121,19 @@ const MO = (() => {
       if (!Number.isNaN(d.getTime())) PROMO_DEADLINE = d;
     }
     if (s.support_phone) SUPPORT_PHONE = s.support_phone;
-    if (s.telegram_url) {
-      window.MO_CONFIG = window.MO_CONFIG || {};
-      window.MO_CONFIG.TELEGRAM_URL = s.telegram_url;
-    }
-    if (s.reward_before) {
-      document.querySelectorAll('[data-reward-before]').forEach((el) => { el.textContent = s.reward_before; });
-    }
-    if (s.reward_after) {
-      document.querySelectorAll('[data-reward-after]').forEach((el) => { el.textContent = s.reward_after; });
-    }
+
+    document.querySelectorAll('[data-content]').forEach((el) => {
+      const v = s[el.dataset.content];
+      if (v) el.textContent = v;
+    });
+    document.querySelectorAll('[data-content-link]').forEach((el) => {
+      const v = s[el.dataset.contentLink];
+      if (v) el.href = v;
+    });
+    document.querySelectorAll('[data-content-color]').forEach((el) => {
+      const preset = COLOR_PRESETS[s[el.dataset.contentColor]];
+      if (preset) el.style.background = preset;
+    });
 
     lastSettings = s;
     resolveSettingsReady();

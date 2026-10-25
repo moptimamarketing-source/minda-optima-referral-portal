@@ -2,7 +2,20 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { sendEmail, esc, SITE } from '../lib/email.mjs';
 
 const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
-const SETTINGS_KEYS = ['promo_deadline', 'reward_before', 'reward_after', 'support_phone', 'telegram_url'];
+const SETTINGS_KEYS = [
+  'promo_deadline', 'reward_before', 'reward_after', 'support_phone',
+  'hero_title_line1', 'hero_title_line2', 'hero_subtitle', 'step3_desc', 'cta_heading', 'cta_sub',
+  'promo_banner_text',
+  'community_title', 'community_desc', 'community_button_label', 'community_link', 'community_color',
+  'share_message_template',
+];
+const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
+const TEXT_SETTINGS_MAX = {
+  hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300, step3_desc: 200,
+  cta_heading: 100, cta_sub: 150, promo_banner_text: 200,
+  community_title: 60, community_desc: 200, community_button_label: 60,
+  share_message_template: 500,
+};
 
 const json = (status, body) => new Response(JSON.stringify(body), {
   status,
@@ -19,7 +32,21 @@ function normalizePhone(raw) {
   return null;
 }
 
-const rewardFor = (date) => (date <= new Date('2026-12-31T23:59:59+08:00') ? 100 : 50);
+async function promoSettings() {
+  const out = { promo_deadline: '2026-12-31T23:59:59+08:00', reward_before: 100, reward_after: 50 };
+  const res = await sb('settings?select=key,value&key=in.(promo_deadline,reward_before,reward_after)');
+  if (res.ok) {
+    for (const row of res.data || []) {
+      out[row.key] = row.key === 'promo_deadline' ? row.value : Number(row.value) || out[row.key];
+    }
+  }
+  return out;
+}
+
+async function rewardFor(date) {
+  const promo = await promoSettings();
+  return date <= new Date(promo.promo_deadline) ? promo.reward_before : promo.reward_after;
+}
 
 async function sb(path, { method = 'GET', body, prefer } = {}) {
   const url = process.env.SUPABASE_URL.replace(/\/+$/, '');
@@ -84,7 +111,7 @@ async function add(body) {
   const ins = await sb('referrals', {
     method: 'POST',
     prefer: 'return=representation',
-    body: { referrer_id: referrer.id, code, referee_phone: phone, referee_name: name, reward: rewardFor(new Date()) },
+    body: { referrer_id: referrer.id, code, referee_phone: phone, referee_name: name, reward: await rewardFor(new Date()) },
   });
   if (!ins.ok) {
     if (ins.data?.code === '23505') return json(409, { error: 'Nombor ini sudah pernah direkod.' });
@@ -254,8 +281,25 @@ function validateSetting(key, raw) {
     if (!/^60\d{8,10}$/.test(d)) return { error: 'Nombor sokongan tak sah. Contoh: 60123456789' };
     return { value: d };
   }
-  if (key === 'telegram_url') {
+  if (key === 'community_link') {
     if (v && !/^https:\/\/\S+$/.test(v)) return { error: 'Link komuniti tak sah. Kena mula dengan https://' };
+    return { value: v };
+  }
+  if (key === 'community_color') {
+    if (!COMMUNITY_COLORS.includes(v)) return { error: 'Warna komuniti tak sah.' };
+    return { value: v };
+  }
+  if (key === 'share_message_template') {
+    if (!v) return { error: 'Mesej share tak boleh kosong.' };
+    if (v.length > TEXT_SETTINGS_MAX[key]) return { error: `Mesej share terlalu panjang (maks ${TEXT_SETTINGS_MAX[key]} aksara).` };
+    if (!v.includes('{code}') || !v.includes('{url}')) {
+      return { error: 'Mesej share kena ada token {code} dan {url} — jangan buang.' };
+    }
+    return { value: v };
+  }
+  if (key in TEXT_SETTINGS_MAX) {
+    if (!v) return { error: 'Medan ini tak boleh kosong.' };
+    if (v.length > TEXT_SETTINGS_MAX[key]) return { error: `Teks terlalu panjang (maks ${TEXT_SETTINGS_MAX[key]} aksara).` };
     return { value: v };
   }
   return { error: 'Tetapan tak dikenali.' };

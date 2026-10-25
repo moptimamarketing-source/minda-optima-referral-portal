@@ -46,6 +46,12 @@ const pages = {
       ['<script src="/js/common.js"></script>', '<script src="js/common.js"></script>', true],
     ],
   },
+  'content.html': {
+    from: extra,
+    edits: [
+      ['<script src="/js/common.js"></script>', '<script src="js/common.js"></script>', true],
+    ],
+  },
 };
 
 fs.rmSync(out, { recursive: true, force: true });
