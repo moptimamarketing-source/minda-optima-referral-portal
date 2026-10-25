@@ -9,16 +9,26 @@
   <script src="js/common.js"></script>
   <script src="js/mock-api.js"></script>
 </head>
-<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased" style="background-image:url('/bg-decor.svg');background-repeat:no-repeat;background-size:cover;background-position:center;background-attachment:fixed;">
+
+  <audio id="bg-music" src="/audio/theme.mp3" loop preload="auto"></audio>
 
   <header class="bg-brand text-white">
     <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="index.html" class="font-extrabold text-lg tracking-tight">Minda<span class="text-gold">Optima</span></a>
-      <button id="logout" class="text-sm text-white/80 hover:text-white">Log Keluar</button>
-    </div>
-    <div class="max-w-3xl mx-auto px-4 pb-6">
-      <p class="text-white/70 text-sm">Selamat Datang,</p>
-      <h1 id="parent-name" class="text-2xl sm:text-3xl font-extrabold">…</h1>
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="h-20 flex items-center shrink-0">
+          <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-20 w-auto">
+        </a>
+        <div>
+          <p class="text-white/70 text-sm">Selamat Datang,</p>
+          <h1 id="parent-name" class="text-xl sm:text-2xl font-extrabold leading-tight">…</h1>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 shrink-0">
+        <button id="music-toggle" type="button" class="text-sm text-white/80 hover:text-white" title="Muzik">🔊</button>
+        <button id="profile-btn" class="text-sm text-white/80 hover:text-white">👤 Profil</button>
+        <button id="logout" class="text-sm text-white/80 hover:text-white">Log Keluar</button>
+      </div>
     </div>
   </header>
 
@@ -29,6 +39,26 @@
       <p class="font-extrabold">🔥 TAWARAN TERHAD: Refer sebelum 31 Dis — RM100 TnG! Selepas tu RM50 je.</p>
       <p class="mt-1 text-sm font-semibold">⏳ Berakhir dalam <span class="tabular-nums" data-countdown>&nbsp;</span></p>
     </div>
+
+    <!-- Telegram community -->
+    <section id="telegram-card" class="hidden rounded-2xl bg-white border border-slate-200 p-5">
+      <h2 class="font-bold text-brand">Komuniti Telegram</h2>
+      <p class="mt-1 text-sm text-slate-600">Dapatkan update, tips dan pengumuman rasmi Minda Optima.</p>
+      <a id="telegram-link" href="#" target="_blank" rel="noopener"
+         class="mt-4 inline-flex items-center justify-center rounded-xl bg-[#229ED9] px-5 py-3 font-bold text-white hover:brightness-95 transition">
+        Sertai Komuniti Telegram
+      </a>
+    </section>
+
+    <!-- Telegram community -->
+    <section id="telegram-card" class="hidden rounded-2xl bg-white border border-slate-200 p-5">
+      <h2 class="font-bold text-brand">Komuniti Telegram</h2>
+      <p class="mt-1 text-sm text-slate-600">Dapatkan update, tips dan pengumuman rasmi Minda Optima.</p>
+      <a id="telegram-link" href="#" target="_blank" rel="noopener"
+         class="mt-4 inline-flex items-center justify-center rounded-xl bg-[#229ED9] px-5 py-3 font-bold text-white hover:brightness-95 transition">
+        Sertai Komuniti Telegram
+      </a>
+    </section>
 
     <!-- Referral code card -->
     <section class="rounded-2xl border-2 border-dashed border-brand bg-white p-6 text-center">
@@ -91,6 +121,47 @@
     </section>
   </main>
 
+  <!-- Profile Modal -->
+  <div id="profile-modal" class="hidden fixed inset-0 bg-black/40 flex items-end z-50 transition-opacity duration-200">
+    <div class="w-full bg-white rounded-t-3xl shadow-lg animate-in slide-in-from-bottom-5">
+      <div class="max-w-3xl mx-auto px-4 py-6">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-xl font-bold text-brand">Profil Anda</h2>
+          <button id="profile-close" class="text-2xl text-slate-400 hover:text-slate-600">×</button>
+        </div>
+        <div id="profile-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Nama Lengkap</p>
+            <p id="profile-name" class="mt-1 font-medium text-slate-800">—</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Nombor Telefon</p>
+            <p id="profile-phone" class="mt-1 font-medium text-slate-800 tabular-nums">—</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Emel</p>
+            <p id="profile-email" class="mt-1 font-medium text-slate-800 break-all">—</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Nama Bank</p>
+            <p id="profile-bank-name" class="mt-1 font-medium text-slate-800">—</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Nombor Akaun Bank</p>
+            <p id="profile-bank-account" class="mt-1 font-medium text-slate-800 tabular-nums">—</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Pekerjaan</p>
+            <p id="profile-occupation" class="mt-1 font-medium text-slate-800">—</p>
+          </div>
+        </div>
+        <p class="text-sm text-slate-600 bg-blue-50 p-3 rounded-lg">
+          💬 Untuk mengubah atau membetulkan butiran, sila hubungi sokongan melalui <strong>WhatsApp</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="pointer-events-none fixed inset-x-0 bottom-6 flex justify-center opacity-0 transition-opacity">
     <span class="rounded-full bg-slate-900 px-4 py-2 text-sm text-white shadow-lg">Disalin!</span>
   </div>
@@ -106,8 +177,8 @@
     const dateFmt = new Intl.DateTimeFormat('ms-MY', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kuala_Lumpur' });
 
     function shareMessage(code, url) {
-      return `Anak aku dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, ` +
-        `kau dapat 1 kelas PERCUMA & aku dapat RM100 🎉 👉 ${url}`;
+      return `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, ` +
+        `anak dapat 1 kelas PERCUMA & saya dapat RM100 🎉 👉 ${url}`;
     }
 
     function toast(text) {
@@ -124,6 +195,19 @@
       document.getElementById('stat-count').textContent = stats.totalReferrals;
       document.getElementById('stat-pending').textContent = rm(stats.rewardPending);
       document.getElementById('stat-earned').textContent = rm(stats.totalEarned);
+
+      document.getElementById('profile-name').textContent = referrer.name || '—';
+      document.getElementById('profile-phone').textContent = referrer.phone || '—';
+      document.getElementById('profile-email').textContent = referrer.email || '—';
+      document.getElementById('profile-bank-name').textContent = referrer.bank_name || '—';
+      document.getElementById('profile-bank-account').textContent = referrer.bank_account || '—';
+      document.getElementById('profile-occupation').textContent = referrer.occupation || '—';
+
+      const telegramUrl = (window.MO_CONFIG || {}).TELEGRAM_URL;
+      if (telegramUrl) {
+        document.getElementById('telegram-link').href = telegramUrl;
+        document.getElementById('telegram-card').classList.remove('hidden');
+      }
 
       const message = shareMessage(referrer.code, shareUrl);
       document.getElementById('share-preview').textContent = message;
@@ -153,6 +237,20 @@
 
       document.getElementById('app').setAttribute('aria-busy', 'false');
     }
+
+    function openProfileModal() {
+      document.getElementById('profile-modal').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.add('hidden');
+    }
+
+    document.getElementById('profile-btn').addEventListener('click', openProfileModal);
+    document.getElementById('profile-close').addEventListener('click', closeProfileModal);
+    document.getElementById('profile-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('profile-modal')) closeProfileModal();
+    });
 
     document.getElementById('logout').addEventListener('click', async () => {
       await MO.api('/api/logout', { method: 'POST' }).catch(() => {});

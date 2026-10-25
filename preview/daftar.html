@@ -12,8 +12,10 @@
 </head>
 <body class="min-h-screen bg-brand font-sans text-white antialiased">
 
-  <header class="max-w-md mx-auto px-4 py-5">
-    <a href="index.html" class="font-extrabold text-lg tracking-tight">Minda<span class="text-gold">Optima</span></a>
+  <header class="max-w-md mx-auto px-4 py-3">
+    <a href="index.html" class="h-16 flex items-center">
+      <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-16 w-auto rounded-xl bg-white/90 p-1">
+    </a>
   </header>
 
   <main class="max-w-md mx-auto px-4 pb-12 text-center">
@@ -47,7 +49,7 @@
   </main>
 
   <script>
-    const REDIRECT_SECONDS = 8;
+    const REDIRECT_SECONDS = 3;
     const params = new URLSearchParams(window.location.search);
     const ref = (params.get('ref') || '').trim();
     const $ = (id) => document.getElementById(id);
@@ -78,7 +80,7 @@
       MO.api(`/api/referral/${encodeURIComponent(ref)}`)
         .then((data) => {
           show({
-            headline: `Kau dijemput oleh ${data.referrerName}!`,
+            headline: `Anda dijemput oleh ${data.referrerName}!`,
             subhead: 'Guna kod di bawah semasa mendaftar untuk tebus tawaran anda.',
           });
           $('code').textContent = data.code;
