@@ -59,6 +59,13 @@ for (const f of fs.readdirSync(pub)) {
     fs.copyFileSync(path.join(pub, f), path.join(out, f));
   }
 }
+const audioDir = path.join(pub, 'audio');
+if (fs.existsSync(audioDir)) {
+  fs.mkdirSync(path.join(out, 'audio'), { recursive: true });
+  for (const f of fs.readdirSync(audioDir)) {
+    fs.copyFileSync(path.join(audioDir, f), path.join(out, 'audio', f));
+  }
+}
 
 for (const [name, { from, edits }] of Object.entries(pages)) {
   let html = fs.readFileSync(path.join(from, name), 'utf8');

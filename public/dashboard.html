@@ -8,7 +8,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/js/common.js"></script>
 </head>
-<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased" style="background-image:url('/bg-decor.svg');background-repeat:no-repeat;background-size:cover;background-position:center;background-attachment:fixed;">
+
+  <audio id="bg-music" src="/audio/theme.mp3" loop preload="auto"></audio>
 
   <header class="bg-brand text-white">
     <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -22,6 +24,7 @@
         </div>
       </div>
       <div class="flex items-center gap-3 shrink-0">
+        <button id="music-toggle" type="button" class="text-sm text-white/80 hover:text-white" title="Muzik">🔊</button>
         <button id="profile-btn" class="text-sm text-white/80 hover:text-white">👤 Profil</button>
         <button id="logout" class="text-sm text-white/80 hover:text-white">Log Keluar</button>
       </div>
@@ -252,6 +255,38 @@
       await MO.api('/api/logout', { method: 'POST' }).catch(() => {});
       window.location.href = '/';
     });
+
+    (function () {
+      const audio = document.getElementById('bg-music');
+      const btn = document.getElementById('music-toggle');
+      const KEY = 'mo_music_muted';
+      let muted = localStorage.getItem(KEY) === '1';
+
+      function applyState() {
+        audio.muted = muted;
+        btn.textContent = muted ? '🔇' : '🔊';
+      }
+      applyState();
+
+      function tryPlay() {
+        audio.play().catch(() => {
+          const resume = () => {
+            audio.play().catch(() => {});
+            document.removeEventListener('click', resume);
+            document.removeEventListener('touchstart', resume);
+          };
+          document.addEventListener('click', resume, { once: true });
+          document.addEventListener('touchstart', resume, { once: true });
+        });
+      }
+      tryPlay();
+
+      btn.addEventListener('click', () => {
+        muted = !muted;
+        localStorage.setItem(KEY, muted ? '1' : '0');
+        applyState();
+      });
+    })();
 
     MO.api('/api/dashboard').then(render).catch((err) => {
       if (err.status === 401) {
