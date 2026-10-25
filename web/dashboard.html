@@ -13,9 +13,14 @@
 <body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
 
   <header class="bg-brand text-white">
-    <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="index.html" class="font-extrabold text-lg tracking-tight">Minda<span class="text-gold">Optima</span></a>
-      <button id="logout" class="text-sm text-white/80 hover:text-white">Log Keluar</button>
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="index.html" class="h-12 flex items-center">
+        <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-12 w-auto">
+      </a>
+      <div class="flex items-center gap-3">
+        <button id="profile-btn" class="text-sm text-white/80 hover:text-white">👤 Profil</button>
+        <button id="logout" class="text-sm text-white/80 hover:text-white">Log Keluar</button>
+      </div>
     </div>
     <div class="max-w-3xl mx-auto px-4 pb-6">
       <p class="text-white/70 text-sm">Selamat Datang,</p>
@@ -31,38 +36,14 @@
       <p class="mt-1 text-sm font-semibold">⏳ Berakhir dalam <span class="tabular-nums" data-countdown>&nbsp;</span></p>
     </div>
 
-    <!-- Profile card -->
-    <section class="rounded-2xl bg-white border border-slate-200 p-5">
-      <h2 class="font-bold text-brand">Profil Anda</h2>
-      <div id="profile-grid" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <p class="text-xs text-slate-500 uppercase tracking-wider">Nama Lengkap</p>
-          <p id="profile-name" class="mt-1 font-medium text-slate-800">—</p>
-        </div>
-        <div>
-          <p class="text-xs text-slate-500 uppercase tracking-wider">Nombor Telefon</p>
-          <p id="profile-phone" class="mt-1 font-medium text-slate-800 tabular-nums">—</p>
-        </div>
-        <div>
-          <p class="text-xs text-slate-500 uppercase tracking-wider">Emel</p>
-          <p id="profile-email" class="mt-1 font-medium text-slate-800 break-all">—</p>
-        </div>
-        <div>
-          <p class="text-xs text-slate-500 uppercase tracking-wider">Nama Bank</p>
-          <p id="profile-bank-name" class="mt-1 font-medium text-slate-800">—</p>
-        </div>
-        <div>
-          <p class="text-xs text-slate-500 uppercase tracking-wider">Nombor Akaun Bank</p>
-          <p id="profile-bank-account" class="mt-1 font-medium text-slate-800 tabular-nums">—</p>
-        </div>
-        <div>
-          <p class="text-xs text-slate-500 uppercase tracking-wider">Pekerjaan</p>
-          <p id="profile-occupation" class="mt-1 font-medium text-slate-800">—</p>
-        </div>
-      </div>
-      <p class="mt-5 text-sm text-slate-600 bg-blue-50 p-3 rounded-lg">
-        💬 Untuk mengubah atau membetulkan butiran, sila hubungi sokongan melalui <strong>WhatsApp</strong>.
-      </p>
+    <!-- Telegram community -->
+    <section id="telegram-card" class="hidden rounded-2xl bg-white border border-slate-200 p-5">
+      <h2 class="font-bold text-brand">Komuniti Telegram</h2>
+      <p class="mt-1 text-sm text-slate-600">Dapatkan update, tips dan pengumuman rasmi Minda Optima.</p>
+      <a id="telegram-link" href="#" target="_blank" rel="noopener"
+         class="mt-4 inline-flex items-center justify-center rounded-xl bg-[#229ED9] px-5 py-3 font-bold text-white hover:brightness-95 transition">
+        Sertai Komuniti Telegram
+      </a>
     </section>
 
     <!-- Telegram community -->
@@ -135,6 +116,47 @@
       </p>
     </section>
   </main>
+
+  <!-- Profile Modal -->
+  <div id="profile-modal" class="hidden fixed inset-0 bg-black/40 flex items-end z-50 transition-opacity duration-200">
+    <div class="w-full bg-white rounded-t-3xl shadow-lg animate-in slide-in-from-bottom-5">
+      <div class="max-w-3xl mx-auto px-4 py-6">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-xl font-bold text-brand">Profil Anda</h2>
+          <button id="profile-close" class="text-2xl text-slate-400 hover:text-slate-600">×</button>
+        </div>
+        <div id="profile-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Nama Lengkap</p>
+            <p id="profile-name" class="mt-1 font-medium text-slate-800">—</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Nombor Telefon</p>
+            <p id="profile-phone" class="mt-1 font-medium text-slate-800 tabular-nums">—</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Emel</p>
+            <p id="profile-email" class="mt-1 font-medium text-slate-800 break-all">—</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Nama Bank</p>
+            <p id="profile-bank-name" class="mt-1 font-medium text-slate-800">—</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Nombor Akaun Bank</p>
+            <p id="profile-bank-account" class="mt-1 font-medium text-slate-800 tabular-nums">—</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Pekerjaan</p>
+            <p id="profile-occupation" class="mt-1 font-medium text-slate-800">—</p>
+          </div>
+        </div>
+        <p class="text-sm text-slate-600 bg-blue-50 p-3 rounded-lg">
+          💬 Untuk mengubah atau membetulkan butiran, sila hubungi sokongan melalui <strong>WhatsApp</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
 
   <div id="toast" class="pointer-events-none fixed inset-x-0 bottom-6 flex justify-center opacity-0 transition-opacity">
     <span class="rounded-full bg-slate-900 px-4 py-2 text-sm text-white shadow-lg">Disalin!</span>
@@ -211,6 +233,20 @@
 
       document.getElementById('app').setAttribute('aria-busy', 'false');
     }
+
+    function openProfileModal() {
+      document.getElementById('profile-modal').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.add('hidden');
+    }
+
+    document.getElementById('profile-btn').addEventListener('click', openProfileModal);
+    document.getElementById('profile-close').addEventListener('click', closeProfileModal);
+    document.getElementById('profile-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('profile-modal')) closeProfileModal();
+    });
 
     document.getElementById('logout').addEventListener('click', async () => {
       await MO.api('/api/logout', { method: 'POST' }).catch(() => {});
