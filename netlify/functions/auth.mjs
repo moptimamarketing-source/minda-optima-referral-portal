@@ -69,7 +69,11 @@ function confirmationEmail({ name, code, phone, email, occupation }) {
         ${row('Emel', email)}
         ${row('Pekerjaan', occupation)}
       </table>
-      <p style="font-size:13px;color:#64748b">Reward RM anda akan dihantar ke Touch 'n Go yang dikaitkan dengan nombor telefon di atas. Untuk mengubah butiran, sila hubungi sokongan melalui WhatsApp.</p>
+
+      <div style="background:#fee2e2;border-left:4px solid #dc2626;padding:12px;border-radius:4px;margin-top:16px;font-size:13px;color:#7f1d1d">
+        <strong style="color:#991b1b">⚠️ Penting — Syarat Ganjaran:</strong>
+        <p style="margin:8px 0 0 0">Ganjaran: RM100 (sehingga 31 Dis 2026), RM50 selepas. Kawan anda mesti <strong>DAFTAR dan HADIR KELAS</strong> (bukan sekadar intro atau isi borang) untuk terima reward. Reward akan dihantar ke Touch 'n Go yang dikaitkan dengan nombor telefon di atas.</p>
+      </div>
 
       <h3 style="color:#0D2A5C;margin-bottom:4px">Kongsi kod anda</h3>
       <p style="font-size:14px;color:#64748b;margin-top:0">Salin mesej di bawah dan hantar kepada rakan anda:</p>
