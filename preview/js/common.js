@@ -135,6 +135,10 @@ const MO = (() => {
       if (preset) el.style.background = preset;
     });
 
+    if (s.promo_enabled === 'false') {
+      document.querySelectorAll('[data-promo-only]').forEach((el) => { el.classList.add('hidden'); });
+    }
+
     lastSettings = s;
     resolveSettingsReady();
     return s;

@@ -6,6 +6,8 @@ delete from public.settings where key = 'telegram_url';
 
 insert into public.settings (key, value) values
   -- Promo & reward (dipakai untuk kira reward sebenar bila referral ditambah, dan untuk countdown).
+  -- Set promo_enabled ke 'false' untuk sembunyikan semua banner/countdown promo (reward_before jadi reward tetap).
+  ('promo_enabled', 'true'),
   ('promo_deadline', '2026-12-31T23:59:59+08:00'),
   ('reward_before', '100'),
   ('reward_after', '50'),

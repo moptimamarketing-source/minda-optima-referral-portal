@@ -3,7 +3,7 @@ import { sendEmail, esc, SITE } from '../lib/email.mjs';
 
 const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
 const SETTINGS_KEYS = [
-  'promo_deadline', 'reward_before', 'reward_after', 'support_phone',
+  'promo_enabled', 'promo_deadline', 'reward_before', 'reward_after', 'support_phone',
   'hero_title_line1', 'hero_title_line2', 'hero_subtitle', 'step3_desc', 'cta_heading', 'cta_sub',
   'promo_banner_text',
   'community_title', 'community_desc', 'community_button_label', 'community_link', 'community_color',
@@ -33,11 +33,11 @@ function normalizePhone(raw) {
 }
 
 async function promoSettings() {
-  const out = { promo_deadline: '2026-12-31T23:59:59+08:00', reward_before: 100, reward_after: 50 };
-  const res = await sb('settings?select=key,value&key=in.(promo_deadline,reward_before,reward_after)');
+  const out = { promo_enabled: 'true', promo_deadline: '2026-12-31T23:59:59+08:00', reward_before: 100, reward_after: 50 };
+  const res = await sb('settings?select=key,value&key=in.(promo_enabled,promo_deadline,reward_before,reward_after)');
   if (res.ok) {
     for (const row of res.data || []) {
-      out[row.key] = row.key === 'promo_deadline' ? row.value : Number(row.value) || out[row.key];
+      out[row.key] = ['promo_enabled', 'promo_deadline'].includes(row.key) ? row.value : (Number(row.value) || out[row.key]);
     }
   }
   return out;
@@ -45,6 +45,7 @@ async function promoSettings() {
 
 async function rewardFor(date) {
   const promo = await promoSettings();
+  if (promo.promo_enabled === 'false') return promo.reward_before;
   return date <= new Date(promo.promo_deadline) ? promo.reward_before : promo.reward_after;
 }
 
@@ -266,6 +267,9 @@ async function getSettings() {
 
 function validateSetting(key, raw) {
   const v = String(raw ?? '').trim();
+  if (key === 'promo_enabled') {
+    return { value: v === 'true' || v === 'on' || v === '1' ? 'true' : 'false' };
+  }
   if (key === 'promo_deadline') {
     const d = new Date(v);
     if (Number.isNaN(d.getTime())) return { error: 'Tarikh tamat promo tak sah.' };

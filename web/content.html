@@ -41,6 +41,11 @@
       <section class="rounded-2xl border border-slate-200 bg-white p-5">
         <h2 class="text-lg font-bold text-brand">Promo &amp; Reward</h2>
         <p class="text-sm text-slate-500">Kawal countdown timer dan jumlah reward sebenar yang dibayar.</p>
+        <label class="mt-4 flex items-center gap-2 text-sm font-semibold">
+          <input id="set-promo-enabled" type="checkbox" class="h-5 w-5 rounded border-slate-300 text-brand focus:ring-brand">
+          Ada promo aktif sekarang (tunjuk banner &amp; countdown)
+        </label>
+        <p class="mt-1 text-xs text-slate-500">Kalau OFF, semua banner oren &amp; countdown disembunyikan di landing page dan dashboard. Reward yang dibayar akan guna "Reward Sebelum Tamat" sebagai reward tetap.</p>
         <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label class="block text-sm font-semibold">Promo Tamat Pada
             <input id="set-promo-deadline" type="datetime-local" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
@@ -200,6 +205,7 @@
     };
 
     function renderSettings(s) {
+      $('set-promo-enabled').checked = s.promo_enabled !== 'false';
       for (const [id, key] of Object.entries(FIELD_MAP)) {
         $(id).value = key === 'promo_deadline' ? toLocalDatetimeInput(s[key] || new Date()) : (s[key] ?? '');
       }
@@ -244,7 +250,7 @@
       $('save-ok').classList.add('hidden');
       try {
         const deadlineLocal = $('set-promo-deadline').value;
-        const fields = {};
+        const fields = { promo_enabled: $('set-promo-enabled').checked ? 'true' : 'false' };
         for (const [id, key] of Object.entries(FIELD_MAP)) {
           fields[key] = key === 'promo_deadline' ? (deadlineLocal ? new Date(deadlineLocal).toISOString() : '') : $(id).value;
         }
