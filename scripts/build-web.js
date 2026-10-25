@@ -54,6 +54,11 @@ fs.copyFileSync(path.join(pub, 'js', 'common.js'), path.join(out, 'js', 'common.
 for (const f of ['config.js', 'supabase-api.js']) {
   fs.copyFileSync(path.join(extra, 'js', f), path.join(out, 'js', f));
 }
+for (const f of fs.readdirSync(pub)) {
+  if (/\.(webp|png|jpg|jpeg|svg|ico)$/i.test(f)) {
+    fs.copyFileSync(path.join(pub, f), path.join(out, f));
+  }
+}
 
 for (const [name, { from, edits }] of Object.entries(pages)) {
   let html = fs.readFileSync(path.join(from, name), 'utf8');
