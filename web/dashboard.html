@@ -61,7 +61,7 @@
     <!-- Referral code card -->
     <section class="rounded-2xl border-2 border-dashed border-brand bg-white p-6 text-center">
       <p class="text-sm font-semibold uppercase tracking-wider text-slate-500">Kod Rujukan Anda</p>
-      <p id="ref-code" class="mt-2 text-3xl sm:text-4xl font-black tracking-wider text-brand select-all break-all">MO-····-····</p>
+      <p id="ref-code" class="mt-2 text-3xl sm:text-4xl font-black tracking-wider text-brand select-all break-all cursor-pointer hover:text-brand/80 hover:underline transition active:scale-95">MO-····-····</p>
     </section>
 
     <!-- Share -->
@@ -230,7 +230,11 @@
       await MO.settingsReady;
       const { referrer, stats, referrals, shareUrl } = data;
       document.getElementById('parent-name').textContent = referrer.name;
-      document.getElementById('ref-code').textContent = referrer.code;
+      const codeEl = document.getElementById('ref-code');
+      codeEl.textContent = referrer.code;
+      codeEl.onclick = async () => {
+        toast((await MO.copyText(referrer.code)) ? 'Kod disalin!' : 'Gagal salin');
+      };
       document.getElementById('stat-count').textContent = stats.totalReferrals;
       document.getElementById('stat-pending').textContent = rm(stats.rewardPending);
       document.getElementById('stat-earned').textContent = rm(stats.totalEarned);
