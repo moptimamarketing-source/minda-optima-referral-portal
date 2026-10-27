@@ -23,10 +23,17 @@
           <h1 id="parent-name" class="text-xl sm:text-2xl font-extrabold leading-tight">…</h1>
         </div>
       </div>
-      <div class="flex items-center gap-3 shrink-0">
+      <div class="flex items-center gap-4 shrink-0 relative">
         <button id="music-toggle" type="button" class="text-sm text-white/80 hover:text-white" title="Muzik">🔊</button>
-        <button id="profile-btn" class="text-sm text-white/80 hover:text-white">👤 Profil</button>
-        <button id="logout" class="text-sm text-white/80 hover:text-white">Log Keluar</button>
+        <button id="menu-toggle" type="button" class="text-white hover:text-white/80 transition" title="Menu">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <div id="menu-dropdown" class="hidden absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg py-2 min-w-40 z-50">
+          <button id="profile-btn" class="w-full text-left px-4 py-2 text-slate-800 hover:bg-slate-100">👤 Profil</button>
+          <button id="logout" class="w-full text-left px-4 py-2 text-slate-800 hover:bg-slate-100">Log Keluar</button>
+        </div>
       </div>
     </div>
   </header>
@@ -191,7 +198,7 @@
           </div>
         </div>
         <p class="text-sm text-slate-600 bg-blue-50 p-3 rounded-lg">
-          💬 Untuk mengubah atau membetulkan butiran, sila hubungi sokongan melalui <strong>WhatsApp</strong>.
+          💬 Untuk mengubah atau membetulkan butiran, sila hubungi sokongan melalui <a data-support-link href="#" class="font-semibold text-blue-600 hover:text-blue-800 underline">WhatsApp</a>.
         </p>
       </div>
     </div>
@@ -280,7 +287,20 @@
       document.getElementById('profile-modal').classList.add('hidden');
     }
 
-    document.getElementById('profile-btn').addEventListener('click', openProfileModal);
+    // Hamburger menu
+    const menuToggle = document.getElementById('menu-toggle');
+    const menuDropdown = document.getElementById('menu-dropdown');
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuDropdown.classList.toggle('hidden');
+    });
+    document.addEventListener('click', () => menuDropdown.classList.add('hidden'));
+    menuDropdown.addEventListener('click', (e) => e.stopPropagation());
+
+    document.getElementById('profile-btn').addEventListener('click', () => {
+      menuDropdown.classList.add('hidden');
+      openProfileModal();
+    });
     document.getElementById('profile-close').addEventListener('click', closeProfileModal);
     document.getElementById('profile-modal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('profile-modal')) closeProfileModal();
