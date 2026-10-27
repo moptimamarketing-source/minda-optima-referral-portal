@@ -15,8 +15,8 @@
   <header class="bg-brand text-white">
     <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <a href="/" class="h-24 flex items-center shrink-0">
-          <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-24 w-auto">
+        <a href="/" class="h-28 flex items-center shrink-0">
+          <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-28 w-auto">
         </a>
         <div>
           <p class="text-white/70 text-sm">Selamat Datang,</p>
@@ -43,6 +43,7 @@
     <div class="rounded-2xl bg-red-50 border-2 border-red-200 px-5 py-4">
       <p class="font-semibold text-red-900">⚠️ Syarat Ganjaran</p>
       <p class="mt-2 text-sm text-red-800" data-content="reward_terms">Ganjaran: RM100 (sehingga 31 Dis 2026), RM50 selepas. Kawan anda mesti DAFTAR dan HADIR KELAS (bukan sekadar intro atau isi borang) untuk terima reward.</p>
+      <button id="syarat-btn" type="button" class="mt-2 text-sm font-semibold text-brand underline">Lihat syarat kelayakan penuh</button>
     </div>
 
     <!-- Community card -->
@@ -215,7 +216,7 @@
 
     function shareMessage(code, url) {
       const tpl = (MO.settings || {}).share_message_template
-        || "Anak saya dah pandai baca dengan Minda Optima! Guna kod *{code}* bila daftar, anak dapat 1 kelas PERCUMA & saya dapat RM100 🎉 👉 {url}";
+        || "Anak saya dah pandai baca dengan Minda Optima! Guna kod *{code}* bila daftar, anak dapat satu sesi kelas PERCUMA & saya dapat RM100 🎉 👉 {url}";
       return tpl.replace(/\{code\}/g, code).replace(/\{url\}/g, url);
     }
 
@@ -300,6 +301,43 @@
           `<p class="rounded-xl bg-red-50 p-4 text-red-700">${MO.escapeHtml(err.message)}</p>`;
       }
     });
+  </script>
+  <!-- Syarat Kelayakan Modal -->
+  <dialog id="syarat-modal" class="fixed inset-0 z-50 w-full max-w-2xl rounded-2xl shadow-xl backdrop:bg-black/40 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold text-brand">Syarat Kelayakan — RM100 TnG Referral</h2>
+      <button id="syarat-close" type="button" class="text-2xl text-slate-400 hover:text-slate-600">×</button>
+    </div>
+    <div class="space-y-4 max-h-96 overflow-y-auto text-sm text-slate-700">
+      <ol class="space-y-3 list-decimal list-inside">
+        <li><strong>Kawan anda mesti mendaftarkan anak mereka</strong> menggunakan kod rujukan anda.</li>
+        <li><strong>Anak mereka mesti hadir ke sesi pertama kelas percuma</strong> dengan Minda Optima.</li>
+        <li><strong>Setelah hadir,</strong> status rujukan anda akan berubah menjadi "Approved" dalam 1-2 hari.</li>
+        <li><strong>Payout RM100</strong> akan dihantar ke akaun Touch 'n Go yang didaftarkan dalam 3-5 hari kerja.</li>
+      </ol>
+      <div class="bg-blue-50 rounded-lg p-3 mt-4 border-l-4 border-blue-400">
+        <p class="font-semibold text-slate-800 mb-2">Catatan Penting:</p>
+        <ul class="list-disc list-inside space-y-1 text-slate-700">
+          <li>Sesi percuma adalah kelas pertama sahaja. Tidak termasuk intro atau ujian.</li>
+          <li><strong>RM100</strong> sehingga 31 Disember 2026</li>
+          <li><strong>RM50</strong> bermula 1 Januari 2027 dan seterusnya</li>
+          <li>Tiada had bilangan rujukan. Kamu boleh refer sebanyak yang kamu mahu.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-6 flex gap-3 justify-end">
+      <button id="syarat-close-btn" type="button" class="px-6 py-2 rounded-lg bg-slate-200 text-slate-800 font-medium hover:bg-slate-300">Tutup</button>
+    </div>
+  </dialog>
+
+  <script>
+    (function () {
+      var b = document.getElementById('syarat-btn'), d = document.getElementById('syarat-modal');
+      if (!b || !d) return;
+      b.addEventListener('click', function () { d.showModal(); });
+      document.getElementById('syarat-close').addEventListener('click', function () { d.close(); });
+      document.getElementById('syarat-close-btn').addEventListener('click', function () { d.close(); });
+    })();
   </script>
 </body>
 </html>

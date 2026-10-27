@@ -16,15 +16,15 @@
   <audio id="bg-music" src="/audio/theme.mp3" loop preload="auto"></audio>
 
   <!-- Countdown banner -->
-  <div data-promo-only class="bg-gold text-brand text-center text-sm font-semibold px-4 py-2">
-    🔥 Tawaran terhad sehingga 31 Disember 2026
+  <div data-promo-only class="bg-gold text-brand text-center text-sm font-semibold px-4 py-2" data-content="promo_banner_text">
+    🎁 Kongsi Peluang, Bawa Pulang RM100! Rebut ganjaran RM100 untuk setiap rujukan berjaya sebelum 31 Disember. Selepas tarikh itu, ganjarannya hanya RM50 sahaja tau!
     <span class="block sm:inline sm:ml-2 font-bold tabular-nums" data-countdown>&nbsp;</span>
   </div>
 
   <header class="bg-brand">
     <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="index.html" class="h-16 flex items-center">
-        <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-16 w-auto">
+      <a href="index.html" class="h-28 flex items-center">
+        <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-28 w-auto">
       </a>
       <div class="flex items-center gap-4">
         <button id="music-toggle" type="button" class="text-sm text-white/80 hover:text-white" title="Muzik">🔊</button>
@@ -42,11 +42,11 @@
         <span class="text-gold" data-content="hero_title_line2">Dapat RM100!</span>
       </h1>
       <p class="mt-5 text-base sm:text-lg text-white/80 max-w-xl mx-auto" data-content="hero_subtitle">
-        Kongsi kod rujukan anda dengan ibu bapa lain. Bila mereka daftar, anak mereka dapat 1 kelas percubaan PERCUMA dan anda dapat RM100 Touch 'n Go.
+        Anak mereka dapat satu sesi kelas percuma. Bila anak hadir, RM100 Touch 'n Go jadi milik anda!
       </p>
       <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
         <a href="login.html" class="rounded-xl bg-gold px-6 py-4 text-brand font-bold text-lg shadow-lg hover:bg-gold-light transition">
-          Daftar sebagai Rujukan
+          Dapatkan Kod Rujukan Saya
         </a>
         <a href="dashboard.html" class="rounded-xl border-2 border-white/40 px-6 py-4 font-semibold text-lg hover:bg-white/10 transition">
           Masuk Dashboard
@@ -71,14 +71,17 @@
         <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand text-2xl">📝</div>
         <p class="mt-4 text-xs font-bold uppercase tracking-wider text-gold-dark">Langkah 2</p>
         <h3 class="mt-1 text-lg font-bold text-brand">Kawan Daftar</h3>
-        <p class="mt-2 text-sm text-slate-600">Kawan guna kod anda semasa daftar dan dapat 1 kelas percubaan PERCUMA.</p>
+        <p class="mt-2 text-sm text-slate-600">Kawan guna kod anda semasa daftar dan dapat satu sesi kelas PERCUMA.</p>
       </li>
       <li class="rounded-2xl bg-amber-50 border-2 border-gold p-6 text-center shadow-sm">
         <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gold text-2xl">💰</div>
         <p class="mt-4 text-xs font-bold uppercase tracking-wider text-gold-dark">Langkah 3</p>
         <h3 class="mt-1 text-lg font-bold text-brand">Dapat RM100</h3>
-        <p class="mt-2 text-sm text-slate-600" data-content="step3_desc">Anda terima RM100 Touch 'n Go untuk setiap rujukan yang berjaya.</p>
-        <p class="mt-3 text-xs text-red-600 font-medium" data-content="reward_terms">Ganjaran: RM100 (sehingga 31 Dis 2026), RM50 selepas. Kawan anda mesti DAFTAR dan HADIR KELAS (bukan sekadar intro atau isi borang) untuk terima reward.</p>
+        <p class="mt-2 text-sm text-slate-600" data-content="step3_desc">Anda menerima RM100 Touch 'n Go apabila anak mereka hadir ke sesi pertama percuma.</p>
+        <div class="mt-3 text-xs space-y-1">
+          <p class="text-slate-600">RM100 sehingga 31 Disember 2026. Ganjaran RM50 bermula 1 Januari 2027.</p>
+          <button id="syarat-btn" type="button" class="text-brand font-semibold underline hover:text-brand/80">Lihat syarat kelayakan penuh</button>
+        </div>
       </li>
     </ol>
   </section>
@@ -94,6 +97,47 @@
       </a>
     </div>
   </section>
+
+  <!-- Syarat Kelayakan Modal -->
+  <dialog id="syarat-modal" class="fixed inset-0 z-50 w-full max-w-2xl rounded-2xl shadow-xl backdrop:bg-black/40 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold text-brand">Syarat Kelayakan — RM100 TnG Referral</h2>
+      <button id="syarat-close" type="button" class="text-2xl text-slate-400 hover:text-slate-600">×</button>
+    </div>
+    <div class="space-y-4 max-h-96 overflow-y-auto text-sm text-slate-700">
+      <ol class="space-y-3 list-decimal list-inside">
+        <li><strong>Kawan anda mesti mendaftarkan anak mereka</strong> menggunakan kod rujukan anda.</li>
+        <li><strong>Anak mereka mesti hadir ke sesi pertama kelas percuma</strong> dengan Minda Optima.</li>
+        <li><strong>Setelah hadir,</strong> status rujukan anda akan berubah menjadi "Approved" dalam 1-2 hari.</li>
+        <li><strong>Payout RM100</strong> akan dihantar ke akaun Touch 'n Go yang didaftarkan dalam 3-5 hari kerja.</li>
+      </ol>
+      <div class="bg-blue-50 rounded-lg p-3 mt-4 border-l-4 border-blue-400">
+        <p class="font-semibold text-slate-800 mb-2">Catatan Penting:</p>
+        <ul class="list-disc list-inside space-y-1 text-slate-700">
+          <li>Sesi percuma adalah kelas pertama sahaja. Tidak termasuk intro atau ujian.</li>
+          <li><strong>RM100</strong> sehingga 31 Disember 2026</li>
+          <li><strong>RM50</strong> bermula 1 Januari 2027 dan seterusnya</li>
+          <li>Tiada had bilangan rujukan. Kamu boleh refer sebanyak yang kamu mahu.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-6 flex gap-3 justify-end">
+      <button id="syarat-close-btn" type="button" class="px-6 py-2 rounded-lg bg-slate-200 text-slate-800 font-medium hover:bg-slate-300">Tutup</button>
+    </div>
+  </dialog>
+
+  <script>
+    const syaratBtn = document.getElementById('syarat-btn');
+    const syaratModal = document.getElementById('syarat-modal');
+    const syaratClose = document.getElementById('syarat-close');
+    const syaratCloseBtn = document.getElementById('syarat-close-btn');
+
+    if (syaratBtn && syaratModal) {
+      syaratBtn.addEventListener('click', () => syaratModal.showModal());
+      syaratClose.addEventListener('click', () => syaratModal.close());
+      syaratCloseBtn.addEventListener('click', () => syaratModal.close());
+    }
+  </script>
 
   <footer class="border-t border-slate-200 py-6 text-center text-xs text-slate-400">
     © 2026 Minda Optima. Tertakluk kepada terma &amp; syarat. · <a data-support-link href="#" class="underline hover:text-slate-600">Hubungi Sokongan</a>
