@@ -274,7 +274,7 @@ begin
     ),
     'referrals', coalesce((
       select jsonb_agg(jsonb_build_object(
-        'name', public.mask_name(r.referee_name),
+        'name', r.referee_name,
         'phone', public.mask_phone(r.referee_phone),
         'registeredAt', r.registered_at,
         'status', r.status,
