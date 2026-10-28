@@ -134,6 +134,18 @@ const MO = (() => {
       const preset = COLOR_PRESETS[s[el.dataset.contentColor]];
       if (preset) el.style.background = preset;
     });
+    document.querySelectorAll('[data-content-list]').forEach((el) => {
+      const v = s[el.dataset.contentList];
+      if (!v) return;
+      const items = v.split('\n').map((line) => line.trim()).filter(Boolean);
+      if (items.length === 0) return;
+      el.innerHTML = '';
+      for (const item of items) {
+        const li = document.createElement('li');
+        li.textContent = item;
+        el.appendChild(li);
+      }
+    });
 
     if (s.promo_enabled === 'false') {
       document.querySelectorAll('[data-promo-only]').forEach((el) => { el.classList.add('hidden'); });

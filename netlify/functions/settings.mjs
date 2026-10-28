@@ -3,11 +3,18 @@
 
 const PUBLIC_KEYS = [
   'promo_enabled', 'promo_deadline', 'reward_before', 'reward_after', 'support_phone',
-  'hero_title_line1', 'hero_title_line2', 'hero_subtitle', 'step3_desc', 'cta_heading', 'cta_sub',
-  'login_hero_benefits',
+  'hero_badge_label', 'hero_title_line1', 'hero_title_line2', 'hero_subtitle',
+  'how_it_works_title', 'how_it_works_subtitle',
+  'step1_title', 'step1_desc', 'step2_title', 'step2_desc', 'step3_title', 'step3_desc',
+  'cta_heading', 'cta_sub', 'cta_button_label',
+  'syarat_items', 'syarat_notes', 'reward_terms',
+  'login_hero_title_line1', 'login_hero_title_line2', 'login_hero_benefits',
+  'dashboard_code_label', 'dashboard_share_heading',
   'promo_banner_text',
   'community_title', 'community_desc', 'community_button_label', 'community_link', 'community_color',
   'share_message_template',
+  'faq1_q', 'faq1_a', 'faq2_q', 'faq2_a', 'faq3_q', 'faq3_a',
+  'faq4_q', 'faq4_a', 'faq5_q', 'faq5_a', 'faq6_q', 'faq6_a',
 ];
 
 const json = (status, body, cacheControl) => new Response(JSON.stringify(body), {

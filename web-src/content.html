@@ -35,109 +35,256 @@
 
     <form id="app" class="hidden space-y-6">
       <p id="app-error" class="hidden rounded-xl bg-red-50 p-4 text-red-700" role="alert"></p>
-      <p class="text-sm text-slate-500">Ubah teks, warna & link kat sini. Tekan "Simpan Semua" di bawah — page depan, dashboard akan guna nilai baru dalam masa seminit (tak payah push code).</p>
+      <p class="text-sm text-slate-500">Ubah teks, warna &amp; link kat sini. Tekan "Simpan Semua" di bawah — page depan, pendaftaran, dashboard akan guna nilai baru dalam masa seminit (tak payah push code). Untuk senarai bertitik (syarat kelayakan), satu baris = satu item.</p>
 
-      <!-- Promo & Reward -->
-      <section class="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 class="text-lg font-bold text-brand">Promo &amp; Reward</h2>
-        <p class="text-sm text-slate-500">Kawal countdown timer dan jumlah reward sebenar yang dibayar.</p>
-        <label class="mt-4 flex items-center gap-2 text-sm font-semibold">
-          <input id="set-promo-enabled" type="checkbox" class="h-5 w-5 rounded border-slate-300 text-brand focus:ring-brand">
-          Ada promo aktif sekarang (tunjuk banner &amp; countdown)
-        </label>
-        <p class="mt-1 text-xs text-slate-500">Kalau OFF, semua banner oren &amp; countdown disembunyikan di landing page dan dashboard. Reward yang dibayar akan guna "Reward Sebelum Tamat" sebagai reward tetap.</p>
-        <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <label class="block text-sm font-semibold">Promo Tamat Pada
-            <input id="set-promo-deadline" type="datetime-local" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-          <label class="block text-sm font-semibold">Reward Sebelum Tamat (RM)
-            <input id="set-reward-before" type="number" min="1" max="10000" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-          <label class="block text-sm font-semibold">Reward Lepas Tamat (RM)
-            <input id="set-reward-after" type="number" min="1" max="10000" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-          <label class="block text-sm font-semibold">Nombor Sokongan (WhatsApp)
-            <input id="set-support-phone" placeholder="60123456789" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-        </div>
-      </section>
+      <!-- Tabs -->
+      <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+        <button type="button" data-tab="umum" class="tab-btn rounded-full px-4 py-2 text-sm font-semibold bg-brand text-white">Umum</button>
+        <button type="button" data-tab="landing" class="tab-btn rounded-full px-4 py-2 text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">Landing Page</button>
+        <button type="button" data-tab="pendaftaran" class="tab-btn rounded-full px-4 py-2 text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">Pendaftaran</button>
+        <button type="button" data-tab="dashboard" class="tab-btn rounded-full px-4 py-2 text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">Dashboard</button>
+      </div>
 
-      <!-- Hero (landing page) -->
-      <section class="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 class="text-lg font-bold text-brand">Hero &amp; Cara Kerja (Landing Page)</h2>
-        <p class="text-sm text-slate-500">Bahagian atas sekali bila orang buka minda-optima-referral.netlify.app.</p>
-        <div class="mt-4 grid gap-3 sm:grid-cols-2">
-          <label class="block text-sm font-semibold">Tajuk Baris 1
-            <input id="set-hero-title-line1" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+      <!-- ===== TAB: Umum ===== -->
+      <div data-tab-panel="umum" class="space-y-6">
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Promo &amp; Reward</h2>
+          <p class="text-sm text-slate-500">Kawal countdown timer dan jumlah reward sebenar yang dibayar. Guna di semua page (landing, dashboard).</p>
+          <label class="mt-4 flex items-center gap-2 text-sm font-semibold">
+            <input id="set-promo-enabled" type="checkbox" class="h-5 w-5 rounded border-slate-300 text-brand focus:ring-brand">
+            Ada promo aktif sekarang (tunjuk banner &amp; countdown)
           </label>
-          <label class="block text-sm font-semibold">Tajuk Baris 2 (emas)
-            <input id="set-hero-title-line2" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-          <label class="block text-sm font-semibold sm:col-span-2">Perenggan Hero
-            <textarea id="set-hero-subtitle" required rows="2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
-          </label>
-          <label class="block text-sm font-semibold sm:col-span-2">Teks "Langkah 3" (Dapat RM100)
-            <input id="set-step3-desc" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-          <label class="block text-sm font-semibold sm:col-span-2">Syarat Ganjaran (warning/disclaimer)
-            <input id="set-reward-terms" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="cth: Ganjaran: RM100 (sehingga 31 Dis 2026), RM50 selepas. Kawan anda mesti DAFTAR dan HADIR KELAS (bukan sekadar intro atau isi borang) untuk terima reward.">
-          </label>
-          <label class="block text-sm font-semibold">Tajuk Kotak CTA Bawah
-            <input id="set-cta-heading" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-          <label class="block text-sm font-semibold">Sub-teks Kotak CTA Bawah
-            <input id="set-cta-sub" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-          <label class="block text-sm font-semibold sm:col-span-2">Teks Benefit (Log Masuk / Daftar)
-            <input id="set-login-hero-benefits" required maxlength="150" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="cth: Ganjaran sehingga RM100 · Satu sesi kelas percuma">
-          </label>
-        </div>
-      </section>
+          <p class="mt-1 text-xs text-slate-500">Kalau OFF, semua banner oren &amp; countdown disembunyikan di landing page dan dashboard. Reward yang dibayar akan guna "Reward Sebelum Tamat" sebagai reward tetap.</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <label class="block text-sm font-semibold">Promo Tamat Pada
+              <input id="set-promo-deadline" type="datetime-local" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Reward Sebelum Tamat (RM)
+              <input id="set-reward-before" type="number" min="1" max="10000" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Reward Lepas Tamat (RM)
+              <input id="set-reward-after" type="number" min="1" max="10000" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Nombor Sokongan (WhatsApp)
+              <input id="set-support-phone" placeholder="60123456789" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
+        </section>
 
-      <!-- Promo banner (dashboard) -->
-      <section class="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 class="text-lg font-bold text-brand">Kotak Oren (Dashboard)</h2>
-        <p class="text-sm text-slate-500">Banner promo kuning/oren kat atas sekali dashboard parent.</p>
-        <label class="mt-4 block text-sm font-semibold">Teks Banner
-          <input id="set-promo-banner-text" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-        </label>
-      </section>
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Syarat Ganjaran (Warning Box)</h2>
+          <p class="text-sm text-slate-500">Ayat dalam kotak "Syarat Kelayakan Ganjaran" di dashboard &amp; pendaftaran.</p>
+          <label class="mt-4 block text-sm font-semibold">Ayat Syarat
+            <input id="set-reward-terms" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="cth: Kawan anda mesti DAFTAR dan HADIR KELAS untuk terima reward.">
+          </label>
+        </section>
+      </div>
 
-      <!-- Community card -->
-      <section class="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 class="text-lg font-bold text-brand">Kad Komuniti (Dashboard)</h2>
-        <p class="text-sm text-slate-500">Boleh tukar jadi WhatsApp Community, Telegram, atau apa-apa link lain. Kosongkan link untuk sembunyikan kad ni terus.</p>
-        <div class="mt-4 grid gap-3 sm:grid-cols-2">
-          <label class="block text-sm font-semibold">Tajuk
-            <input id="set-community-title" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-          <label class="block text-sm font-semibold">Warna Button
-            <select id="set-community-color" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-              <option value="telegram">Telegram (biru)</option>
-              <option value="whatsapp">WhatsApp (hijau)</option>
-              <option value="brand">Brand (navy)</option>
-            </select>
-          </label>
-          <label class="block text-sm font-semibold sm:col-span-2">Deskripsi
-            <input id="set-community-desc" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-          <label class="block text-sm font-semibold">Teks Button
-            <input id="set-community-button-label" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-          <label class="block text-sm font-semibold">Link (kosongkan untuk sembunyi)
-            <input id="set-community-link" placeholder="https://..." class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
-          </label>
-        </div>
-      </section>
+      <!-- ===== TAB: Landing Page ===== -->
+      <div data-tab-panel="landing" class="hidden space-y-6">
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Hero (Bahagian Atas Sekali)</h2>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold sm:col-span-2">Label Kecil (atas tajuk)
+              <input id="set-hero-badge-label" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Tajuk Baris 1
+              <input id="set-hero-title-line1" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Tajuk Baris 2 (emas)
+              <input id="set-hero-title-line2" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Perenggan Hero
+              <textarea id="set-hero-subtitle" required rows="2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Teks Butang CTA (hero &amp; bawah)
+              <input id="set-cta-button-label" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
+        </section>
 
-      <!-- Share message -->
-      <section class="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 class="text-lg font-bold text-brand">Mesej Share WhatsApp (Dashboard)</h2>
-        <p class="text-sm text-slate-500">Mesej yang parent kongsi dekat WhatsApp. <strong>Kekalkan</strong> <code class="rounded bg-slate-100 px-1">{code}</code> dan <code class="rounded bg-slate-100 px-1">{url}</code> — dua tu akan ditukar automatik dengan kod &amp; link rujukan parent tu.</p>
-        <label class="mt-4 block text-sm font-semibold">Template Mesej
-          <textarea id="set-share-message-template" required rows="3" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
-        </label>
-      </section>
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Cara Kerja (3 Langkah)</h2>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold">Tajuk Seksyen
+              <input id="set-how-it-works-title" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Sub-tajuk
+              <input id="set-how-it-works-subtitle" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
+          <div class="mt-4 grid gap-3 sm:grid-cols-3">
+            <label class="block text-sm font-semibold">Langkah 1 — Tajuk
+              <input id="set-step1-title" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Langkah 1 — Ayat
+              <input id="set-step1-desc" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Langkah 2 — Tajuk
+              <input id="set-step2-title" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Langkah 2 — Ayat
+              <input id="set-step2-desc" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Langkah 3 — Tajuk
+              <input id="set-step3-title" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Langkah 3 — Ayat
+              <input id="set-step3-desc" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Pop-up "Syarat Kelayakan Penuh"</h2>
+          <p class="text-sm text-slate-500">Satu baris = satu item dalam senarai. Guna sama dekat landing page &amp; dashboard.</p>
+          <div class="mt-4 grid gap-3">
+            <label class="block text-sm font-semibold">Syarat (bernombor)
+              <textarea id="set-syarat-items" required rows="4" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+            </label>
+            <label class="block text-sm font-semibold">Catatan Penting (bullet)
+              <textarea id="set-syarat-notes" required rows="2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Kotak CTA Bawah Sekali</h2>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold">Tajuk
+              <input id="set-cta-heading" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Sub-teks
+              <input id="set-cta-sub" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <!-- ===== TAB: Pendaftaran ===== -->
+      <div data-tab-panel="pendaftaran" class="hidden space-y-6">
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Hero (Halaman Log Masuk / Daftar)</h2>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold">Tajuk Baris 1
+              <input id="set-login-hero-title-line1" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Tajuk Baris 2 (emas)
+              <input id="set-login-hero-title-line2" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Teks Benefit (pill)
+              <input id="set-login-hero-benefits" required maxlength="150" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="cth: Ganjaran sehingga RM100 · Satu sesi kelas percuma">
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <!-- ===== TAB: Dashboard ===== -->
+      <div data-tab-panel="dashboard" class="hidden space-y-6">
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Kotak Oren &amp; Label</h2>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold sm:col-span-2">Teks Banner Promo
+              <input id="set-promo-banner-text" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Label "Kod Rujukan Anda"
+              <input id="set-dashboard-code-label" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Tajuk "Kongsi di WhatsApp"
+              <input id="set-dashboard-share-heading" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Kad Komuniti</h2>
+          <p class="text-sm text-slate-500">Boleh tukar jadi WhatsApp Community, Telegram, atau apa-apa link lain. Kosongkan link untuk sembunyikan kad ni terus.</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold">Tajuk
+              <input id="set-community-title" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Warna Button
+              <select id="set-community-color" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+                <option value="telegram">Telegram (biru)</option>
+                <option value="whatsapp">WhatsApp (hijau)</option>
+                <option value="brand">Brand (navy)</option>
+              </select>
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Deskripsi
+              <input id="set-community-desc" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Teks Button
+              <input id="set-community-button-label" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Link (kosongkan untuk sembunyi)
+              <input id="set-community-link" placeholder="https://..." class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Mesej Share WhatsApp</h2>
+          <p class="text-sm text-slate-500">Mesej yang parent kongsi dekat WhatsApp. <strong>Kekalkan</strong> <code class="rounded bg-slate-100 px-1">{code}</code> dan <code class="rounded bg-slate-100 px-1">{url}</code> — dua tu akan ditukar automatik dengan kod &amp; link rujukan parent tu.</p>
+          <label class="mt-4 block text-sm font-semibold">Template Mesej
+            <textarea id="set-share-message-template" required rows="3" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+          </label>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Soalan Lazim (FAQ)</h2>
+          <p class="text-sm text-slate-500">6 soalan yang keluar kat bawah dashboard parent.</p>
+          <div class="mt-4 space-y-4">
+            <div class="rounded-xl border border-slate-100 p-3">
+              <label class="block text-sm font-semibold">Soalan 1
+                <input id="set-faq1-q" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+              </label>
+              <label class="mt-2 block text-sm font-semibold">Jawapan 1
+                <textarea id="set-faq1-a" required rows="2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+              </label>
+            </div>
+            <div class="rounded-xl border border-slate-100 p-3">
+              <label class="block text-sm font-semibold">Soalan 2
+                <input id="set-faq2-q" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+              </label>
+              <label class="mt-2 block text-sm font-semibold">Jawapan 2
+                <textarea id="set-faq2-a" required rows="2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+              </label>
+            </div>
+            <div class="rounded-xl border border-slate-100 p-3">
+              <label class="block text-sm font-semibold">Soalan 3
+                <input id="set-faq3-q" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+              </label>
+              <label class="mt-2 block text-sm font-semibold">Jawapan 3
+                <textarea id="set-faq3-a" required rows="2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+              </label>
+            </div>
+            <div class="rounded-xl border border-slate-100 p-3">
+              <label class="block text-sm font-semibold">Soalan 4
+                <input id="set-faq4-q" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+              </label>
+              <label class="mt-2 block text-sm font-semibold">Jawapan 4
+                <textarea id="set-faq4-a" required rows="2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+              </label>
+            </div>
+            <div class="rounded-xl border border-slate-100 p-3">
+              <label class="block text-sm font-semibold">Soalan 5
+                <input id="set-faq5-q" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+              </label>
+              <label class="mt-2 block text-sm font-semibold">Jawapan 5
+                <textarea id="set-faq5-a" required rows="2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+              </label>
+            </div>
+            <div class="rounded-xl border border-slate-100 p-3">
+              <label class="block text-sm font-semibold">Soalan 6
+                <input id="set-faq6-q" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+              </label>
+              <label class="mt-2 block text-sm font-semibold">Jawapan 6
+                <textarea id="set-faq6-a" required rows="2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+              </label>
+            </div>
+          </div>
+        </section>
+      </div>
 
       <div class="sticky bottom-4 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg">
         <button type="submit" class="rounded-xl bg-brand px-6 py-3 text-white font-bold hover:bg-brand-light disabled:opacity-60">Simpan Semua</button>
@@ -190,26 +337,65 @@
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach((b) => {
+          b.classList.remove('bg-brand', 'text-white');
+          b.classList.add('bg-slate-100', 'text-slate-600');
+        });
+        btn.classList.add('bg-brand', 'text-white');
+        btn.classList.remove('bg-slate-100', 'text-slate-600');
+        document.querySelectorAll('[data-tab-panel]').forEach((panel) => {
+          panel.classList.toggle('hidden', panel.dataset.tabPanel !== btn.dataset.tab);
+        });
+      });
+    });
+
     const FIELD_MAP = {
       'set-promo-deadline': 'promo_deadline',
       'set-reward-before': 'reward_before',
       'set-reward-after': 'reward_after',
       'set-support-phone': 'support_phone',
+      'set-reward-terms': 'reward_terms',
+
+      'set-hero-badge-label': 'hero_badge_label',
       'set-hero-title-line1': 'hero_title_line1',
       'set-hero-title-line2': 'hero_title_line2',
       'set-hero-subtitle': 'hero_subtitle',
+      'set-cta-button-label': 'cta_button_label',
+      'set-how-it-works-title': 'how_it_works_title',
+      'set-how-it-works-subtitle': 'how_it_works_subtitle',
+      'set-step1-title': 'step1_title',
+      'set-step1-desc': 'step1_desc',
+      'set-step2-title': 'step2_title',
+      'set-step2-desc': 'step2_desc',
+      'set-step3-title': 'step3_title',
       'set-step3-desc': 'step3_desc',
-      'set-reward-terms': 'reward_terms',
+      'set-syarat-items': 'syarat_items',
+      'set-syarat-notes': 'syarat_notes',
       'set-cta-heading': 'cta_heading',
       'set-cta-sub': 'cta_sub',
+
+      'set-login-hero-title-line1': 'login_hero_title_line1',
+      'set-login-hero-title-line2': 'login_hero_title_line2',
       'set-login-hero-benefits': 'login_hero_benefits',
+
       'set-promo-banner-text': 'promo_banner_text',
+      'set-dashboard-code-label': 'dashboard_code_label',
+      'set-dashboard-share-heading': 'dashboard_share_heading',
       'set-community-title': 'community_title',
       'set-community-color': 'community_color',
       'set-community-desc': 'community_desc',
       'set-community-button-label': 'community_button_label',
       'set-community-link': 'community_link',
       'set-share-message-template': 'share_message_template',
+      'set-faq1-q': 'faq1_q', 'set-faq1-a': 'faq1_a',
+      'set-faq2-q': 'faq2_q', 'set-faq2-a': 'faq2_a',
+      'set-faq3-q': 'faq3_q', 'set-faq3-a': 'faq3_a',
+      'set-faq4-q': 'faq4_q', 'set-faq4-a': 'faq4_a',
+      'set-faq5-q': 'faq5_q', 'set-faq5-a': 'faq5_a',
+      'set-faq6-q': 'faq6_q', 'set-faq6-a': 'faq6_a',
     };
 
     function renderSettings(s) {

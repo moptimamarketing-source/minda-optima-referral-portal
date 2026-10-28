@@ -4,18 +4,33 @@ import { sendEmail, esc, SITE } from '../lib/email.mjs';
 const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
 const SETTINGS_KEYS = [
   'promo_enabled', 'promo_deadline', 'reward_before', 'reward_after', 'support_phone',
-  'hero_title_line1', 'hero_title_line2', 'hero_subtitle', 'step3_desc', 'cta_heading', 'cta_sub',
-  'login_hero_benefits',
+  'hero_badge_label', 'hero_title_line1', 'hero_title_line2', 'hero_subtitle',
+  'how_it_works_title', 'how_it_works_subtitle',
+  'step1_title', 'step1_desc', 'step2_title', 'step2_desc', 'step3_title', 'step3_desc',
+  'cta_heading', 'cta_sub', 'cta_button_label',
+  'syarat_items', 'syarat_notes', 'reward_terms',
+  'login_hero_title_line1', 'login_hero_title_line2', 'login_hero_benefits',
+  'dashboard_code_label', 'dashboard_share_heading',
   'promo_banner_text',
   'community_title', 'community_desc', 'community_button_label', 'community_link', 'community_color',
   'share_message_template',
+  'faq1_q', 'faq1_a', 'faq2_q', 'faq2_a', 'faq3_q', 'faq3_a',
+  'faq4_q', 'faq4_a', 'faq5_q', 'faq5_a', 'faq6_q', 'faq6_a',
 ];
 const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
 const TEXT_SETTINGS_MAX = {
-  hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300, step3_desc: 200,
-  cta_heading: 100, cta_sub: 150, login_hero_benefits: 150, promo_banner_text: 200,
+  hero_badge_label: 60, hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300,
+  how_it_works_title: 60, how_it_works_subtitle: 100,
+  step1_title: 40, step1_desc: 200, step2_title: 40, step2_desc: 200, step3_title: 40, step3_desc: 200,
+  cta_heading: 100, cta_sub: 150, cta_button_label: 60,
+  syarat_items: 1500, syarat_notes: 800, reward_terms: 300,
+  login_hero_title_line1: 60, login_hero_title_line2: 60, login_hero_benefits: 150,
+  dashboard_code_label: 60, dashboard_share_heading: 60,
+  promo_banner_text: 200,
   community_title: 60, community_desc: 200, community_button_label: 60,
   share_message_template: 500,
+  faq1_q: 150, faq1_a: 500, faq2_q: 150, faq2_a: 500, faq3_q: 150, faq3_a: 500,
+  faq4_q: 150, faq4_a: 500, faq5_q: 150, faq5_a: 500, faq6_q: 150, faq6_a: 500,
 };
 
 const json = (status, body) => new Response(JSON.stringify(body), {
