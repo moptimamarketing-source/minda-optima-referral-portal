@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { sendEmail, esc, SITE, TELEGRAM_LINK, fetchSettings } from '../lib/email.mjs';
+import { sendEmail, esc, SITE, TELEGRAM_LINK, fetchSettings, imagesBlock } from '../lib/email.mjs';
 
 const SESSION_DAYS = 30;
 
@@ -55,8 +55,9 @@ export function confirmationEmail({ name, code, phone, email, occupation, s = {}
   const headerImage = s.welcome_email_header_image || 'https://drive.google.com/uc?id=15gWaMZTfS9d8-z1yN7dKLmvDgjPYGbud';
   const heading = s.welcome_email_heading || '🎉 Selamat Datang!';
   const subtitle = s.welcome_email_subtitle || 'Terima kasih telah mendaftar. Kod rujukan anda sudah siap untuk dikongsi.';
-  const image1 = s.welcome_email_image1 || 'https://drive.google.com/uc?id=12BtXDOAxv_ofGCpDuTdUQHPhWt6ZMtL2';
-  const image2 = s.welcome_email_image2 || 'https://drive.google.com/uc?id=1PzIvylgBQPfawl2JxyHRAKGH_gdEOBmE';
+  const image1 = s.welcome_email_image1 ?? 'https://drive.google.com/uc?id=12BtXDOAxv_ofGCpDuTdUQHPhWt6ZMtL2';
+  const image2 = s.welcome_email_image2 ?? 'https://drive.google.com/uc?id=1PzIvylgBQPfawl2JxyHRAKGH_gdEOBmE';
+  const images = imagesBlock(image1, image2);
 
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
@@ -103,11 +104,7 @@ export function confirmationEmail({ name, code, phone, email, occupation, s = {}
           <a href="${SITE}/dashboard.html" style="display:block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);color:white">Buka Dashboard</a>
         </div>
 
-        <!-- Marketing Images -->
-        <div style="margin:40px 0;text-align:center">
-          <img src="${esc(image1)}" alt="Minda Optima" style="width:100%;max-width:500px;border-radius:8px;margin-bottom:16px">
-          <img src="${esc(image2)}" alt="Minda Optima" style="width:100%;max-width:500px;border-radius:8px">
-        </div>
+        <!-- Marketing Images -->${images}
 
         <!-- WhatsApp Community Button -->
         <div style="text-align:center;margin:32px 0">
@@ -138,6 +135,7 @@ export function otpEmail({ otp, s = {} }) {
   const headerImage = s.otp_email_header_image || `${SITE}/logo-mindaoptima.webp`;
   const heading = s.otp_email_heading || 'Sahkan Kod OTP Anda';
   const desc = s.otp_email_desc || 'Masukkan kod di bawah untuk mengesahkan pendaftaran anda sebagai referrer Minda Optima.';
+  const images = imagesBlock(s.otp_email_image1, s.otp_email_image2);
 
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
@@ -173,7 +171,7 @@ export function otpEmail({ otp, s = {} }) {
         <div style="background:#fff9e6;border-left:4px solid #f59e0b;padding:14px 16px;border-radius:4px;margin:24px 0;font-size:12px;color:#78350f;line-height:1.6">
           <strong style="display:block;margin-bottom:6px">⚠️ Penting:</strong>
           Minda Optima tidak akan meminta kod OTP ini melalui emel, WhatsApp, atau saluran lain. Jika menerima permintaan seumpamanya, ia adalah penipuan.
-        </div>
+        </div>${images}
       </div>
 
       <!-- Footer -->
@@ -215,7 +213,7 @@ async function sendOtp(body) {
     return json(422, { error: OTP_ERRORS[r?.reason] || 'Gagal hantar OTP. Sila cuba lagi.' });
   }
 
-  const emailSettings = await fetchSettings(['otp_email_header_image', 'otp_email_heading', 'otp_email_desc']);
+  const emailSettings = await fetchSettings(['otp_email_header_image', 'otp_email_heading', 'otp_email_desc', 'otp_email_image1', 'otp_email_image2']);
   const emailRes = await sendEmail(r.email, 'Kod OTP Referral Anda — Minda Optima', otpEmail({ otp: r.otp, s: emailSettings }));
   if (!emailRes.ok) return json(502, { error: emailRes.error });
 

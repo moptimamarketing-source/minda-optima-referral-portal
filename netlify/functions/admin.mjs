@@ -1,5 +1,5 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { sendEmail, esc, SITE, fetchSettings } from '../lib/email.mjs';
+import { sendEmail, esc, SITE, fetchSettings, imagesBlock } from '../lib/email.mjs';
 import { otpEmail } from './auth.mjs';
 
 const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
@@ -18,16 +18,23 @@ const SETTINGS_KEYS = [
   'share_message_template',
   'faq1_q', 'faq1_a', 'faq2_q', 'faq2_a', 'faq3_q', 'faq3_a',
   'faq4_q', 'faq4_a', 'faq5_q', 'faq5_a', 'faq6_q', 'faq6_a',
-  'otp_email_header_image', 'otp_email_heading', 'otp_email_desc',
+  'otp_email_header_image', 'otp_email_heading', 'otp_email_desc', 'otp_email_image1', 'otp_email_image2',
   'welcome_email_header_image', 'welcome_email_heading', 'welcome_email_subtitle',
   'welcome_email_image1', 'welcome_email_image2',
   'approved_email_header_image', 'approved_email_heading', 'approved_email_subtitle',
+  'approved_email_image1', 'approved_email_image2',
   'paid_email_header_image', 'paid_email_heading', 'paid_email_subtitle',
+  'paid_email_image1', 'paid_email_image2',
 ];
 const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
-const IMAGE_URL_SETTINGS = [
-  'otp_email_header_image', 'welcome_email_header_image', 'welcome_email_image1', 'welcome_email_image2',
-  'approved_email_header_image', 'paid_email_header_image',
+const REQUIRED_IMAGE_SETTINGS = [
+  'otp_email_header_image', 'welcome_email_header_image', 'approved_email_header_image', 'paid_email_header_image',
+];
+const OPTIONAL_IMAGE_SETTINGS = [
+  'otp_email_image1', 'otp_email_image2',
+  'welcome_email_image1', 'welcome_email_image2',
+  'approved_email_image1', 'approved_email_image2',
+  'paid_email_image1', 'paid_email_image2',
 ];
 const TEXT_SETTINGS_MAX = {
   hero_badge_label: 60, hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300,
@@ -44,10 +51,13 @@ const TEXT_SETTINGS_MAX = {
   faq1_q: 150, faq1_a: 500, faq2_q: 150, faq2_a: 500, faq3_q: 150, faq3_a: 500,
   faq4_q: 150, faq4_a: 500, faq5_q: 150, faq5_a: 500, faq6_q: 150, faq6_a: 500,
   otp_email_header_image: 500, otp_email_heading: 80, otp_email_desc: 200,
+  otp_email_image1: 500, otp_email_image2: 500,
   welcome_email_header_image: 500, welcome_email_heading: 80, welcome_email_subtitle: 200,
   welcome_email_image1: 500, welcome_email_image2: 500,
   approved_email_header_image: 500, approved_email_heading: 80, approved_email_subtitle: 200,
+  approved_email_image1: 500, approved_email_image2: 500,
   paid_email_header_image: 500, paid_email_heading: 80, paid_email_subtitle: 200,
+  paid_email_image1: 500, paid_email_image2: 500,
 };
 
 const json = (status, body) => new Response(JSON.stringify(body), {
@@ -219,7 +229,7 @@ async function resendOtp(body) {
     return json(422, { error: reason || 'Gagal jana OTP.' });
   }
 
-  const emailSettings = await fetchSettings(['otp_email_header_image', 'otp_email_heading', 'otp_email_desc']);
+  const emailSettings = await fetchSettings(['otp_email_header_image', 'otp_email_heading', 'otp_email_desc', 'otp_email_image1', 'otp_email_image2']);
   const emailRes = await sendEmail(r.email, 'Kod OTP Referral Anda — Minda Optima', otpEmail({ otp: r.otp, s: emailSettings }));
   if (!emailRes.ok) return json(502, { error: emailRes.error });
 
@@ -296,7 +306,9 @@ async function notifyEmail(body) {
 
   const emailSettings = await fetchSettings([
     'approved_email_header_image', 'approved_email_heading', 'approved_email_subtitle',
+    'approved_email_image1', 'approved_email_image2',
     'paid_email_header_image', 'paid_email_heading', 'paid_email_subtitle',
+    'paid_email_image1', 'paid_email_image2',
   ]);
 
   let subject;
@@ -305,6 +317,7 @@ async function notifyEmail(body) {
     const headerImage = emailSettings.approved_email_header_image || 'https://drive.google.com/uc?id=1QUvgbM8Cf6RNh0qn6K_e9GRTFzHFu4-F';
     const heading = emailSettings.approved_email_heading || '✓ Rujukan Anda Layak!';
     const subtitle = emailSettings.approved_email_subtitle || 'Tahniah! Rujukan anda telah disahkan memenuhi kriteria program kami.';
+    const images = imagesBlock(emailSettings.approved_email_image1, emailSettings.approved_email_image2);
     subject = '✓ Rujukan Anda Layak';
     html = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
@@ -346,7 +359,7 @@ async function notifyEmail(body) {
           <!-- CTA Button -->
           <div style="text-align:center;margin:32px 0">
             <a href="${SITE}/dashboard.html" style="display:inline-block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);color:white">Buka Dashboard</a>
-          </div>
+          </div>${images}
         </div>
 
         <!-- Footer -->
@@ -366,6 +379,7 @@ async function notifyEmail(body) {
     const headerImage = emailSettings.paid_email_header_image || 'https://drive.google.com/uc?id=12SPd0G_EfTz-_OdPcAba5xwMNzKBQ_ip';
     const heading = emailSettings.paid_email_heading || '🎉 Pembayaran Selesai!';
     const subtitle = emailSettings.paid_email_subtitle || 'Ganjaran anda telah diproses dan akan masuk ke akaun Touch \'n Go anda.';
+    const images = imagesBlock(emailSettings.paid_email_image1, emailSettings.paid_email_image2);
     subject = '🎉 Pembayaran Reward Selesai';
     html = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
@@ -411,7 +425,7 @@ async function notifyEmail(body) {
           <!-- CTA Button -->
           <div style="text-align:center;margin:32px 0">
             <a href="${SITE}/dashboard.html" style="display:inline-block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);color:white">Buka Dashboard</a>
-          </div>
+          </div>${images}
         </div>
 
         <!-- Footer -->
@@ -446,8 +460,12 @@ async function getSettings() {
 
 function validateSetting(key, raw) {
   const v = String(raw ?? '').trim();
-  if (IMAGE_URL_SETTINGS.includes(key)) {
+  if (REQUIRED_IMAGE_SETTINGS.includes(key)) {
     if (!/^https:\/\/\S+$/.test(v)) return { error: 'Link gambar tak sah. Kena mula dengan https://' };
+    return { value: v };
+  }
+  if (OPTIONAL_IMAGE_SETTINGS.includes(key)) {
+    if (v && !/^https:\/\/\S+$/.test(v)) return { error: 'Link gambar tak sah. Kena mula dengan https://' };
     return { value: v };
   }
   if (key === 'promo_enabled') {

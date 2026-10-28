@@ -7,6 +7,18 @@ export const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 }[c]));
 
+/** Blok 2 gambar marketing (pilihan) untuk templat email. Pulangkan '' bila takde
+ * gambar langsung supaya email tak ada ruang kosong. Boleh satu atau dua gambar. */
+export function imagesBlock(image1, image2) {
+  const imgs = [image1, image2].filter(Boolean);
+  if (!imgs.length) return '';
+  const tags = imgs.map((src, i) => `<img src="${esc(src)}" alt="Minda Optima" style="width:100%;max-width:500px;border-radius:8px;${i < imgs.length - 1 ? 'margin-bottom:16px' : ''}">`).join('\n          ');
+  return `
+        <div style="margin:40px 0;text-align:center">
+          ${tags}
+        </div>`;
+}
+
 /** Ambil tetapan (key/value) dari jadual public.settings, untuk kandungan email yang
  * boleh diedit via admin (gambar header, tajuk, dll). Pulangkan {} bila gagal/offline
  * supaya email masih boleh dihantar dengan nilai lalai (fallback) dalam templat. */
