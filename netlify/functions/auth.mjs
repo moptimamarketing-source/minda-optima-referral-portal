@@ -55,11 +55,6 @@ export function confirmationEmail({ name, code, phone, email, occupation }) {
 
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
-      <!-- Logo Header -->
-      <div style="padding:24px 20px;text-align:center;border-bottom:1px solid #e2e8f0">
-        <img src="${SITE}/logo-mindaoptima.webp" alt="Minda Optima" style="height:70px;max-width:100%">
-      </div>
-
       <!-- Content -->
       <div style="padding:40px 24px">
         <!-- Greeting -->
@@ -87,8 +82,8 @@ export function confirmationEmail({ name, code, phone, email, occupation }) {
         <!-- Share Code Section -->
         <div style="text-align:center;margin:40px 0">
           <h2 style="font-size:14px;font-weight:700;color:#0D2A5C;margin:0 0 16px 0">Kongsi Rujukan Anda Sekarang</h2>
-          <div style="background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);border-radius:12px;padding:32px 24px;margin:0;text-align:center;color:white">
-            <p style="font-size:42px;font-weight:900;letter-spacing:4px;color:#fff;margin:0;font-family:monospace">${esc(code)}</p>
+          <div style="background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);border-radius:10px;padding:16px 20px;margin:0;text-align:center;color:white">
+            <p style="font-size:26px;font-weight:900;letter-spacing:2px;color:#fff;margin:0;font-family:monospace">${esc(code)}</p>
           </div>
           <a href="${waLink}" class="button" style="display:inline-block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;margin-top:16px;background:linear-gradient(135deg,#25D366 0%,#1fa854 100%);color:white">💚 Kongsi di WhatsApp</a>
         </div>
