@@ -113,7 +113,10 @@
       </div>
       <div class="mt-5 flex flex-col items-center gap-2 border-t border-slate-100 pt-5">
         <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Atau Scan Kod QR</p>
-        <img id="qr-code" alt="QR kod rujukan" class="h-36 w-36 rounded-lg border border-slate-200" width="144" height="144">
+        <button id="qr-open" type="button" class="rounded-lg border border-slate-200 p-1 hover:border-brand transition">
+          <img id="qr-code" alt="QR kod rujukan" class="h-36 w-36 rounded-lg" width="144" height="144">
+        </button>
+        <p class="text-xs text-slate-400">Tekan untuk besarkan</p>
       </div>
     </section>
 
@@ -249,6 +252,16 @@
     <span class="rounded-full bg-slate-900 px-4 py-2 text-sm text-white shadow-lg">Disalin!</span>
   </div>
 
+  <!-- QR Modal -->
+  <dialog id="qr-modal" class="fixed inset-0 z-50 w-full max-w-xs rounded-2xl shadow-xl backdrop:bg-black/40 p-6 text-center">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-bold text-brand">Kod QR Rujukan</h2>
+      <button id="qr-close" type="button" class="text-2xl text-slate-400 hover:text-slate-600">×</button>
+    </div>
+    <img id="qr-code-large" alt="QR kod rujukan" class="mx-auto h-64 w-64 rounded-lg border border-slate-200" width="256" height="256">
+    <p class="mt-4 text-sm text-slate-500">Minta kawan scan kod ini untuk terus ke pautan pendaftaran anda.</p>
+  </dialog>
+
   <script>
     const STATUS = {
       pending: { label: 'Menunggu', cls: 'bg-amber-100 text-amber-800' },
@@ -298,6 +311,7 @@
       document.getElementById('share-preview').textContent = message;
       document.getElementById('share-wa').href = `https://wa.me/?text=${encodeURIComponent(message)}`;
       document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
+      document.getElementById('qr-code-large').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(shareUrl)}`;
 
       const nativeBtn = document.getElementById('share-native');
       if (navigator.share) {
@@ -375,17 +389,15 @@
     </div>
     <div class="space-y-4 max-h-96 overflow-y-auto text-sm text-slate-700">
       <ol class="space-y-3 list-decimal list-inside">
-        <li><strong>Kawan anda mesti mendaftarkan anak mereka</strong> menggunakan kod rujukan anda.</li>
-        <li><strong>Anak mereka mesti hadir ke sesi pertama kelas percuma</strong> dengan Minda Optima.</li>
-        <li><strong>Setelah hadir,</strong> status rujukan anda akan berubah menjadi "Approved" dalam 1-2 hari.</li>
-        <li><strong>Payout RM100</strong> akan dihantar ke akaun Touch 'n Go yang didaftarkan dalam 3-5 hari kerja.</li>
+        <li><strong>Ibu bapa atau penjaga mendaftarkan anak</strong> menggunakan kod rujukan anda.</li>
+        <li><strong>Anak mereka mesti menghadiri sesi kelas percuma pertama</strong> bersama Minda Optima.</li>
+        <li><strong>Selepas kehadiran disahkan,</strong> status rujukan akan berubah kepada "Diluluskan/Approved" dalam tempoh 1–2 hari.</li>
+        <li><strong>Ganjaran akan dihantar</strong> ke nombor Touch 'n Go eWallet yang didaftarkan dalam tempoh 3–5 hari bekerja.</li>
       </ol>
       <div class="bg-blue-50 rounded-lg p-3 mt-4 border-l-4 border-blue-400">
         <p class="font-semibold text-slate-800 mb-2">Catatan Penting:</p>
         <ul class="list-disc list-inside space-y-1 text-slate-700">
           <li>Sesi percuma adalah kelas pertama sahaja. Tidak termasuk intro atau ujian.</li>
-          <li><strong>RM100</strong> sehingga 31 Disember 2026</li>
-          <li><strong>RM50</strong> bermula 1 Januari 2027 dan seterusnya</li>
           <li>Tiada had bilangan rujukan. Kamu boleh refer sebanyak yang kamu mahu.</li>
         </ul>
       </div>
@@ -402,6 +414,13 @@
       b.addEventListener('click', function () { d.showModal(); });
       document.getElementById('syarat-close').addEventListener('click', function () { d.close(); });
       document.getElementById('syarat-close-btn').addEventListener('click', function () { d.close(); });
+    })();
+    (function () {
+      var o = document.getElementById('qr-open'), d = document.getElementById('qr-modal');
+      if (!o || !d) return;
+      o.addEventListener('click', function () { d.showModal(); });
+      document.getElementById('qr-close').addEventListener('click', function () { d.close(); });
+      d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
     })();
   </script>
 </body>
