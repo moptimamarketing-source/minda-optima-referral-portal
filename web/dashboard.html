@@ -113,12 +113,13 @@
           📤 Kongsi ke Mana-mana
         </button>
       </div>
-      <div class="mt-5 flex flex-col items-center gap-2 border-t border-slate-100 pt-5">
-        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Atau Scan Kod QR</p>
-        <button id="qr-open" type="button" class="rounded-lg border border-slate-200 p-1 hover:border-brand transition">
-          <img id="qr-code" alt="QR kod rujukan" class="h-36 w-36 rounded-lg" width="144" height="144">
+      <div class="mt-5 border-t border-slate-100 pt-5 text-center">
+        <button id="qr-open" type="button" class="inline-flex items-center gap-2 rounded-xl border-2 border-brand px-5 py-2.5 font-semibold text-brand hover:bg-brand/5 transition">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 4.5h4.5v4.5h-4.5v-4.5Zm0 10.5h4.5v4.5h-4.5v-4.5ZM15 4.5h4.5v4.5H15v-4.5Zm2.25 10.5v4.5m-2.25-2.25h4.5" />
+          </svg>
+          Tunjuk Kod QR
         </button>
-        <p class="text-xs text-slate-400">Tekan untuk besarkan</p>
       </div>
     </section>
 
@@ -312,7 +313,6 @@
       const message = shareMessage(referrer.code, shareUrl);
       document.getElementById('share-preview').textContent = message;
       document.getElementById('share-wa').href = `https://wa.me/?text=${encodeURIComponent(message)}`;
-      document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
       document.getElementById('qr-code-large').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(shareUrl)}`;
 
       const nativeBtn = document.getElementById('share-native');
