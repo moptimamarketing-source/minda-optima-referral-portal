@@ -7,6 +7,11 @@
   <title>Edit Kandungan — Minda Optima</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="js/common.js"></script>
+  <style>
+    .preview-shell { width: 420px; height: calc(100vh - 140px); overflow: auto; background: #e2e8f0; border-radius: 1rem; }
+    .preview-scale { width: 1024px; transform: scale(0.41); transform-origin: top left; }
+    .preview-scale iframe { width: 1024px; height: 2600px; border: 0; background: white; display: block; }
+  </style>
 </head>
 <body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
 
@@ -33,9 +38,10 @@
       <button type="submit" class="mt-5 w-full rounded-xl bg-brand py-3 text-white font-bold hover:bg-brand-light disabled:opacity-60">Masuk</button>
     </form>
 
-    <form id="app" class="hidden space-y-6">
+    <div class="lg:flex lg:gap-6 lg:items-start">
+    <form id="app" class="hidden space-y-6 flex-1 min-w-0">
       <p id="app-error" class="hidden rounded-xl bg-red-50 p-4 text-red-700" role="alert"></p>
-      <p class="text-sm text-slate-500">Ubah teks, warna &amp; link kat sini. Tekan "Simpan Semua" di bawah — page depan, pendaftaran, dashboard akan guna nilai baru dalam masa seminit (tak payah push code). Untuk senarai bertitik (syarat kelayakan), satu baris = satu item.</p>
+      <p class="text-sm text-slate-500">Ubah teks, warna &amp; link kat sini. Pratonton sebelah kanan terus update bila kau taip (draf — belum simpan). Tekan "Simpan Semua" di bawah untuk betul-betul publish — page depan, pendaftaran, dashboard akan guna nilai baru dalam masa seminit (tak payah push code). Untuk senarai bertitik (syarat kelayakan), satu baris = satu item.</p>
 
       <!-- Tabs -->
       <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
@@ -292,6 +298,17 @@
         <p id="save-ok" class="hidden text-sm font-semibold text-green-700" role="status">Dah disimpan! ✓</p>
       </div>
     </form>
+
+    <!-- Live preview panel -->
+    <aside class="hidden lg:block w-[420px] shrink-0 sticky top-4">
+      <p class="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Pratonton Langsung — <span id="preview-page-label">Landing Page</span></p>
+      <div class="preview-shell shadow-lg border border-slate-200">
+        <div class="preview-scale">
+          <iframe id="preview-frame" title="Pratonton"></iframe>
+        </div>
+      </div>
+    </aside>
+    </div>
   </main>
 
   <script>
@@ -338,6 +355,40 @@
     }
 
     // Tabs
+    const PREVIEW_SRC = {
+      umum: 'index.html',
+      landing: 'index.html',
+      pendaftaran: 'login.html',
+      dashboard: 'dashboard.html?preview=1',
+    };
+    const PREVIEW_LABEL = {
+      umum: 'Landing Page',
+      landing: 'Landing Page',
+      pendaftaran: 'Log Masuk / Daftar',
+      dashboard: 'Dashboard',
+    };
+    const previewFrame = document.getElementById('preview-frame');
+    const previewLabel = document.getElementById('preview-page-label');
+    let previewFrameReady = false;
+
+    function setPreviewTab(tab) {
+      const src = PREVIEW_SRC[tab] || 'index.html';
+      previewLabel.textContent = PREVIEW_LABEL[tab] || 'Landing Page';
+      const current = previewFrame.getAttribute('data-src');
+      if (current !== src) {
+        previewFrameReady = false;
+        previewFrame.setAttribute('data-src', src);
+        previewFrame.src = src;
+      } else {
+        syncPreview();
+      }
+    }
+
+    previewFrame.addEventListener('load', () => {
+      previewFrameReady = true;
+      syncPreview();
+    });
+
     document.querySelectorAll('.tab-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach((b) => {
@@ -349,6 +400,7 @@
         document.querySelectorAll('[data-tab-panel]').forEach((panel) => {
           panel.classList.toggle('hidden', panel.dataset.tabPanel !== btn.dataset.tab);
         });
+        setPreviewTab(btn.dataset.tab);
       });
     });
 
@@ -405,6 +457,60 @@
       }
     }
 
+    const COLOR_PRESETS = { telegram: '#229ED9', whatsapp: '#25D366', brand: '#0D2A5C' };
+
+    function currentDraftSettings() {
+      const s = { promo_enabled: $('set-promo-enabled').checked ? 'true' : 'false' };
+      for (const [id, key] of Object.entries(FIELD_MAP)) s[key] = $(id).value;
+      return s;
+    }
+
+    function syncPreview() {
+      if (!previewFrameReady) return;
+      let doc;
+      try { doc = previewFrame.contentDocument; } catch { return; }
+      if (!doc || !doc.body) return;
+      const s = currentDraftSettings();
+
+      doc.querySelectorAll('[data-content]').forEach((el) => {
+        const v = s[el.dataset.content];
+        if (v) el.textContent = v;
+      });
+      doc.querySelectorAll('[data-content-link]').forEach((el) => {
+        const v = s[el.dataset.contentLink];
+        if (v) el.href = v;
+      });
+      doc.querySelectorAll('[data-content-color]').forEach((el) => {
+        const preset = COLOR_PRESETS[s[el.dataset.contentColor]];
+        if (preset) el.style.background = preset;
+      });
+      doc.querySelectorAll('[data-content-list]').forEach((el) => {
+        const v = s[el.dataset.contentList];
+        if (!v) return;
+        const items = v.split('\n').map((line) => line.trim()).filter(Boolean);
+        if (items.length === 0) return;
+        el.innerHTML = '';
+        for (const item of items) {
+          const li = doc.createElement('li');
+          li.textContent = item;
+          el.appendChild(li);
+        }
+      });
+      doc.querySelectorAll('[data-promo-only]').forEach((el) => {
+        el.classList.toggle('hidden', s.promo_enabled === 'false');
+      });
+      const communityCard = doc.getElementById('community-card');
+      if (communityCard) communityCard.classList.toggle('hidden', !s.community_link);
+    }
+
+    let syncTimer;
+    function debouncedSync() {
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(syncPreview, 150);
+    }
+    $('app').addEventListener('input', debouncedSync);
+    $('app').addEventListener('change', debouncedSync);
+
     async function load() {
       $('login-form').classList.add('hidden');
       $('app').classList.remove('hidden');
@@ -413,6 +519,7 @@
       try {
         const data = await call({ action: 'get-settings' });
         renderSettings(data.settings || {});
+        setPreviewTab('umum');
       } catch (err) {
         if (err.status === 401) return showLogin('Kata laluan salah.');
         showAppError(err.message);

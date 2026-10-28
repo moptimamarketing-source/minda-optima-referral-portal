@@ -417,14 +417,31 @@
       window.location.href = 'index.html';
     });
 
-    MO.api('/api/dashboard').then(render).catch((err) => {
-      if (err.status === 401) {
-        window.location.replace('login.html');
-      } else {
-        document.getElementById('app').innerHTML =
-          `<p class="rounded-xl bg-red-50 p-4 text-red-700">${MO.escapeHtml(err.message)}</p>`;
-      }
-    });
+    const isPreview = new URLSearchParams(location.search).get('preview') === '1';
+
+    if (isPreview) {
+      // Admin Content Editor preview: skip login, use mock data so the
+      // real layout can be shown live without an authenticated session.
+      render({
+        referrer: { name: 'Demo Parent', code: 'MO-1111-YADG', phone: '0171234567', email: 'demo@example.com', occupation: 'Guru' },
+        shareUrl: 'https://referral.mindaoptima.com/daftar.html?ref=MO-1111-YADG',
+        stats: { totalReferrals: 3, rewardPending: 100, totalEarned: 200 },
+        referrals: [
+          { name: 'Demo 24', phone: '0171234567', registeredAt: new Date().toISOString(), status: 'approved', reward: 100 },
+          { name: 'demo3', phone: '0121112222', registeredAt: new Date().toISOString(), status: 'paid', reward: 100 },
+          { name: 'demo2', phone: '0179990000', registeredAt: new Date().toISOString(), status: 'pending', reward: 100 },
+        ],
+      });
+    } else {
+      MO.api('/api/dashboard').then(render).catch((err) => {
+        if (err.status === 401) {
+          window.location.replace('login.html');
+        } else {
+          document.getElementById('app').innerHTML =
+            `<p class="rounded-xl bg-red-50 p-4 text-red-700">${MO.escapeHtml(err.message)}</p>`;
+        }
+      });
+    }
   </script>
   <!-- Syarat Kelayakan Modal -->
   <dialog id="syarat-modal" class="fixed inset-0 z-50 w-full max-w-2xl rounded-2xl shadow-xl backdrop:bg-black/40 p-6">
