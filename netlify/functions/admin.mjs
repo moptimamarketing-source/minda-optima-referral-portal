@@ -229,7 +229,7 @@ async function notifyEmail(body) {
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
         <!-- Header Image -->
         <div style="text-align:center">
-          <img src="https://drive.google.com/uc?id=15gWaMZTfS9d8-z1yN7dKLmvDgjPYGbud" alt="Minda Optima" style="width:100%;max-width:560px;display:block">
+          <img src="https://drive.google.com/uc?id=1QUvgbM8Cf6RNh0qn6K_e9GRTFzHFu4-F" alt="Rujukan Layak" style="width:100%;max-width:560px;display:block">
         </div>
 
         <!-- Content -->
@@ -287,7 +287,7 @@ async function notifyEmail(body) {
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
         <!-- Header Image -->
         <div style="text-align:center">
-          <img src="https://drive.google.com/uc?id=15gWaMZTfS9d8-z1yN7dKLmvDgjPYGbud" alt="Minda Optima" style="width:100%;max-width:560px;display:block">
+          <img src="https://drive.google.com/uc?id=12SPd0G_EfTz-_OdPcAba5xwMNzKBQ_ip" alt="Pembayaran Selesai" style="width:100%;max-width:560px;display:block">
         </div>
 
         <!-- Content -->
