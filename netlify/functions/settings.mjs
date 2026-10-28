@@ -4,6 +4,7 @@
 const PUBLIC_KEYS = [
   'promo_enabled', 'promo_deadline', 'reward_before', 'reward_after', 'support_phone',
   'hero_title_line1', 'hero_title_line2', 'hero_subtitle', 'step3_desc', 'cta_heading', 'cta_sub',
+  'login_hero_benefits',
   'promo_banner_text',
   'community_title', 'community_desc', 'community_button_label', 'community_link', 'community_color',
   'share_message_template',

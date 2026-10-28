@@ -5,6 +5,7 @@ const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
 const SETTINGS_KEYS = [
   'promo_enabled', 'promo_deadline', 'reward_before', 'reward_after', 'support_phone',
   'hero_title_line1', 'hero_title_line2', 'hero_subtitle', 'step3_desc', 'cta_heading', 'cta_sub',
+  'login_hero_benefits',
   'promo_banner_text',
   'community_title', 'community_desc', 'community_button_label', 'community_link', 'community_color',
   'share_message_template',
@@ -12,7 +13,7 @@ const SETTINGS_KEYS = [
 const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
 const TEXT_SETTINGS_MAX = {
   hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300, step3_desc: 200,
-  cta_heading: 100, cta_sub: 150, promo_banner_text: 200,
+  cta_heading: 100, cta_sub: 150, login_hero_benefits: 150, promo_banner_text: 200,
   community_title: 60, community_desc: 200, community_button_label: 60,
   share_message_template: 500,
 };
