@@ -116,6 +116,7 @@
           </table>
           <p id="referral-empty" class="hidden px-4 py-8 text-center text-slate-500">Takde referral lagi.</p>
         </div>
+        <div id="referral-pagination" class="mt-3 flex items-center justify-center gap-3"></div>
       </section>
 
       <section>
@@ -134,6 +135,7 @@
             <tbody id="referrer-rows" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
+        <div id="referrer-pagination" class="mt-3 flex items-center justify-center gap-3"></div>
       </section>
 
       <section>
@@ -152,6 +154,7 @@
             <tbody id="funnel-rows" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
+        <div id="funnel-pagination" class="mt-3 flex items-center justify-center gap-3"></div>
       </section>
 
       <section>
@@ -246,6 +249,40 @@
         </div>`).join('');
     }
 
+    const PAGE_SIZE = 7;
+    const page = { referral: 1, referrer: 1, funnel: 1 };
+
+    function paginate(rows, key) {
+      const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+      if (page[key] > totalPages) page[key] = totalPages;
+      if (page[key] < 1) page[key] = 1;
+      const start = (page[key] - 1) * PAGE_SIZE;
+      renderPagination(key, rows.length, totalPages);
+      return rows.slice(start, start + PAGE_SIZE);
+    }
+
+    function renderPagination(key, total, totalPages) {
+      const el = $(`${key}-pagination`);
+      if (!el) return;
+      if (total <= PAGE_SIZE) { el.innerHTML = ''; return; }
+      el.innerHTML = `
+        <button type="button" data-page-prev="${key}" ${page[key] <= 1 ? 'disabled' : ''} class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">← Sebelum</button>
+        <span class="text-sm text-slate-500">Halaman ${page[key]} / ${totalPages} (${total} rekod)</span>
+        <button type="button" data-page-next="${key}" ${page[key] >= totalPages ? 'disabled' : ''} class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">Seterusnya →</button>
+      `;
+    }
+
+    document.addEventListener('click', (e) => {
+      const prev = e.target.closest('[data-page-prev]');
+      const next = e.target.closest('[data-page-next]');
+      if (!prev && !next) return;
+      const key = (prev || next).dataset.pagePrev || (prev || next).dataset.pageNext;
+      page[key] += prev ? -1 : 1;
+      if (key === 'referral') renderReferrals();
+      else if (key === 'referrer') renderReferrers();
+      else if (key === 'funnel') renderFunnel();
+    });
+
     function filterFunnel() {
       const q = $('funnel-search').value.trim().toLowerCase();
       if (!q) return funnel;
@@ -253,7 +290,8 @@
     }
 
     function renderFunnel() {
-      const rows = filterFunnel();
+      const filtered = filterFunnel();
+      const rows = paginate(filtered, 'funnel');
       $('funnel-rows').innerHTML = rows.map((r) => `<tr>
         <td class="px-4 py-3"><div class="font-medium">${esc(r.name)}</div><div class="text-xs text-slate-500 tabular-nums">${esc(fmtPhone(r.phone))}</div></td>
         <td class="px-3 py-3 font-mono text-xs">${esc(r.code)}</td>
@@ -285,8 +323,9 @@
     }
 
     function renderReferrals() {
-      const rows = filterReferrals();
-      $('referral-empty').classList.toggle('hidden', rows.length > 0);
+      const filtered = filterReferrals();
+      $('referral-empty').classList.toggle('hidden', filtered.length > 0);
+      const rows = paginate(filtered, 'referral');
       $('referral-rows').innerHTML = rows.map((r) => `<tr>
         <td class="px-4 py-3"><div class="font-medium">${esc(r.referee_name || '—')}</div><div class="text-xs text-slate-500 tabular-nums">${esc(fmtPhone(r.referee_phone))}</div></td>
         <td class="px-3 py-3"><div>${esc(r.referrers?.name || '')}</div><div class="font-mono text-xs text-slate-500">${esc(r.code)}</div></td>
@@ -346,7 +385,8 @@
     }
 
     function renderReferrers() {
-      const rows = filterReferrers();
+      const filtered = filterReferrers();
+      const rows = paginate(filtered, 'referrer');
       $('referrer-rows').innerHTML = rows.map((r) => `<tr>
         <td class="px-4 py-3"><div class="font-medium">${esc(r.name)}</div><div class="text-xs text-slate-500 tabular-nums">${esc(fmtPhone(r.phone))}</div></td>
         <td class="px-3 py-3 font-mono text-xs">${esc(r.code)}</td>
@@ -387,17 +427,18 @@
     }
 
     ['referral-search', 'referral-status-filter', 'referral-date-from', 'referral-date-to'].forEach((id) => {
-      $(id).addEventListener('input', renderReferrals);
+      $(id).addEventListener('input', () => { page.referral = 1; renderReferrals(); });
     });
     $('referral-filter-clear').addEventListener('click', () => {
       $('referral-search').value = '';
       $('referral-status-filter').value = '';
       $('referral-date-from').value = '';
       $('referral-date-to').value = '';
+      page.referral = 1;
       renderReferrals();
     });
-    $('referrer-search').addEventListener('input', renderReferrers);
-    $('funnel-search').addEventListener('input', renderFunnel);
+    $('referrer-search').addEventListener('input', () => { page.referrer = 1; renderReferrers(); });
+    $('funnel-search').addEventListener('input', () => { page.funnel = 1; renderFunnel(); });
 
     $('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
