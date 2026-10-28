@@ -50,4 +50,30 @@
   <use href="#mo-star" x="1410" y="800"/>
   <circle cx="1460" cy="776" r="4" fill="#86B4F2"/>
   <circle cx="1240" cy="938" r="4" fill="#86B4F2"/>
+
+  <!-- Centre fill so the pattern reads busier, not just corner clusters -->
+  <circle cx="768" cy="60" r="90" fill="#D2E4FF" opacity="0.6"/>
+  <circle cx="768" cy="960" r="100" fill="#D2E4FF" opacity="0.6"/>
+  <use href="#mo-star" x="650" y="90" transform="scale(1.3)" transform-origin="650 90"/>
+  <use href="#mo-star" x="880" y="150"/>
+  <use href="#mo-plane" x="700" y="230" transform="rotate(-10 700 230)"/>
+  <circle cx="820" cy="110" r="5" fill="#86B4F2"/>
+  <circle cx="600" cy="220" r="4" fill="#86B4F2"/>
+  <path d="M600 60 Q680 90 740 150" stroke="#86B4F2" stroke-width="2" fill="none" stroke-dasharray="4 6"/>
+
+  <use href="#mo-book-stack" x="650" y="760" transform="scale(0.85)" transform-origin="650 760"/>
+  <use href="#mo-star" x="870" y="860" transform="scale(1.2)" transform-origin="870 860"/>
+  <use href="#mo-star" x="560" y="900"/>
+  <circle cx="950" cy="780" r="4" fill="#86B4F2"/>
+  <circle cx="730" cy="950" r="4" fill="#86B4F2"/>
+  <path d="M900 900 Q830 930 760 900" stroke="#86B4F2" stroke-width="2" fill="none" stroke-dasharray="4 6"/>
+
+  <!-- Mid-left / mid-right so the sides aren't bare either -->
+  <use href="#mo-star" x="30" y="500" transform="scale(1.1)" transform-origin="30 500"/>
+  <use href="#mo-plane" x="80" y="560" transform="rotate(8 80 560)"/>
+  <circle cx="140" cy="510" r="4" fill="#86B4F2"/>
+
+  <use href="#mo-star" x="1470" y="520"/>
+  <use href="#mo-book-open" x="1360" y="470" transform="scale(0.6)" transform-origin="1360 470"/>
+  <circle cx="1420" cy="560" r="4" fill="#86B4F2"/>
 </svg>
