@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { sendEmail, esc, SITE } from '../lib/email.mjs';
+import { otpEmail } from './auth.mjs';
 
 const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
 const SETTINGS_KEYS = [
@@ -188,6 +189,25 @@ async function deleteReferrer(body) {
 }
 
 const clean = (v, max) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
+
+async function resendOtp(body) {
+  const phone = normalizePhone(body.phone);
+  const email = String(body.email ?? '').trim().toLowerCase();
+  if (!phone) return json(422, { error: 'Nombor telefon tak sah. Contoh: 0176629820' });
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json(422, { error: 'Emel tak sah.' });
+
+  const otpRes = await sb('rpc/send_otp', { method: 'POST', body: { p_phone: phone, p_email: email } });
+  const r = otpRes.data;
+  if (!otpRes.ok || !r?.ok) {
+    const reason = { invalid_phone: 'Nombor telefon tak sah.', invalid_email: 'Emel tak sah.' }[r?.reason];
+    return json(422, { error: reason || 'Gagal jana OTP.' });
+  }
+
+  const emailRes = await sendEmail(r.email, 'Kod OTP Referral Anda — Minda Optima', otpEmail({ otp: r.otp }));
+  if (!emailRes.ok) return json(502, { error: emailRes.error });
+
+  return json(200, { ok: true, phone: r.phone, email: r.email });
+}
 
 async function editReferrer(body) {
   const id = Number(body.id);
@@ -492,6 +512,7 @@ export default async (req) => {
     if (body.action === 'edit-referee') return await editReferee(body);
     if (body.action === 'delete-referral') return await deleteReferral(body);
     if (body.action === 'delete-referrer') return await deleteReferrer(body);
+    if (body.action === 'resend-otp') return await resendOtp(body);
     if (body.action === 'notify-email') return await notifyEmail(body);
     if (body.action === 'get-settings') return await getSettings();
     if (body.action === 'save-settings') return await saveSettings(body);

@@ -62,6 +62,22 @@
         <p id="add-ok" class="mt-3 hidden rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700" role="status">Dah simpan!</p>
       </section>
 
+      <section class="rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 class="text-lg font-bold text-brand">Push OTP Manual</h2>
+        <p class="text-sm text-slate-500">Kalau parent risau emel automatik ada masalah (tak sampai, masuk spam, dll), hantar kod OTP baru terus kat emel dia dari sini.</p>
+        <form id="otp-form" class="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+          <label class="block text-sm font-semibold">Phone Parent
+            <input id="otp-phone" required inputmode="tel" placeholder="0176629820" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-brand">
+          </label>
+          <label class="block text-sm font-semibold">Emel Parent
+            <input id="otp-email" required type="email" placeholder="parent@email.com" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-brand">
+          </label>
+          <button type="submit" class="rounded-xl bg-brand px-6 py-2.5 text-white font-bold hover:bg-brand-light disabled:opacity-60">Hantar OTP</button>
+        </form>
+        <p id="otp-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+        <p id="otp-ok" class="mt-3 hidden rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700" role="status"></p>
+      </section>
+
       <section>
         <div class="flex items-end justify-between gap-3">
           <div>
@@ -415,6 +431,25 @@
         if (err.status === 401) return showLogin('Kata laluan salah.');
         $('add-error').textContent = err.message;
         $('add-error').classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $('otp-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      $('otp-error').classList.add('hidden');
+      $('otp-ok').classList.add('hidden');
+      try {
+        const d = await call({ action: 'resend-otp', phone: $('otp-phone').value, email: $('otp-email').value });
+        $('otp-ok').textContent = `OTP dah dihantar ke ${d.email}.`;
+        $('otp-ok').classList.remove('hidden');
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        $('otp-error').textContent = err.message;
+        $('otp-error').classList.remove('hidden');
       } finally {
         btn.disabled = false;
       }

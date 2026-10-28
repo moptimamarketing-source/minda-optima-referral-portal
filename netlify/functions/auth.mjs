@@ -129,17 +129,8 @@ const OTP_ERRORS = {
   invalid_email: 'Emel tidak sah.',
 };
 
-async function sendOtp(body) {
-  const otpRes = await sb('rpc/send_otp', {
-    method: 'POST',
-    body: { p_phone: String(body.phone ?? '').trim(), p_email: String(body.email ?? '').trim() },
-  });
-  const r = otpRes.data;
-  if (!otpRes.ok || !r?.ok) {
-    return json(422, { error: OTP_ERRORS[r?.reason] || 'Gagal hantar OTP. Sila cuba lagi.' });
-  }
-
-  const otpHtml = `
+export function otpEmail({ otp }) {
+  return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
       <!-- Logo Header -->
       <div style="padding:24px 20px;text-align:center;border-bottom:1px solid #e2e8f0">
@@ -160,7 +151,7 @@ async function sendOtp(body) {
         <!-- OTP Code Box -->
         <div style="background:#f0f4ff;border:2px solid #0D2A5C;border-radius:12px;padding:32px 24px;margin:32px 0;text-align:center">
           <p style="font-size:12px;color:#0D2A5C;text-transform:uppercase;font-weight:700;letter-spacing:1.5px;margin:0 0 16px 0">Kod OTP</p>
-          <p style="font-size:48px;font-weight:900;letter-spacing:6px;color:#0D2A5C;margin:0;font-family:'Courier New',monospace;word-break:break-all">${r.otp}</p>
+          <p style="font-size:48px;font-weight:900;letter-spacing:6px;color:#0D2A5C;margin:0;font-family:'Courier New',monospace;word-break:break-all">${otp}</p>
           <p style="font-size:12px;color:#64748b;margin:16px 0 0 0">Tamat tempoh dalam <strong>10 minit</strong></p>
         </div>
 
@@ -203,8 +194,19 @@ async function sendOtp(body) {
       </div>
     </div>
   `;
+}
 
-  const emailRes = await sendEmail(r.email, 'Kod OTP Referral Anda — Minda Optima', otpHtml);
+async function sendOtp(body) {
+  const otpRes = await sb('rpc/send_otp', {
+    method: 'POST',
+    body: { p_phone: String(body.phone ?? '').trim(), p_email: String(body.email ?? '').trim() },
+  });
+  const r = otpRes.data;
+  if (!otpRes.ok || !r?.ok) {
+    return json(422, { error: OTP_ERRORS[r?.reason] || 'Gagal hantar OTP. Sila cuba lagi.' });
+  }
+
+  const emailRes = await sendEmail(r.email, 'Kod OTP Referral Anda — Minda Optima', otpEmail({ otp: r.otp }));
   if (!emailRes.ok) return json(502, { error: emailRes.error });
 
   return json(200, { ok: true, phone: r.phone, email: r.email });
