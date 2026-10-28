@@ -145,13 +145,17 @@ async function sendOtp(body) {
 
       <!-- Footer -->
       <div style="background:#1a1a1a;color:#ffffff;padding:32px 24px;text-align:center">
-        <!-- Social Icons -->
-        <div style="margin:0 0 24px 0">
-          <a href="https://www.facebook.com/MindaOptimaOfficial" style="display:inline-block;margin:0 12px;text-decoration:none;color:#ffffff;font-size:18px">f</a>
-          <a href="https://www.instagram.com/mindaoptima/" style="display:inline-block;margin:0 12px;text-decoration:none;color:#ffffff;font-size:18px">📷</a>
-          <a href="https://www.tiktok.com/@minda_optima" style="display:inline-block;margin:0 12px;text-decoration:none;color:#ffffff;font-size:18px">🎵</a>
-          <a href="https://www.youtube.com/@mindaoptimahq" style="display:inline-block;margin:0 12px;text-decoration:none;color:#ffffff;font-size:18px">▶️</a>
-          <a href="https://www.threads.com/@mindaoptima" style="display:inline-block;margin:0 12px;text-decoration:none;color:#ffffff;font-size:18px">@</a>
+        <!-- Social Links -->
+        <div style="margin:0 0 24px 0;font-size:13px">
+          <a href="https://www.facebook.com/MindaOptimaOfficial" style="display:inline-block;margin:0 8px;text-decoration:none;color:#ffffff">Facebook</a>
+          <span style="color:#666">•</span>
+          <a href="https://www.instagram.com/mindaoptima/" style="display:inline-block;margin:0 8px;text-decoration:none;color:#ffffff">Instagram</a>
+          <span style="color:#666">•</span>
+          <a href="https://www.tiktok.com/@minda_optima" style="display:inline-block;margin:0 8px;text-decoration:none;color:#ffffff">TikTok</a>
+          <span style="color:#666">•</span>
+          <a href="https://www.youtube.com/@mindaoptimahq" style="display:inline-block;margin:0 8px;text-decoration:none;color:#ffffff">YouTube</a>
+          <span style="color:#666">•</span>
+          <a href="https://www.threads.com/@mindaoptima" style="display:inline-block;margin:0 8px;text-decoration:none;color:#ffffff">Threads</a>
         </div>
 
         <!-- Links -->
