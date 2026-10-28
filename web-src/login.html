@@ -99,8 +99,8 @@
 
       <!-- Step 3: Registration (for new users only) -->
       <form id="register-form" class="hidden" novalidate>
-        <h1 class="text-2xl font-extrabold text-brand">Lengkapkan Profil Anda</h1>
-        <p class="mt-1 text-sm text-slate-500">Sila isi maklumat di bawah untuk menjadi rujukan Minda Optima.</p>
+        <h1 class="text-2xl font-extrabold text-brand" data-content="reg_heading">Lengkapkan Profil Anda</h1>
+        <p class="mt-1 text-sm text-slate-500" data-content="reg_subtitle">Sila isi maklumat di bawah untuk menjadi rujukan Minda Optima.</p>
 
         <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3">
           <p class="text-xs text-red-700 leading-relaxed">
@@ -108,19 +108,19 @@
           </p>
         </div>
 
-        <label for="reg-name" class="mt-6 block text-sm font-semibold text-slate-700">Nama Penuh</label>
+        <label for="reg-name" class="mt-6 block text-sm font-semibold text-slate-700" data-content="reg_name_label">Nama Penuh</label>
         <input id="reg-name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="cth. Siti Aminah" required
                class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
 
         <p class="mt-4 text-xs text-slate-500">Reward RM anda akan dihantar ke Touch 'n Go yang dikaitkan dengan nombor telefon <strong id="reg-tng-phone"></strong> yang anda daftarkan tadi. Sila sahkan nombor tersebut betul sebelum meneruskan.</p>
 
-        <label for="reg-occupation" class="mt-4 block text-sm font-semibold text-slate-700">Pekerjaan (Pilihan)</label>
+        <label for="reg-occupation" class="mt-4 block text-sm font-semibold text-slate-700" data-content="reg_occupation_label">Pekerjaan (Pilihan)</label>
         <input id="reg-occupation" name="occupation" type="text" maxlength="50" placeholder="cth. Guru, Doktor, Entrepreneur"
                class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
 
         <p id="register-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
 
-        <button type="submit" class="mt-6 w-full rounded-xl bg-brand py-3.5 text-white font-bold hover:bg-brand-light disabled:opacity-60 transition">
+        <button type="submit" class="mt-6 w-full rounded-xl bg-brand py-3.5 text-white font-bold hover:bg-brand-light disabled:opacity-60 transition" data-content="reg_submit_label">
           Daftar Sekarang
         </button>
       </form>
