@@ -51,43 +51,76 @@ async function sessionFor(token) {
 function confirmationEmail({ name, code, phone, email, occupation }) {
   const share = `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, anak dapat 1 kelas PERCUMA & saya dapat RM100 🎉 👉 ${SITE}/daftar.html?ref=${code}`;
   const waLink = `https://wa.me/?text=${encodeURIComponent(share)}`;
-  const tgLink = TELEGRAM_LINK;
-  const row = (label, value) => `<tr><td style="padding:6px 0;color:#64748b;width:40%">${label}</td><td style="padding:6px 0;font-weight:600">${esc(value || '—')}</td></tr>`;
+  const waGroupLink = 'https://chat.whatsapp.com/Ech6q73TWPH9qFC5en8gDm';
 
   return `
-    <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1e293b">
-      <h2 style="color:#0D2A5C">Pendaftaran Berjaya</h2>
-      <p>Hai Salam Parents! ${esc(name)}, terima kasih kerana mendaftar sebagai Referral Minda Optima.</p>
-
-      <p style="font-size:14px;color:#64748b;margin-bottom:4px">Kod rujukan anda</p>
-      <p style="font-size:28px;font-weight:800;letter-spacing:2px;color:#0D2A5C;margin-top:0">${esc(code)}</p>
-
-      <h3 style="color:#0D2A5C;margin-bottom:4px">Butiran anda</h3>
-      <table style="width:100%;border-collapse:collapse;font-size:15px">
-        ${row('Nama', name)}
-        ${row('Nombor telefon', phone)}
-        ${row('Emel', email)}
-        ${row('Pekerjaan', occupation)}
-      </table>
-
-      <div style="background:#fee2e2;border-left:4px solid #dc2626;padding:12px;border-radius:4px;margin-top:16px;font-size:13px;color:#7f1d1d">
-        <strong style="color:#991b1b">⚠️ Penting — Syarat Ganjaran:</strong>
-        <p style="margin:8px 0 0 0">Ganjaran: RM100 (sehingga 31 Dis 2026), RM50 selepas. Kawan anda mesti <strong>DAFTAR dan HADIR KELAS</strong> (bukan sekadar intro atau isi borang) untuk terima reward. Reward akan dihantar ke Touch 'n Go yang dikaitkan dengan nombor telefon di atas.</p>
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
+      <!-- Logo Header -->
+      <div style="padding:24px 20px;text-align:center;border-bottom:1px solid #e2e8f0">
+        <img src="${SITE}/logo-mindaoptima.webp" alt="Minda Optima" style="height:70px;max-width:100%">
       </div>
 
-      <h3 style="color:#0D2A5C;margin-bottom:4px">Kongsi kod anda</h3>
-      <p style="font-size:14px;color:#64748b;margin-top:0">Salin mesej di bawah dan hantar kepada rakan anda:</p>
-      <div style="background:#ecfdf5;padding:12px;border-radius:8px;white-space:pre-wrap;word-break:break-word">${esc(share)}</div>
-      <p style="margin:16px 0">
-        <a href="${waLink}" style="display:inline-block;background:#25D366;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold">Kongsi di WhatsApp</a>
-      </p>
+      <!-- Content -->
+      <div style="padding:40px 24px">
+        <!-- Greeting -->
+        <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 8px 0;text-align:center">🎉 Selamat Datang!</h1>
+        <p style="font-size:14px;color:#64748b;margin:0 0 40px 0;text-align:center;line-height:1.6">Terima kasih telah mendaftar. Kod rujukan anda sudah siap untuk dikongsi.</p>
 
-      ${tgLink ? `
-      <h3 style="color:#0D2A5C;margin-bottom:4px">Komuniti Telegram</h3>
-      <p style="font-size:14px;color:#64748b;margin-top:0">Dapatkan update, tips dan pengumuman rasmi di sini.</p>
-      <p><a href="${esc(tgLink)}" style="display:inline-block;background:#229ED9;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold">Sertai Komuniti Telegram</a></p>` : ''}
+        <!-- User Details -->
+        <div style="background:#f9fafb;border-radius:8px;padding:16px;margin:32px 0;font-size:13px">
+          <table style="width:100%;border-collapse:collapse">
+            <tr style="border-bottom:1px solid #e2e8f0">
+              <td style="padding:8px 0;color:#64748b;width:40%">Nama</td>
+              <td style="padding:8px 0;font-weight:600;text-align:right">${esc(name || '—')}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e2e8f0">
+              <td style="padding:8px 0;color:#64748b">Telefon</td>
+              <td style="padding:8px 0;font-weight:600;text-align:right">${esc(phone || '—')}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#64748b">Emel</td>
+              <td style="padding:8px 0;font-weight:600;text-align:right">${esc(email || '—')}</td>
+            </tr>
+          </table>
+        </div>
 
-      <p style="margin-top:24px"><a href="${SITE}/dashboard.html" style="color:#0D2A5C">Buka dashboard anda</a></p>
+        <!-- Share Code Section -->
+        <div style="text-align:center;margin:40px 0">
+          <h2 style="font-size:14px;font-weight:700;color:#0D2A5C;margin:0 0 16px 0">Kongsi Rujukan Anda Sekarang</h2>
+          <div style="background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);border-radius:12px;padding:32px 24px;margin:0;text-align:center;color:white">
+            <p style="font-size:42px;font-weight:900;letter-spacing:4px;color:#fff;margin:0;font-family:monospace">${esc(code)}</p>
+          </div>
+          <a href="${waLink}" class="button" style="display:inline-block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;margin-top:16px;background:linear-gradient(135deg,#25D366 0%,#1fa854 100%);color:white">💚 Kongsi di WhatsApp</a>
+        </div>
+
+        <!-- Dashboard Button -->
+        <div style="text-align:center;margin:32px 0">
+          <a href="${SITE}/dashboard.html" style="display:block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);color:white">Buka Dashboard</a>
+        </div>
+
+        <!-- Marketing Images -->
+        <div style="margin:40px 0;text-align:center">
+          <img src="https://drive.google.com/uc?id=12BtXDOAxv_ofGCpDuTdUQHPhWt6ZMtL2" alt="3 Langkah Mudah Dapat Ganjaran" style="width:100%;max-width:500px;border-radius:8px;margin-bottom:16px">
+          <img src="https://drive.google.com/uc?id=1PzIvylgBQPfawl2JxyHRAKGH_gdEOBmE" alt="Selamat Datang ke Komuniti Minda Optima" style="width:100%;max-width:500px;border-radius:8px">
+        </div>
+
+        <!-- WhatsApp Community Button -->
+        <div style="text-align:center;margin:32px 0">
+          <a href="${waGroupLink}" style="display:inline-block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#25D366 0%,#1fa854 100%);color:white;box-shadow:0 4px 12px rgba(37,211,102,0.3)">💚 Sertai Komuniti WhatsApp</a>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="background:#1a1a1a;color:white;padding:24px;text-align:center;font-size:12px">
+        <div style="margin-bottom:12px">
+          <a href="https://www.facebook.com/MindaOptimaOfficial" style="color:white;text-decoration:none;margin:0 6px">Facebook</a> •
+          <a href="https://www.instagram.com/mindaoptima/" style="color:white;text-decoration:none;margin:0 6px">Instagram</a> •
+          <a href="https://www.tiktok.com/@minda_optima" style="color:white;text-decoration:none;margin:0 6px">TikTok</a> •
+          <a href="https://www.youtube.com/@mindaoptimahq" style="color:white;text-decoration:none;margin:0 6px">YouTube</a> •
+          <a href="https://www.threads.com/@mindaoptima" style="color:white;text-decoration:none;margin:0 6px">Threads</a>
+        </div>
+        <p style="color:#999;font-size:11px;margin:0">© 2026 Minda Optima</p>
+      </div>
     </div>`;
 }
 
