@@ -55,6 +55,11 @@ export function confirmationEmail({ name, code, phone, email, occupation }) {
 
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
+      <!-- Header Image -->
+      <div style="text-align:center">
+        <img src="https://drive.google.com/uc?id=15gWaMZTfS9d8-z1yN7dKLmvDgjPYGbud" alt="Minda Optima" style="width:100%;max-width:560px;display:block">
+      </div>
+
       <!-- Content -->
       <div style="padding:40px 24px">
         <!-- Greeting -->
