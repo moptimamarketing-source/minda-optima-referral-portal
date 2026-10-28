@@ -107,42 +107,62 @@ async function sendOtp(body) {
   }
 
   const otpHtml = `
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:500px;margin:auto;background:white;padding:0;color:#1e293b">
-      <!-- Header with logo -->
-      <div style="padding:20px;text-align:center;border-bottom:1px solid #e2e8f0">
-        <img src="${SITE}/logo-mindaoptima.webp" alt="Minda Optima" style="height:60px;max-width:100%;background:none;padding:0">
-      </div>
-
-      <!-- Hero Info Box with decorations -->
-      <div style="background:#0D2A5C;color:white;padding:32px 24px;position:relative;overflow:hidden">
-        <div style="position:absolute;top:8px;right:16px;font-size:32px;opacity:0.15">🚀</div>
-        <div style="position:absolute;bottom:12px;left:12px;font-size:28px;opacity:0.15">📚</div>
-        <div style="position:absolute;top:50%;right:8px;font-size:24px;opacity:0.1">✨</div>
-
-        <div style="position:relative;z-index:1">
-          <h2 style="font-size:18px;font-weight:700;margin:0 0 8px 0">Kod OTP Anda</h2>
-          <p style="font-size:13px;margin:0;line-height:1.5;opacity:0.95">Masukkan kod di bawah untuk mengesahkan pendaftaran.</p>
-        </div>
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
+      <!-- Logo Header -->
+      <div style="padding:24px 20px;text-align:center;border-bottom:1px solid #e2e8f0">
+        <img src="${SITE}/logo-mindaoptima.webp" alt="Minda Optima" style="height:70px;max-width:100%">
       </div>
 
       <!-- Content -->
-      <div style="padding:32px 24px">
+      <div style="padding:40px 24px">
+        <!-- Label -->
+        <p style="font-size:12px;color:#0D2A5C;text-transform:uppercase;font-weight:700;letter-spacing:1px;margin:0 0 12px 0;text-align:center">Pengesahan Akaun</p>
+
+        <!-- Headline -->
+        <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 12px 0;text-align:center;line-height:1.3">Sahkan Kod OTP Anda</h1>
+
+        <!-- Description -->
+        <p style="font-size:14px;color:#64748b;margin:0 0 32px 0;text-align:center;line-height:1.6">Masukkan kod di bawah untuk mengesahkan pendaftaran anda sebagai referrer Minda Optima.</p>
+
         <!-- OTP Code Box -->
-        <div style="background:#f0f4ff;border:1px solid #bfdbfe;border-radius:8px;padding:24px;margin:24px 0;text-align:center">
-          <p style="font-size:11px;color:#0D2A5C;text-transform:uppercase;font-weight:600;letter-spacing:1px;margin:0 0 12px 0">Kod OTP</p>
-          <p style="font-size:40px;font-weight:800;letter-spacing:4px;color:#0D2A5C;margin:0;font-family:monospace">${r.otp}</p>
-          <p style="font-size:12px;color:#64748b;margin:8px 0 0 0">Tamat tempoh dalam 10 minit</p>
+        <div style="background:#f0f4ff;border:2px solid #0D2A5C;border-radius:12px;padding:32px 24px;margin:32px 0;text-align:center">
+          <p style="font-size:12px;color:#0D2A5C;text-transform:uppercase;font-weight:700;letter-spacing:1.5px;margin:0 0 16px 0">Kod OTP</p>
+          <p style="font-size:48px;font-weight:900;letter-spacing:6px;color:#0D2A5C;margin:0;font-family:'Courier New',monospace;word-break:break-all">${r.otp}</p>
+          <p style="font-size:12px;color:#64748b;margin:16px 0 0 0">Tamat tempoh dalam <strong>10 minit</strong></p>
+        </div>
+
+        <!-- Copy Instruction -->
+        <div style="background:#f9fafb;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:24px 0;text-align:center;font-size:13px;color:#64748b">
+          Salin kod di atas dan masukkan semasa mendaftar. Kod ini adalah peribadi — jangan berkongsi dengan orang lain.
         </div>
 
         <!-- Security Notice -->
-        <div style="background:#fef3c7;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:4px;margin:24px 0;font-size:12px;color:#78350f;line-height:1.5">
-          <strong>⚠️ Jangan berkongsi:</strong> Jangan berikan kod ini kepada sesiapa. Kami tidak akan minta kod ini di emel.
+        <div style="background:#fff9e6;border-left:4px solid #f59e0b;padding:14px 16px;border-radius:4px;margin:24px 0;font-size:12px;color:#78350f;line-height:1.6">
+          <strong style="display:block;margin-bottom:6px">⚠️ Penting:</strong>
+          Minda Optima tidak akan meminta kod OTP ini melalui emel, WhatsApp, atau saluran lain. Jika menerima permintaan seumpamanya, ia adalah penipuan.
         </div>
       </div>
 
       <!-- Footer -->
-      <div style="background:#f9fafb;padding:16px;text-align:center;font-size:11px;color:#64748b;border-top:1px solid #e2e8f0">
-        <p style="margin:0">Minda Optima © 2026</p>
+      <div style="background:#1a1a1a;color:#ffffff;padding:32px 24px;text-align:center">
+        <!-- Social Icons -->
+        <div style="margin:0 0 24px 0">
+          <a href="https://www.facebook.com/MindaOptimaOfficial" style="display:inline-block;margin:0 12px;text-decoration:none;color:#ffffff;font-size:18px">f</a>
+          <a href="https://www.instagram.com/mindaoptima/" style="display:inline-block;margin:0 12px;text-decoration:none;color:#ffffff;font-size:18px">📷</a>
+          <a href="https://www.tiktok.com/@minda_optima" style="display:inline-block;margin:0 12px;text-decoration:none;color:#ffffff;font-size:18px">🎵</a>
+          <a href="https://www.youtube.com/@mindaoptimahq" style="display:inline-block;margin:0 12px;text-decoration:none;color:#ffffff;font-size:18px">▶️</a>
+          <a href="https://www.threads.com/@mindaoptima" style="display:inline-block;margin:0 12px;text-decoration:none;color:#ffffff;font-size:18px">@</a>
+        </div>
+
+        <!-- Links -->
+        <p style="font-size:12px;margin:0 0 12px 0;line-height:1.8">
+          <a href="https://pantasbaca.com/" style="color:#ffffff;text-decoration:none">Tentang Kami</a>
+          &nbsp;•&nbsp;
+          <a href="https://pantasbaca.com/" style="color:#ffffff;text-decoration:none">Hubungi Kami</a>
+        </p>
+
+        <!-- Copyright -->
+        <p style="font-size:11px;color:#999999;margin:0">© 2026 Minda Optima. Semua hak dipelihara.</p>
       </div>
     </div>
   `;
