@@ -106,16 +106,47 @@ async function sendOtp(body) {
     return json(422, { error: OTP_ERRORS[r?.reason] || 'Gagal hantar OTP. Sila cuba lagi.' });
   }
 
-  const emailRes = await sendEmail(
-    r.email,
-    'Kod OTP Referral Anda — Minda Optima',
-    `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1e293b">
-      <h2 style="color:#0D2A5C">Kod OTP Referral Anda</h2>
-      <p>Masukkan kod di bawah untuk mengesahkan pendaftaran Referral Minda Optima:</p>
-      <p style="font-size:32px;font-weight:800;letter-spacing:8px;color:#0D2A5C;text-align:center;margin:24px 0">${r.otp}</p>
-      <p style="color:#64748b">Kod ini akan luput dalam 10 minit.</p>
-    </div>`,
-  );
+  const otpHtml = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#f8fafc;padding:0">
+      <!-- Header with logo -->
+      <div style="padding:24px;text-align:center;background:white;border-bottom:1px solid #f0f0f0">
+        <img src="${SITE}/logo-mindaoptima.webp" alt="Minda Optima" style="height:80px;max-width:100%">
+      </div>
+
+      <!-- Hero section -->
+      <div style="background:linear-gradient(135deg, #0D2A5C 0%, #1a3a7a 100%);padding:60px 40px;text-align:center;color:white;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-50%;right:-20%;width:300px;height:300px;background:rgba(255,255,255,0.05);border-radius:50%;z-index:0"></div>
+        <h2 style="font-size:32px;font-weight:700;line-height:1.2;position:relative;z-index:1;margin:0;letter-spacing:-0.5px">Sahkan Kod Anda</h2>
+      </div>
+
+      <!-- Content -->
+      <div style="background:white;padding:40px 32px">
+        <p style="font-size:15px;color:#1e293b;margin:0 0 16px 0;line-height:1.6">Halo! 👋</p>
+        <p style="font-size:14px;color:#64748b;margin:0 0 32px 0;line-height:1.6">Masukkan kod di bawah untuk mengesahkan pendaftaran anda sebagai Referral Minda Optima.</p>
+
+        <!-- OTP Code Box -->
+        <div style="background:linear-gradient(135deg, #f0f4ff 0%, #e0ebff 100%);border:2px solid #0D2A5C;border-radius:12px;padding:32px;margin:32px 0;text-align:center">
+          <p style="font-size:11px;color:#0D2A5C;text-transform:uppercase;font-weight:700;letter-spacing:1px;margin:0 0 12px 0">Kod OTP Anda</p>
+          <p style="font-size:52px;font-weight:900;letter-spacing:8px;color:#0D2A5C;margin:0;font-family:'Courier New',monospace">${r.otp}</p>
+          <p style="font-size:12px;color:#64748b;margin:12px 0 0 0">⏱️ Kod ini akan tamat tempoh dalam <strong>10 minit</strong></p>
+        </div>
+
+        <!-- Security Notice -->
+        <div style="background:#fff9e6;border-left:4px solid #f59e0b;padding:14px 16px;border-radius:6px;margin:24px 0;font-size:13px;color:#78350f;line-height:1.6">
+          <strong style="display:block;margin-bottom:6px">💡 Penting:</strong>
+          Jangan berkongsi kod ini kepada sesiapa. Minda Optima tidak akan meminta kod anda melalui emel atau WhatsApp.
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="background:#f8fafc;padding:20px;text-align:center;font-size:12px;color:#64748b;border-top:1px solid #e2e8f0">
+        <p style="margin:0 0 4px 0"><strong>Minda Optima</strong> © 2026</p>
+        <p style="margin:0">Program Rujukan Rasmi</p>
+      </div>
+    </div>
+  `;
+
+  const emailRes = await sendEmail(r.email, 'Kod OTP Referral Anda — Minda Optima', otpHtml);
   if (!emailRes.ok) return json(502, { error: emailRes.error });
 
   return json(200, { ok: true, phone: r.phone, email: r.email });
