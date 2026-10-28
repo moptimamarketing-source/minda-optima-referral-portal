@@ -110,14 +110,23 @@ async function sendOtp(body) {
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:500px;margin:auto;background:white;padding:0;color:#1e293b">
       <!-- Header with logo -->
       <div style="padding:20px;text-align:center;border-bottom:1px solid #e2e8f0">
-        <img src="${SITE}/logo-mindaoptima.webp" alt="Minda Optima" style="height:60px;max-width:100%">
+        <img src="${SITE}/logo-mindaoptima.webp" alt="Minda Optima" style="height:60px;max-width:100%;background:none;padding:0">
+      </div>
+
+      <!-- Hero Info Box with decorations -->
+      <div style="background:#0D2A5C;color:white;padding:32px 24px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:8px;right:16px;font-size:32px;opacity:0.15">🚀</div>
+        <div style="position:absolute;bottom:12px;left:12px;font-size:28px;opacity:0.15">📚</div>
+        <div style="position:absolute;top:50%;right:8px;font-size:24px;opacity:0.1">✨</div>
+
+        <div style="position:relative;z-index:1">
+          <h2 style="font-size:18px;font-weight:700;margin:0 0 8px 0">Kod OTP Anda</h2>
+          <p style="font-size:13px;margin:0;line-height:1.5;opacity:0.95">Masukkan kod di bawah untuk mengesahkan pendaftaran.</p>
+        </div>
       </div>
 
       <!-- Content -->
       <div style="padding:32px 24px">
-        <h2 style="font-size:18px;font-weight:700;color:#0D2A5C;margin:0 0 8px 0">Kod OTP Anda</h2>
-        <p style="font-size:13px;color:#64748b;margin:0 0 24px 0;line-height:1.5">Masukkan kod di bawah untuk mengesahkan pendaftaran.</p>
-
         <!-- OTP Code Box -->
         <div style="background:#f0f4ff;border:1px solid #bfdbfe;border-radius:8px;padding:24px;margin:24px 0;text-align:center">
           <p style="font-size:11px;color:#0D2A5C;text-transform:uppercase;font-weight:600;letter-spacing:1px;margin:0 0 12px 0">Kod OTP</p>
