@@ -2,7 +2,7 @@
 -- reward terms copy. Admin can still edit these in Content Editor.
 
 update public.settings
-set value = '🎁 Promosi sempena musim persekolahan baru! Dapatkan RM100 untuk setiap rujukan berjaya sebelum 31 Disember. Selepas itu, ganjaran kembali ke RM50 sahaja.'
+set value = '📢 PROMOSI SPESIAL BACK-TO-SCHOOL! Dapatkan RM100 untuk setiap rujukan berjaya sebelum 31 Disember. Selepas itu, ganjaran kembali ke RM50 sahaja.'
 where key = 'promo_banner_text';
 
 update public.settings
