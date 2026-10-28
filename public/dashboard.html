@@ -7,13 +7,41 @@
   <meta name="theme-color" content="#0D2A5C">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/js/common.js"></script>
+  <style>
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-areas: "banner" "stats" "code" "share" "syarat" "community" "list" "faq";
+      gap: 1.5rem;
+    }
+    @media (min-width: 1024px) {
+      .dash-grid {
+        grid-template-columns: 1fr 320px;
+        grid-template-areas:
+          "banner  banner"
+          "code    stats"
+          "share   syarat"
+          "list    community"
+          "faq     faq";
+        align-items: start;
+      }
+    }
+    .area-banner { grid-area: banner; }
+    .area-stats { grid-area: stats; }
+    .area-code { grid-area: code; }
+    .area-share { grid-area: share; }
+    .area-syarat { grid-area: syarat; }
+    .area-community { grid-area: community; }
+    .area-list { grid-area: list; }
+    .area-faq { grid-area: faq; }
+  </style>
 </head>
 <body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased" style="background-image:url('/bg-decor.svg');background-repeat:no-repeat;background-size:cover;background-position:center;background-attachment:fixed;">
 
   <audio id="bg-music" src="/audio/theme.mp3" loop preload="auto"></audio>
 
   <header class="bg-brand text-white">
-    <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <a href="/" class="h-28 flex items-center shrink-0">
           <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-28 w-auto">
@@ -38,23 +66,23 @@
     </div>
   </header>
 
-  <main id="app" class="max-w-3xl mx-auto px-4 py-6 space-y-6" aria-busy="true">
+  <main id="app" class="max-w-5xl mx-auto px-4 py-6 dash-grid" aria-busy="true">
 
     <!-- Promo banner -->
-    <div data-promo-only class="rounded-2xl bg-gold px-5 py-4 text-brand shadow-sm">
+    <div data-promo-only class="area-banner rounded-2xl bg-gold px-5 py-4 text-brand shadow-sm">
       <p class="font-extrabold" data-content="promo_banner_text">🎁 Kongsi Peluang, Bawa Pulang RM100! Rebut ganjaran RM100 untuk setiap rujukan berjaya sebelum 31 Disember. Selepas tarikh itu, ganjarannya hanya RM50 sahaja tau!</p>
       <p class="mt-1 text-sm font-semibold">⏳ Berakhir dalam <span class="tabular-nums" data-countdown>&nbsp;</span></p>
     </div>
 
     <!-- Reward terms disclaimer -->
-    <div class="rounded-2xl bg-red-50 border-2 border-red-200 px-5 py-4">
+    <div class="area-syarat rounded-2xl bg-red-50 border-2 border-red-200 px-5 py-4 h-fit">
       <p class="font-semibold text-red-900">⚠️ Syarat Ganjaran</p>
       <p class="mt-2 text-sm text-red-800" data-content="reward_terms">Kawan anda mesti DAFTAR dan HADIR KELAS (bukan sekadar intro atau isi borang) untuk terima reward.</p>
       <button id="syarat-btn" type="button" class="mt-2 text-sm font-semibold text-brand underline">Lihat syarat kelayakan penuh</button>
     </div>
 
     <!-- Community card -->
-    <section id="community-card" class="hidden rounded-2xl bg-white border border-slate-200 p-5">
+    <section id="community-card" class="area-community hidden rounded-2xl bg-white border border-slate-200 p-5 h-fit">
       <h2 class="font-bold text-brand" data-content="community_title">Komuniti Telegram</h2>
       <p class="mt-1 text-sm text-slate-600" data-content="community_desc">Dapatkan update, tips dan pengumuman rasmi Minda Optima.</p>
       <a id="community-link" href="#" target="_blank" rel="noopener" data-content-link="community_link" data-content-color="community_color"
@@ -64,13 +92,13 @@
     </section>
 
     <!-- Referral code card -->
-    <section class="rounded-2xl border-2 border-dashed border-brand bg-white p-6 text-center">
+    <section class="area-code rounded-2xl border-2 border-dashed border-brand bg-white p-6 text-center h-fit">
       <p class="text-sm font-semibold uppercase tracking-wider text-slate-500">Kod Rujukan Anda</p>
       <p id="ref-code" class="mt-2 text-3xl sm:text-4xl font-black tracking-wider text-brand select-all break-all cursor-pointer hover:text-brand/80 hover:underline transition active:scale-95">MO-····-····</p>
     </section>
 
     <!-- Share -->
-    <section class="rounded-2xl bg-white p-5 border border-slate-200">
+    <section class="area-share rounded-2xl bg-white p-5 border border-slate-200 h-fit">
       <h2 class="font-bold text-brand">Kongsi di WhatsApp</h2>
       <p id="share-preview" class="mt-3 whitespace-pre-line rounded-xl bg-emerald-50 p-4 text-sm text-slate-700 break-words"></p>
       <div class="mt-4 flex flex-col sm:flex-row gap-3">
@@ -79,12 +107,18 @@
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88m8.41-18.29A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.89a11.82 11.82 0 0 0-3.48-8.41"/></svg>
           Share ke WhatsApp
         </a>
-        <button id="copy-msg" class="rounded-xl border-2 border-brand px-5 py-3 font-semibold text-brand hover:bg-brand/5 transition">Copy Mesej</button>
+        <button id="share-native" type="button" class="hidden flex-1 items-center justify-center gap-2 rounded-xl border-2 border-brand px-5 py-3 font-semibold text-brand hover:bg-brand/5 transition">
+          📤 Kongsi ke Mana-mana
+        </button>
+      </div>
+      <div class="mt-5 flex flex-col items-center gap-2 border-t border-slate-100 pt-5">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Atau Scan Kod QR</p>
+        <img id="qr-code" alt="QR kod rujukan" class="h-36 w-36 rounded-lg border border-slate-200" width="144" height="144">
       </div>
     </section>
 
     <!-- Stats -->
-    <section class="grid grid-cols-3 gap-3">
+    <section class="area-stats grid grid-cols-3 lg:grid-cols-1 gap-3 h-fit">
       <div class="rounded-2xl bg-white p-4 text-center border border-slate-200">
         <p class="text-xs text-slate-500">Bilangan Rujukan</p>
         <p id="stat-count" class="mt-1 text-2xl sm:text-3xl font-extrabold text-brand">0</p>
@@ -100,7 +134,7 @@
     </section>
 
     <!-- Referrals list -->
-    <section class="rounded-2xl bg-white border border-slate-200 overflow-hidden">
+    <section class="area-list rounded-2xl bg-white border border-slate-200 overflow-hidden h-fit">
       <h2 class="px-5 pt-5 font-bold text-brand">Senarai Rujukan</h2>
       <div class="mt-3 overflow-x-auto">
         <table class="w-full text-sm">
@@ -121,7 +155,7 @@
     </section>
 
     <!-- FAQ -->
-    <section class="rounded-2xl bg-white border border-slate-200 p-5">
+    <section class="area-faq rounded-2xl bg-white border border-slate-200 p-5">
       <h2 class="font-bold text-brand">Soalan Lazim</h2>
       <div class="mt-3 divide-y divide-slate-100">
         <details class="group py-3">
@@ -158,6 +192,13 @@
             <span class="text-slate-400 group-open:rotate-45 transition-transform">+</span>
           </summary>
           <p class="mt-2 text-sm text-slate-600">RM100 akan dibayar terus ke nombor Touch 'n Go yang anda daftarkan semasa sign-up. Payout dilakukan dalam 3-5 hari kerja selepas anak yang dirujuk hadir ke kelas.</p>
+        </details>
+        <details class="group py-3">
+          <summary class="flex items-center justify-between cursor-pointer list-none font-semibold text-sm text-slate-800">
+            Boleh ke saya kongsi kod rujukan dengan lebih dari seorang ibu bapa?
+            <span class="text-slate-400 group-open:rotate-45 transition-transform">+</span>
+          </summary>
+          <p class="mt-2 text-sm text-slate-600">Boleh! Kod rujukan anda tiada had penggunaan. Kongsikan kepada seramai mana ibu bapa yang anda mahu, dan setiap pendaftaran berjaya menggunakan kod anda akan dikira sebagai satu rujukan yang berasingan.</p>
         </details>
       </div>
     </section>
@@ -256,10 +297,16 @@
       const message = shareMessage(referrer.code, shareUrl);
       document.getElementById('share-preview').textContent = message;
       document.getElementById('share-wa').href = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
 
-      document.getElementById('copy-msg').onclick = async () => {
-        toast((await MO.copyText(message)) ? 'Mesej disalin!' : 'Gagal salin');
-      };
+      const nativeBtn = document.getElementById('share-native');
+      if (navigator.share) {
+        nativeBtn.classList.remove('hidden');
+        nativeBtn.classList.add('flex');
+        nativeBtn.onclick = () => {
+          navigator.share({ text: message, url: shareUrl }).catch(() => {});
+        };
+      }
 
       const tbody = document.getElementById('referral-rows');
       document.getElementById('empty-state').classList.toggle('hidden', referrals.length > 0);
