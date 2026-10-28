@@ -107,41 +107,33 @@ async function sendOtp(body) {
   }
 
   const otpHtml = `
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#f8fafc;padding:0">
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:500px;margin:auto;background:white;padding:0;color:#1e293b">
       <!-- Header with logo -->
-      <div style="padding:24px;text-align:center;background:white;border-bottom:1px solid #f0f0f0">
-        <img src="${SITE}/logo-mindaoptima.webp" alt="Minda Optima" style="height:80px;max-width:100%">
-      </div>
-
-      <!-- Hero section -->
-      <div style="background:linear-gradient(135deg, #0D2A5C 0%, #1a3a7a 100%);padding:60px 40px;text-align:center;color:white;position:relative;overflow:hidden">
-        <div style="position:absolute;top:-50%;right:-20%;width:300px;height:300px;background:rgba(255,255,255,0.05);border-radius:50%;z-index:0"></div>
-        <h2 style="font-size:32px;font-weight:700;line-height:1.2;position:relative;z-index:1;margin:0;letter-spacing:-0.5px">Sahkan Kod Anda</h2>
+      <div style="padding:20px;text-align:center;border-bottom:1px solid #e2e8f0">
+        <img src="${SITE}/logo-mindaoptima.webp" alt="Minda Optima" style="height:60px;max-width:100%">
       </div>
 
       <!-- Content -->
-      <div style="background:white;padding:40px 32px">
-        <p style="font-size:15px;color:#1e293b;margin:0 0 16px 0;line-height:1.6">Halo! 👋</p>
-        <p style="font-size:14px;color:#64748b;margin:0 0 32px 0;line-height:1.6">Masukkan kod di bawah untuk mengesahkan pendaftaran anda sebagai Referral Minda Optima.</p>
+      <div style="padding:32px 24px">
+        <h2 style="font-size:18px;font-weight:700;color:#0D2A5C;margin:0 0 8px 0">Kod OTP Anda</h2>
+        <p style="font-size:13px;color:#64748b;margin:0 0 24px 0;line-height:1.5">Masukkan kod di bawah untuk mengesahkan pendaftaran.</p>
 
         <!-- OTP Code Box -->
-        <div style="background:linear-gradient(135deg, #f0f4ff 0%, #e0ebff 100%);border:2px solid #0D2A5C;border-radius:12px;padding:32px;margin:32px 0;text-align:center">
-          <p style="font-size:11px;color:#0D2A5C;text-transform:uppercase;font-weight:700;letter-spacing:1px;margin:0 0 12px 0">Kod OTP Anda</p>
-          <p style="font-size:52px;font-weight:900;letter-spacing:8px;color:#0D2A5C;margin:0;font-family:'Courier New',monospace">${r.otp}</p>
-          <p style="font-size:12px;color:#64748b;margin:12px 0 0 0">⏱️ Kod ini akan tamat tempoh dalam <strong>10 minit</strong></p>
+        <div style="background:#f0f4ff;border:1px solid #bfdbfe;border-radius:8px;padding:24px;margin:24px 0;text-align:center">
+          <p style="font-size:11px;color:#0D2A5C;text-transform:uppercase;font-weight:600;letter-spacing:1px;margin:0 0 12px 0">Kod OTP</p>
+          <p style="font-size:40px;font-weight:800;letter-spacing:4px;color:#0D2A5C;margin:0;font-family:monospace">${r.otp}</p>
+          <p style="font-size:12px;color:#64748b;margin:8px 0 0 0">Tamat tempoh dalam 10 minit</p>
         </div>
 
         <!-- Security Notice -->
-        <div style="background:#fff9e6;border-left:4px solid #f59e0b;padding:14px 16px;border-radius:6px;margin:24px 0;font-size:13px;color:#78350f;line-height:1.6">
-          <strong style="display:block;margin-bottom:6px">💡 Penting:</strong>
-          Jangan berkongsi kod ini kepada sesiapa. Minda Optima tidak akan meminta kod anda melalui emel atau WhatsApp.
+        <div style="background:#fef3c7;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:4px;margin:24px 0;font-size:12px;color:#78350f;line-height:1.5">
+          <strong>⚠️ Jangan berkongsi:</strong> Jangan berikan kod ini kepada sesiapa. Kami tidak akan minta kod ini di emel.
         </div>
       </div>
 
       <!-- Footer -->
-      <div style="background:#f8fafc;padding:20px;text-align:center;font-size:12px;color:#64748b;border-top:1px solid #e2e8f0">
-        <p style="margin:0 0 4px 0"><strong>Minda Optima</strong> © 2026</p>
-        <p style="margin:0">Program Rujukan Rasmi</p>
+      <div style="background:#f9fafb;padding:16px;text-align:center;font-size:11px;color:#64748b;border-top:1px solid #e2e8f0">
+        <p style="margin:0">Minda Optima © 2026</p>
       </div>
     </div>
   `;
