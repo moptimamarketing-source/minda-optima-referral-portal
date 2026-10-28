@@ -48,7 +48,7 @@ async function sessionFor(token) {
   return row;
 }
 
-function confirmationEmail({ name, code, phone, email, occupation }) {
+export function confirmationEmail({ name, code, phone, email, occupation }) {
   const share = `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, anak dapat 1 kelas PERCUMA & saya dapat RM100 🎉 👉 ${SITE}/daftar.html?ref=${code}`;
   const waLink = `https://wa.me/?text=${encodeURIComponent(share)}`;
   const waGroupLink = 'https://chat.whatsapp.com/Ech6q73TWPH9qFC5en8gDm';
