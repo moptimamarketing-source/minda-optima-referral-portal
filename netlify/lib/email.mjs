@@ -7,6 +7,26 @@ export const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 }[c]));
 
+/** Ambil tetapan (key/value) dari jadual public.settings, untuk kandungan email yang
+ * boleh diedit via admin (gambar header, tajuk, dll). Pulangkan {} bila gagal/offline
+ * supaya email masih boleh dihantar dengan nilai lalai (fallback) dalam templat. */
+export async function fetchSettings(keys) {
+  try {
+    const url = process.env.SUPABASE_URL.replace(/\/+$/, '');
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const res = await fetch(`${url}/rest/v1/settings?select=key,value&key=in.(${keys.join(',')})`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    });
+    if (!res.ok) return {};
+    const rows = await res.json();
+    const out = {};
+    for (const row of rows) out[row.key] = row.value;
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 let transporter;
 function getTransporter() {
   if (!transporter) {

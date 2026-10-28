@@ -1,5 +1,5 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { sendEmail, esc, SITE } from '../lib/email.mjs';
+import { sendEmail, esc, SITE, fetchSettings } from '../lib/email.mjs';
 import { otpEmail } from './auth.mjs';
 
 const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
@@ -18,8 +18,17 @@ const SETTINGS_KEYS = [
   'share_message_template',
   'faq1_q', 'faq1_a', 'faq2_q', 'faq2_a', 'faq3_q', 'faq3_a',
   'faq4_q', 'faq4_a', 'faq5_q', 'faq5_a', 'faq6_q', 'faq6_a',
+  'otp_email_header_image', 'otp_email_heading', 'otp_email_desc',
+  'welcome_email_header_image', 'welcome_email_heading', 'welcome_email_subtitle',
+  'welcome_email_image1', 'welcome_email_image2',
+  'approved_email_header_image', 'approved_email_heading', 'approved_email_subtitle',
+  'paid_email_header_image', 'paid_email_heading', 'paid_email_subtitle',
 ];
 const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
+const IMAGE_URL_SETTINGS = [
+  'otp_email_header_image', 'welcome_email_header_image', 'welcome_email_image1', 'welcome_email_image2',
+  'approved_email_header_image', 'paid_email_header_image',
+];
 const TEXT_SETTINGS_MAX = {
   hero_badge_label: 60, hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300,
   how_it_works_title: 60, how_it_works_subtitle: 100,
@@ -34,6 +43,11 @@ const TEXT_SETTINGS_MAX = {
   share_message_template: 500,
   faq1_q: 150, faq1_a: 500, faq2_q: 150, faq2_a: 500, faq3_q: 150, faq3_a: 500,
   faq4_q: 150, faq4_a: 500, faq5_q: 150, faq5_a: 500, faq6_q: 150, faq6_a: 500,
+  otp_email_header_image: 500, otp_email_heading: 80, otp_email_desc: 200,
+  welcome_email_header_image: 500, welcome_email_heading: 80, welcome_email_subtitle: 200,
+  welcome_email_image1: 500, welcome_email_image2: 500,
+  approved_email_header_image: 500, approved_email_heading: 80, approved_email_subtitle: 200,
+  paid_email_header_image: 500, paid_email_heading: 80, paid_email_subtitle: 200,
 };
 
 const json = (status, body) => new Response(JSON.stringify(body), {
@@ -205,7 +219,8 @@ async function resendOtp(body) {
     return json(422, { error: reason || 'Gagal jana OTP.' });
   }
 
-  const emailRes = await sendEmail(r.email, 'Kod OTP Referral Anda — Minda Optima', otpEmail({ otp: r.otp }));
+  const emailSettings = await fetchSettings(['otp_email_header_image', 'otp_email_heading', 'otp_email_desc']);
+  const emailRes = await sendEmail(r.email, 'Kod OTP Referral Anda — Minda Optima', otpEmail({ otp: r.otp, s: emailSettings }));
   if (!emailRes.ok) return json(502, { error: emailRes.error });
 
   return json(200, { ok: true, phone: r.phone, email: r.email });
@@ -279,22 +294,30 @@ async function notifyEmail(body) {
   const ref = row.referrers;
   if (!ref?.email) return json(422, { error: 'This referrer has no email on file.' });
 
+  const emailSettings = await fetchSettings([
+    'approved_email_header_image', 'approved_email_heading', 'approved_email_subtitle',
+    'paid_email_header_image', 'paid_email_heading', 'paid_email_subtitle',
+  ]);
+
   let subject;
   let html;
   if (row.status === 'approved') {
+    const headerImage = emailSettings.approved_email_header_image || 'https://drive.google.com/uc?id=1QUvgbM8Cf6RNh0qn6K_e9GRTFzHFu4-F';
+    const heading = emailSettings.approved_email_heading || '✓ Rujukan Anda Layak!';
+    const subtitle = emailSettings.approved_email_subtitle || 'Tahniah! Rujukan anda telah disahkan memenuhi kriteria program kami.';
     subject = '✓ Rujukan Anda Layak';
     html = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
         <!-- Header Image -->
         <div style="text-align:center">
-          <img src="https://drive.google.com/uc?id=1QUvgbM8Cf6RNh0qn6K_e9GRTFzHFu4-F" alt="Rujukan Layak" style="width:100%;max-width:560px;display:block">
+          <img src="${esc(headerImage)}" alt="Minda Optima" style="width:100%;max-width:560px;display:block">
         </div>
 
         <!-- Content -->
         <div style="padding:40px 24px">
           <!-- Greeting -->
-          <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 8px 0;text-align:center">✓ Rujukan Anda Layak!</h1>
-          <p style="font-size:14px;color:#64748b;margin:0 0 32px 0;text-align:center;line-height:1.6">Tahniah! Rujukan anda telah disahkan memenuhi kriteria program kami.</p>
+          <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 8px 0;text-align:center">${esc(heading)}</h1>
+          <p style="font-size:14px;color:#64748b;margin:0 0 32px 0;text-align:center;line-height:1.6">${esc(subtitle)}</p>
 
           <!-- Status Box -->
           <div style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:12px;padding:24px;margin:32px 0;text-align:center;color:white">
@@ -340,19 +363,22 @@ async function notifyEmail(body) {
       </div>`;
   } else {
     const acc = ref.phone ? `Touch 'n Go •••• ${esc(String(ref.phone).slice(-4))}` : "Touch 'n Go anda";
+    const headerImage = emailSettings.paid_email_header_image || 'https://drive.google.com/uc?id=12SPd0G_EfTz-_OdPcAba5xwMNzKBQ_ip';
+    const heading = emailSettings.paid_email_heading || '🎉 Pembayaran Selesai!';
+    const subtitle = emailSettings.paid_email_subtitle || 'Ganjaran anda telah diproses dan akan masuk ke akaun Touch \'n Go anda.';
     subject = '🎉 Pembayaran Reward Selesai';
     html = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
         <!-- Header Image -->
         <div style="text-align:center">
-          <img src="https://drive.google.com/uc?id=12SPd0G_EfTz-_OdPcAba5xwMNzKBQ_ip" alt="Pembayaran Selesai" style="width:100%;max-width:560px;display:block">
+          <img src="${esc(headerImage)}" alt="Minda Optima" style="width:100%;max-width:560px;display:block">
         </div>
 
         <!-- Content -->
         <div style="padding:40px 24px">
           <!-- Greeting -->
-          <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 8px 0;text-align:center">🎉 Pembayaran Selesai!</h1>
-          <p style="font-size:14px;color:#64748b;margin:0 0 32px 0;text-align:center;line-height:1.6">Ganjaran anda telah diproses dan akan masuk ke akaun Touch 'n Go anda.</p>
+          <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 8px 0;text-align:center">${esc(heading)}</h1>
+          <p style="font-size:14px;color:#64748b;margin:0 0 32px 0;text-align:center;line-height:1.6">${esc(subtitle)}</p>
 
           <!-- Payment Status Box -->
           <div style="background:linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%);border-radius:12px;padding:24px;margin:32px 0;text-align:center;color:white">
@@ -420,6 +446,10 @@ async function getSettings() {
 
 function validateSetting(key, raw) {
   const v = String(raw ?? '').trim();
+  if (IMAGE_URL_SETTINGS.includes(key)) {
+    if (!/^https:\/\/\S+$/.test(v)) return { error: 'Link gambar tak sah. Kena mula dengan https://' };
+    return { value: v };
+  }
   if (key === 'promo_enabled') {
     return { value: v === 'true' || v === 'on' || v === '1' ? 'true' : 'false' };
   }

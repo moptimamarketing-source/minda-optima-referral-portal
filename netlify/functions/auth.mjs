@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { sendEmail, esc, SITE, TELEGRAM_LINK } from '../lib/email.mjs';
+import { sendEmail, esc, SITE, TELEGRAM_LINK, fetchSettings } from '../lib/email.mjs';
 
 const SESSION_DAYS = 30;
 
@@ -48,23 +48,28 @@ async function sessionFor(token) {
   return row;
 }
 
-export function confirmationEmail({ name, code, phone, email, occupation }) {
+export function confirmationEmail({ name, code, phone, email, occupation, s = {} }) {
   const share = `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, anak dapat 1 kelas PERCUMA & saya dapat RM100 🎉 👉 ${SITE}/daftar.html?ref=${code}`;
   const waLink = `https://wa.me/?text=${encodeURIComponent(share)}`;
-  const waGroupLink = 'https://chat.whatsapp.com/Ech6q73TWPH9qFC5en8gDm';
+  const waGroupLink = s.community_link || 'https://chat.whatsapp.com/Ech6q73TWPH9qFC5en8gDm';
+  const headerImage = s.welcome_email_header_image || 'https://drive.google.com/uc?id=15gWaMZTfS9d8-z1yN7dKLmvDgjPYGbud';
+  const heading = s.welcome_email_heading || '🎉 Selamat Datang!';
+  const subtitle = s.welcome_email_subtitle || 'Terima kasih telah mendaftar. Kod rujukan anda sudah siap untuk dikongsi.';
+  const image1 = s.welcome_email_image1 || 'https://drive.google.com/uc?id=12BtXDOAxv_ofGCpDuTdUQHPhWt6ZMtL2';
+  const image2 = s.welcome_email_image2 || 'https://drive.google.com/uc?id=1PzIvylgBQPfawl2JxyHRAKGH_gdEOBmE';
 
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
       <!-- Header Image -->
       <div style="text-align:center">
-        <img src="https://drive.google.com/uc?id=15gWaMZTfS9d8-z1yN7dKLmvDgjPYGbud" alt="Minda Optima" style="width:100%;max-width:560px;display:block">
+        <img src="${esc(headerImage)}" alt="Minda Optima" style="width:100%;max-width:560px;display:block">
       </div>
 
       <!-- Content -->
       <div style="padding:40px 24px">
         <!-- Greeting -->
-        <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 8px 0;text-align:center">🎉 Selamat Datang!</h1>
-        <p style="font-size:14px;color:#64748b;margin:0 0 40px 0;text-align:center;line-height:1.6">Terima kasih telah mendaftar. Kod rujukan anda sudah siap untuk dikongsi.</p>
+        <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 8px 0;text-align:center">${esc(heading)}</h1>
+        <p style="font-size:14px;color:#64748b;margin:0 0 40px 0;text-align:center;line-height:1.6">${esc(subtitle)}</p>
 
         <!-- User Details -->
         <div style="background:#f9fafb;border-radius:8px;padding:16px;margin:32px 0;font-size:13px">
@@ -100,8 +105,8 @@ export function confirmationEmail({ name, code, phone, email, occupation }) {
 
         <!-- Marketing Images -->
         <div style="margin:40px 0;text-align:center">
-          <img src="https://drive.google.com/uc?id=12BtXDOAxv_ofGCpDuTdUQHPhWt6ZMtL2" alt="3 Langkah Mudah Dapat Ganjaran" style="width:100%;max-width:500px;border-radius:8px;margin-bottom:16px">
-          <img src="https://drive.google.com/uc?id=1PzIvylgBQPfawl2JxyHRAKGH_gdEOBmE" alt="Selamat Datang ke Komuniti Minda Optima" style="width:100%;max-width:500px;border-radius:8px">
+          <img src="${esc(image1)}" alt="Minda Optima" style="width:100%;max-width:500px;border-radius:8px;margin-bottom:16px">
+          <img src="${esc(image2)}" alt="Minda Optima" style="width:100%;max-width:500px;border-radius:8px">
         </div>
 
         <!-- WhatsApp Community Button -->
@@ -129,12 +134,16 @@ const OTP_ERRORS = {
   invalid_email: 'Emel tidak sah.',
 };
 
-export function otpEmail({ otp }) {
+export function otpEmail({ otp, s = {} }) {
+  const headerImage = s.otp_email_header_image || `${SITE}/logo-mindaoptima.webp`;
+  const heading = s.otp_email_heading || 'Sahkan Kod OTP Anda';
+  const desc = s.otp_email_desc || 'Masukkan kod di bawah untuk mengesahkan pendaftaran anda sebagai referrer Minda Optima.';
+
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
       <!-- Logo Header -->
       <div style="padding:24px 20px;text-align:center;border-bottom:1px solid #e2e8f0">
-        <img src="${SITE}/logo-mindaoptima.webp" alt="Minda Optima" style="height:70px;max-width:100%">
+        <img src="${esc(headerImage)}" alt="Minda Optima" style="height:70px;max-width:100%">
       </div>
 
       <!-- Content -->
@@ -143,10 +152,10 @@ export function otpEmail({ otp }) {
         <p style="font-size:12px;color:#0D2A5C;text-transform:uppercase;font-weight:700;letter-spacing:1px;margin:0 0 12px 0;text-align:center">Pengesahan Akaun</p>
 
         <!-- Headline -->
-        <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 12px 0;text-align:center;line-height:1.3">Sahkan Kod OTP Anda</h1>
+        <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 12px 0;text-align:center;line-height:1.3">${esc(heading)}</h1>
 
         <!-- Description -->
-        <p style="font-size:14px;color:#64748b;margin:0 0 32px 0;text-align:center;line-height:1.6">Masukkan kod di bawah untuk mengesahkan pendaftaran anda sebagai referrer Minda Optima.</p>
+        <p style="font-size:14px;color:#64748b;margin:0 0 32px 0;text-align:center;line-height:1.6">${esc(desc)}</p>
 
         <!-- OTP Code Box -->
         <div style="background:#f0f4ff;border:2px solid #0D2A5C;border-radius:12px;padding:32px 24px;margin:32px 0;text-align:center">
@@ -206,7 +215,8 @@ async function sendOtp(body) {
     return json(422, { error: OTP_ERRORS[r?.reason] || 'Gagal hantar OTP. Sila cuba lagi.' });
   }
 
-  const emailRes = await sendEmail(r.email, 'Kod OTP Referral Anda — Minda Optima', otpEmail({ otp: r.otp }));
+  const emailSettings = await fetchSettings(['otp_email_header_image', 'otp_email_heading', 'otp_email_desc']);
+  const emailRes = await sendEmail(r.email, 'Kod OTP Referral Anda — Minda Optima', otpEmail({ otp: r.otp, s: emailSettings }));
   if (!emailRes.ok) return json(502, { error: emailRes.error });
 
   return json(200, { ok: true, phone: r.phone, email: r.email });
@@ -276,7 +286,11 @@ async function register(body) {
     email: s.email,
     occupation: String(body.occupation ?? '').trim(),
   };
-  await sendEmail(s.email, `Pendaftaran Berjaya — Kod Rujukan ${r.data.code}`, confirmationEmail(details));
+  const emailSettings = await fetchSettings([
+    'community_link', 'welcome_email_header_image', 'welcome_email_heading',
+    'welcome_email_subtitle', 'welcome_email_image1', 'welcome_email_image2',
+  ]);
+  await sendEmail(s.email, `Pendaftaran Berjaya — Kod Rujukan ${r.data.code}`, confirmationEmail({ ...details, s: emailSettings }));
 
   return json(200, { ok: true, code: r.data.code });
 }

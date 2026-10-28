@@ -49,6 +49,7 @@
         <button type="button" data-tab="landing" class="tab-btn rounded-full px-4 py-2 text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">Landing Page</button>
         <button type="button" data-tab="pendaftaran" class="tab-btn rounded-full px-4 py-2 text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">Pendaftaran</button>
         <button type="button" data-tab="dashboard" class="tab-btn rounded-full px-4 py-2 text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">Dashboard</button>
+        <button type="button" data-tab="email" class="tab-btn rounded-full px-4 py-2 text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">Email</button>
       </div>
 
       <!-- ===== TAB: Umum ===== -->
@@ -314,6 +315,81 @@
         </section>
       </div>
 
+      <!-- ===== TAB: Email ===== -->
+      <div data-tab-panel="email" class="hidden space-y-6">
+        <p class="text-sm text-slate-500">Edit gambar header &amp; text untuk setiap email automatik. Link gambar kena URL penuh (https://...) — guna Google Drive (<code class="rounded bg-slate-100 px-1">drive.google.com/uc?id=FILE_ID</code>) atau hos lain.</p>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Email Kod OTP</h2>
+          <p class="text-sm text-slate-500">Dihantar semasa log masuk/daftar untuk sahkan emel.</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold sm:col-span-2">Link Gambar Header
+              <input id="set-otp-email-header-image" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://...">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Tajuk
+              <input id="set-otp-email-heading" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Deskripsi
+              <input id="set-otp-email-desc" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Email Selamat Datang</h2>
+          <p class="text-sm text-slate-500">Dihantar lepas parent selesai daftar (nama, pekerjaan).</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold sm:col-span-2">Link Gambar Header
+              <input id="set-welcome-email-header-image" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://...">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Tajuk
+              <input id="set-welcome-email-heading" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Deskripsi
+              <input id="set-welcome-email-subtitle" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Link Gambar Marketing 1
+              <input id="set-welcome-email-image1" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://...">
+            </label>
+            <label class="block text-sm font-semibold">Link Gambar Marketing 2
+              <input id="set-welcome-email-image2" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://...">
+            </label>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Email Rujukan Layak</h2>
+          <p class="text-sm text-slate-500">Dihantar dari admin bila rujukan ditukar status ke Approved.</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold sm:col-span-2">Link Gambar Header
+              <input id="set-approved-email-header-image" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://...">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Tajuk
+              <input id="set-approved-email-heading" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Deskripsi
+              <input id="set-approved-email-subtitle" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Email Pembayaran Selesai</h2>
+          <p class="text-sm text-slate-500">Dihantar dari admin bila rujukan ditukar status ke Paid.</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold sm:col-span-2">Link Gambar Header
+              <input id="set-paid-email-header-image" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://...">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Tajuk
+              <input id="set-paid-email-heading" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Deskripsi
+              <input id="set-paid-email-subtitle" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
+        </section>
+      </div>
+
       <div class="sticky bottom-4 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg">
         <button type="submit" class="rounded-xl bg-brand px-6 py-3 text-white font-bold hover:bg-brand-light disabled:opacity-60">Simpan Semua</button>
         <p id="save-error" class="hidden text-sm font-semibold text-red-700" role="alert"></p>
@@ -324,10 +400,13 @@
     <!-- Live preview panel -->
     <aside class="hidden lg:block w-[420px] shrink-0 sticky top-4">
       <p class="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Pratonton Langsung — <span id="preview-page-label">Landing Page</span></p>
-      <div class="preview-shell shadow-lg border border-slate-200">
+      <div id="preview-frame-wrap" class="preview-shell shadow-lg border border-slate-200">
         <div class="preview-scale">
           <iframe id="preview-frame" title="Pratonton"></iframe>
         </div>
+      </div>
+      <div id="preview-email-note" class="hidden rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500">
+        Tiada pratonton langsung untuk email. Simpan dulu, lepas tu guna "Push OTP Manual" di page Admin, atau butang "Email" pada senarai rujukan, untuk tengok hasil sebenar dalam inbox.
       </div>
     </aside>
     </div>
@@ -394,6 +473,13 @@
     let previewFrameReady = false;
 
     function setPreviewTab(tab) {
+      const isEmail = tab === 'email';
+      document.getElementById('preview-frame-wrap').classList.toggle('hidden', isEmail);
+      document.getElementById('preview-email-note').classList.toggle('hidden', !isEmail);
+      if (isEmail) {
+        previewLabel.textContent = 'Email';
+        return;
+      }
       const src = PREVIEW_SRC[tab] || 'index.html';
       previewLabel.textContent = PREVIEW_LABEL[tab] || 'Landing Page';
       const current = previewFrame.getAttribute('data-src');
@@ -476,6 +562,24 @@
       'set-faq4-q': 'faq4_q', 'set-faq4-a': 'faq4_a',
       'set-faq5-q': 'faq5_q', 'set-faq5-a': 'faq5_a',
       'set-faq6-q': 'faq6_q', 'set-faq6-a': 'faq6_a',
+
+      'set-otp-email-header-image': 'otp_email_header_image',
+      'set-otp-email-heading': 'otp_email_heading',
+      'set-otp-email-desc': 'otp_email_desc',
+
+      'set-welcome-email-header-image': 'welcome_email_header_image',
+      'set-welcome-email-heading': 'welcome_email_heading',
+      'set-welcome-email-subtitle': 'welcome_email_subtitle',
+      'set-welcome-email-image1': 'welcome_email_image1',
+      'set-welcome-email-image2': 'welcome_email_image2',
+
+      'set-approved-email-header-image': 'approved_email_header_image',
+      'set-approved-email-heading': 'approved_email_heading',
+      'set-approved-email-subtitle': 'approved_email_subtitle',
+
+      'set-paid-email-header-image': 'paid_email_header_image',
+      'set-paid-email-heading': 'paid_email_heading',
+      'set-paid-email-subtitle': 'paid_email_subtitle',
     };
 
     function renderSettings(s) {
