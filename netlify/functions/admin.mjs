@@ -151,6 +151,42 @@ async function setStatus(body) {
   return json(200, { ok: true });
 }
 
+const confirmsDelete = (body) => String(body.confirm ?? '').trim().toLowerCase() === 'delete';
+
+async function deleteReferral(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  if (!confirmsDelete(body)) return json(422, { error: 'Taip "delete" untuk sahkan.' });
+
+  const del = await sb(`referrals?id=eq.${id}`, { method: 'DELETE', prefer: 'return=representation' });
+  if (!del.ok) {
+    console.error('deleteReferral error:', del.data);
+    return json(502, { error: `Gagal padam rujukan: ${del.data?.message || 'Unknown error'}` });
+  }
+  if (!del.data?.length) return json(404, { error: 'Rujukan tak dijumpai.' });
+  return json(200, { ok: true });
+}
+
+async function deleteReferrer(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  if (!confirmsDelete(body)) return json(422, { error: 'Taip "delete" untuk sahkan.' });
+
+  const delReferrals = await sb(`referrals?referrer_id=eq.${id}`, { method: 'DELETE' });
+  if (!delReferrals.ok) {
+    console.error('deleteReferrer (referrals) error:', delReferrals.data);
+    return json(502, { error: 'Gagal padam rujukan penjemput.' });
+  }
+
+  const del = await sb(`referrers?id=eq.${id}`, { method: 'DELETE', prefer: 'return=representation' });
+  if (!del.ok) {
+    console.error('deleteReferrer error:', del.data);
+    return json(502, { error: `Gagal padam penjemput: ${del.data?.message || 'Unknown error'}` });
+  }
+  if (!del.data?.length) return json(404, { error: 'Penjemput tak dijumpai.' });
+  return json(200, { ok: true });
+}
+
 const clean = (v, max) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
 
 async function editReferrer(body) {
@@ -454,6 +490,8 @@ export default async (req) => {
     if (body.action === 'status') return await setStatus(body);
     if (body.action === 'edit-referrer') return await editReferrer(body);
     if (body.action === 'edit-referee') return await editReferee(body);
+    if (body.action === 'delete-referral') return await deleteReferral(body);
+    if (body.action === 'delete-referrer') return await deleteReferrer(body);
     if (body.action === 'notify-email') return await notifyEmail(body);
     if (body.action === 'get-settings') return await getSettings();
     if (body.action === 'save-settings') return await saveSettings(body);

@@ -158,6 +158,20 @@
     </form>
   </dialog>
 
+  <dialog id="delete-dialog" class="w-[min(26rem,92vw)] rounded-2xl p-0 backdrop:bg-black/40">
+    <form id="delete-form" class="p-6">
+      <h2 class="text-lg font-extrabold text-red-700">Padam Rekod</h2>
+      <p id="delete-desc" class="mt-2 text-sm text-slate-600"></p>
+      <p class="mt-3 text-sm font-semibold">Taip <code class="rounded bg-slate-100 px-1.5 py-0.5 text-red-700">delete</code> untuk sahkan:</p>
+      <input id="delete-confirm-input" autocomplete="off" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-red-500" placeholder="delete">
+      <p id="delete-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+      <div class="mt-5 flex justify-end gap-2">
+        <button type="button" id="delete-cancel" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50">Batal</button>
+        <button type="submit" id="delete-submit" disabled class="rounded-xl bg-red-600 px-5 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed">Padam</button>
+      </div>
+    </form>
+  </dialog>
+
   <script>
     const API = '/.netlify/functions/admin';
     const PW_KEY = 'mo_admin_pw';
@@ -269,6 +283,7 @@
         </td>
         <td class="px-3 py-3 text-right whitespace-nowrap">
           <button data-edit-referee="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button>
+          <button data-delete-referral="${esc(r.id)}" class="ml-3 text-sm font-semibold text-red-600 hover:underline">Padam</button>
           ${notifyButtons(r)}
         </td>
       </tr>`).join('');
@@ -321,7 +336,10 @@
         <td class="px-3 py-3 font-mono text-xs">${esc(r.code)}</td>
         <td class="px-3 py-3">${esc(r.email || '—')}</td>
         <td class="px-3 py-3">${esc(r.occupation || '—')}</td>
-        <td class="px-3 py-3 text-right"><button data-edit-referrer="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button></td>
+        <td class="px-3 py-3 text-right whitespace-nowrap">
+          <button data-edit-referrer="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button>
+          <button data-delete-referrer="${esc(r.id)}" class="ml-3 text-sm font-semibold text-red-600 hover:underline">Padam</button>
+        </td>
       </tr>`).join('') || '<tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">Takde referrer lagi.</td></tr>';
     }
 
@@ -462,15 +480,62 @@
       $('edit-dialog').showModal();
     }
 
+    let deleting = null;
+
+    function openDelete(kind, id) {
+      const row = kind === 'referrer'
+        ? referrers.find((r) => String(r.id) === id)
+        : referrals.find((r) => String(r.id) === id);
+      if (!row) return;
+      deleting = { kind, id: row.id };
+      $('delete-desc').textContent = kind === 'referrer'
+        ? `Padam penjemput "${row.name}" (${row.code}) — SEMUA rujukan di bawah dia akan dipadam sekali. Tindakan ini tak boleh diundur.`
+        : `Padam rujukan "${row.referee_name || row.referee_phone}" di bawah kod ${row.code}. Tindakan ini tak boleh diundur.`;
+      $('delete-confirm-input').value = '';
+      $('delete-submit').disabled = true;
+      $('delete-error').classList.add('hidden');
+      $('delete-dialog').showModal();
+      $('delete-confirm-input').focus();
+    }
+
     document.addEventListener('click', (e) => {
       const a = e.target.closest('[data-edit-referrer]');
       const b = e.target.closest('[data-edit-referee]');
       const n = e.target.closest('[data-notify-email]');
+      const dRef = e.target.closest('[data-delete-referrer]');
+      const dRel = e.target.closest('[data-delete-referral]');
       if (n) sendNotify(n.dataset.notifyEmail, n);
       if (a) openEdit('referrer', a.dataset.editReferrer);
       if (b) openEdit('referee', b.dataset.editReferee);
+      if (dRef) openDelete('referrer', dRef.dataset.deleteReferrer);
+      if (dRel) openDelete('referral', dRel.dataset.deleteReferral);
     });
     $('edit-cancel').addEventListener('click', () => $('edit-dialog').close());
+    $('delete-cancel').addEventListener('click', () => $('delete-dialog').close());
+    $('delete-confirm-input').addEventListener('input', (e) => {
+      $('delete-submit').disabled = e.target.value.trim().toLowerCase() !== 'delete';
+    });
+
+    $('delete-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!deleting || $('delete-confirm-input').value.trim().toLowerCase() !== 'delete') return;
+      const btn = $('delete-submit');
+      btn.disabled = true;
+      try {
+        await call({
+          action: deleting.kind === 'referrer' ? 'delete-referrer' : 'delete-referral',
+          id: deleting.id,
+          confirm: 'delete',
+        });
+        $('delete-dialog').close();
+        await load();
+      } catch (err) {
+        if (err.status === 401) { $('delete-dialog').close(); return showLogin('Kata laluan salah.'); }
+        $('delete-error').textContent = err.message;
+        $('delete-error').classList.remove('hidden');
+        btn.disabled = false;
+      }
+    });
 
     $('edit-form').addEventListener('submit', async (e) => {
       e.preventDefault();
