@@ -457,6 +457,13 @@
       </tr>`).join('') || '<tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">Takde referrer lagi.</td></tr>';
     }
 
+    function supportWaLink(r) {
+      const phone = (r.phone || '').replace(/\D/g, '');
+      if (!phone) return '';
+      const msg = `Salam ${r.name}, terima kasih kerana menghubungi sokongan Minda Optima.${r.code ? ` Kod rujukan: ${r.code}.` : ''} Mengenai masalah anda: "${r.problem}" — `;
+      return `https://wa.me/60${phone.replace(/^0/, '')}?text=${encodeURIComponent(msg)}`;
+    }
+
     function renderSupport() {
       const filtered = supportRequests;
       $('support-empty').classList.toggle('hidden', filtered.length > 0);
@@ -471,7 +478,8 @@
           <span class="rounded-full px-2.5 py-1 text-xs font-semibold ${r.handled ? 'bg-slate-200 text-slate-600' : 'bg-amber-100 text-amber-800'}">${r.handled ? 'Selesai' : 'Baharu'}</span>
         </td>
         <td class="px-3 py-3 text-right whitespace-nowrap">
-          ${r.screenshot_path ? `<button data-view-screenshot="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Gambar</button>` : ''}
+          ${supportWaLink(r) ? `<a href="${esc(supportWaLink(r))}" target="_blank" rel="noopener" class="text-sm font-semibold text-emerald-700 hover:underline">WhatsApp</a>` : ''}
+          ${r.screenshot_path ? `<button data-view-screenshot="${esc(r.id)}" class="ml-3 text-sm font-semibold text-brand hover:underline">Gambar</button>` : ''}
           <button data-toggle-handled="${esc(r.id)}" data-next="${r.handled ? 'false' : 'true'}" class="ml-3 text-sm font-semibold text-brand hover:underline">${r.handled ? 'Tandai Baharu' : 'Tandai Selesai'}</button>
         </td>
       </tr>`).join('');

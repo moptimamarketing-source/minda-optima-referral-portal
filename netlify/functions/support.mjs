@@ -1,4 +1,7 @@
 import { randomBytes } from 'node:crypto';
+import { sendEmail, esc, SITE } from '../lib/email.mjs';
+
+const ADMIN_NOTIFY_EMAIL = 'moptima.marketing@gmail.com';
 
 const json = (status, body) => new Response(JSON.stringify(body), {
   status,
@@ -91,6 +94,27 @@ export default async (req) => {
     if (!ins.ok) {
       console.error('support_requests insert error:', ins.data);
       return json(502, { error: 'Gagal hantar. Sila cuba lagi.' });
+    }
+
+    const notifyHtml = `
+      <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1e293b">
+        <h2 style="color:#0D2A5C">🔔 Permintaan Sokongan Baharu</h2>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:12px">
+          <tr><td style="padding:6px 0;color:#64748b;width:30%">Nama</td><td style="padding:6px 0;font-weight:600">${esc(name)}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b">Kod Rujukan</td><td style="padding:6px 0;font-weight:600">${esc(code || '—')}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b">Telefon</td><td style="padding:6px 0;font-weight:600">${esc(phone || '—')}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b;vertical-align:top">Masalah</td><td style="padding:6px 0;font-weight:600">${esc(problem)}</td></tr>
+          ${screenshotPath ? '<tr><td style="padding:6px 0;color:#64748b">Screenshot</td><td style="padding:6px 0;font-weight:600">Ada (lihat di admin panel)</td></tr>' : ''}
+        </table>
+        <p style="margin-top:20px"><a href="${SITE}/admin" style="display:inline-block;background:#0D2A5C;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold">Buka Admin Panel</a></p>
+      </div>`;
+    // Awaited (not fire-and-forget): a Netlify Function's background work can be
+    // killed the moment the response is returned, so the send must finish first.
+    // A failed notification should never fail the user's submission, though.
+    try {
+      await sendEmail(ADMIN_NOTIFY_EMAIL, `🔔 Permintaan Sokongan Baharu — ${name}`, notifyHtml);
+    } catch (e) {
+      console.error('Admin notify email failed:', e);
     }
 
     return json(200, { ok: true });
