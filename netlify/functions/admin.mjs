@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { sendEmail, esc, SITE, fetchSettings, imagesBlock } from '../lib/email.mjs';
-import { otpEmail } from './auth.mjs';
+import { otpEmail, confirmationEmail } from './auth.mjs';
 
 const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
 const SETTINGS_KEYS = [
@@ -234,6 +234,26 @@ async function resendOtp(body) {
   if (!emailRes.ok) return json(502, { error: emailRes.error });
 
   return json(200, { ok: true, phone: r.phone, email: r.email });
+}
+
+async function resendWelcome(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+
+  const r = await sb(`referrers?select=name,code,phone,email,occupation&id=eq.${id}`);
+  if (!r.ok) return json(502, { error: 'Gagal baca rekod.' });
+  const ref = r.data?.[0];
+  if (!ref) return json(404, { error: 'Penjemput tak dijumpai.' });
+  if (!ref.email) return json(422, { error: 'Penjemput ni tiada emel direkod.' });
+
+  const emailSettings = await fetchSettings([
+    'community_link', 'welcome_email_header_image', 'welcome_email_heading',
+    'welcome_email_subtitle', 'welcome_email_image1', 'welcome_email_image2',
+  ]);
+  const html = confirmationEmail({ ...ref, s: emailSettings });
+  const sent = await sendEmail(ref.email, `Pendaftaran Berjaya — Kod Rujukan ${ref.code}`, html);
+  if (!sent.ok) return json(502, { error: sent.error });
+  return json(200, { ok: true, to: ref.email });
 }
 
 async function editReferrer(body) {
@@ -563,6 +583,7 @@ export default async (req) => {
     if (body.action === 'delete-referral') return await deleteReferral(body);
     if (body.action === 'delete-referrer') return await deleteReferrer(body);
     if (body.action === 'resend-otp') return await resendOtp(body);
+    if (body.action === 'resend-welcome') return await resendWelcome(body);
     if (body.action === 'notify-email') return await notifyEmail(body);
     if (body.action === 'get-settings') return await getSettings();
     if (body.action === 'save-settings') return await saveSettings(body);

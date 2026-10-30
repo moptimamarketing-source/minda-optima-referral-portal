@@ -377,6 +377,22 @@
       }
     }
 
+    async function sendResendWelcome(id, btn) {
+      const r = referrers.find((x) => String(x.id) === String(id));
+      if (!r) return;
+      if (!confirm(`Hantar semula email Selamat Datang kat ${r.email || 'penjemput ni'}?`)) return;
+      btn.disabled = true;
+      try {
+        const d = await call({ action: 'resend-welcome', id: Number(id) });
+        alert(`Email dah hantar kat ${d.to}.`);
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        alert(err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     function filterReferrers() {
       const q = $('referrer-search').value.trim().toLowerCase();
       if (!q) return referrers;
@@ -394,6 +410,7 @@
         <td class="px-3 py-3">${esc(r.occupation || '—')}</td>
         <td class="px-3 py-3 text-right whitespace-nowrap">
           <button data-edit-referrer="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button>
+          ${r.email ? `<button data-resend-welcome="${esc(r.id)}" class="ml-3 text-sm font-semibold text-brand hover:underline">Welcome</button>` : ''}
           <button data-delete-referrer="${esc(r.id)}" class="ml-3 text-sm font-semibold text-red-600 hover:underline">Padam</button>
         </td>
       </tr>`).join('') || '<tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">Takde referrer lagi.</td></tr>';
@@ -580,7 +597,9 @@
       const n = e.target.closest('[data-notify-email]');
       const dRef = e.target.closest('[data-delete-referrer]');
       const dRel = e.target.closest('[data-delete-referral]');
+      const w = e.target.closest('[data-resend-welcome]');
       if (n) sendNotify(n.dataset.notifyEmail, n);
+      if (w) sendResendWelcome(w.dataset.resendWelcome, w);
       if (a) openEdit('referrer', a.dataset.editReferrer);
       if (b) openEdit('referee', b.dataset.editReferee);
       if (dRef) openDelete('referrer', dRef.dataset.deleteReferrer);
