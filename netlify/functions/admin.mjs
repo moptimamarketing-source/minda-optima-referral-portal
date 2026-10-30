@@ -25,7 +25,7 @@ const SETTINGS_KEYS = [
   'approved_email_image1', 'approved_email_image2',
   'paid_email_header_image', 'paid_email_heading', 'paid_email_subtitle',
   'paid_email_image1', 'paid_email_image2',
-  'video_title', 'video_desc', 'video_url',
+  'video_title', 'video_desc', 'video_url', 'video2_url',
 ];
 const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
 const REQUIRED_IMAGE_SETTINGS = [
@@ -37,7 +37,7 @@ const OPTIONAL_IMAGE_SETTINGS = [
   'approved_email_image1', 'approved_email_image2',
   'paid_email_image1', 'paid_email_image2',
 ];
-const OPTIONAL_URL_SETTINGS = ['video_url'];
+const OPTIONAL_URL_SETTINGS = ['video_url', 'video2_url'];
 const OPTIONAL_TEXT_SETTINGS = ['video_title', 'video_desc'];
 const TEXT_SETTINGS_MAX = {
   hero_badge_label: 60, hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300,
@@ -61,7 +61,7 @@ const TEXT_SETTINGS_MAX = {
   approved_email_image1: 500, approved_email_image2: 500,
   paid_email_header_image: 500, paid_email_heading: 80, paid_email_subtitle: 200,
   paid_email_image1: 500, paid_email_image2: 500,
-  video_title: 80, video_desc: 200, video_url: 500,
+  video_title: 80, video_desc: 200, video_url: 500, video2_url: 500,
 };
 
 const json = (status, body) => new Response(JSON.stringify(body), {

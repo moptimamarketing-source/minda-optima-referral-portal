@@ -169,7 +169,7 @@
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5">
           <h2 class="text-lg font-bold text-brand">Video Tutorial</h2>
-          <p class="text-sm text-slate-500">Letak link embed (bukan link biasa). Contoh YouTube: <code class="rounded bg-slate-100 px-1">https://www.youtube.com/embed/VIDEO_ID</code>. Keluar di landing page <strong>dan</strong> dashboard sekali. Kosongkan link untuk sembunyikan section ni terus dari kedua-dua page.</p>
+          <p class="text-sm text-slate-500">Boleh terus paste link biasa YouTube/Vimeo (watch, youtu.be, shorts) — sistem auto-tukar jadi link embed. Keluar di landing page <strong>dan</strong> dashboard sekali. Kosongkan kedua-dua link untuk sembunyikan section ni terus.</p>
           <div class="mt-4 grid gap-3 sm:grid-cols-2">
             <label class="block text-sm font-semibold">Tajuk
               <input id="set-video-title" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
@@ -177,8 +177,11 @@
             <label class="block text-sm font-semibold">Sub-teks
               <input id="set-video-desc" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
             </label>
-            <label class="block text-sm font-semibold sm:col-span-2">Link Embed Video (kosongkan untuk sembunyi)
-              <input id="set-video-url" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://www.youtube.com/embed/VIDEO_ID">
+            <label class="block text-sm font-semibold">Link Video 1 (kosongkan untuk sembunyi)
+              <input id="set-video-url" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://www.youtube.com/watch?v=VIDEO_ID">
+            </label>
+            <label class="block text-sm font-semibold">Link Video 2 (kosongkan untuk sembunyi)
+              <input id="set-video2-url" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://www.youtube.com/watch?v=VIDEO_ID">
             </label>
           </div>
         </section>
@@ -574,6 +577,7 @@
       'set-video-title': 'video_title',
       'set-video-desc': 'video_desc',
       'set-video-url': 'video_url',
+      'set-video2-url': 'video2_url',
 
       'set-login-hero-title-line1': 'login_hero_title_line1',
       'set-login-hero-title-line2': 'login_hero_title_line2',
@@ -635,6 +639,36 @@
 
     const COLOR_PRESETS = { telegram: '#229ED9', whatsapp: '#25D366', brand: '#0D2A5C' };
 
+    // Sama macam MO.toEmbedUrl() dalam common.js (iframe pratonton guna salinan sendiri
+    // sebab cross-window access ke MO dalam iframe tak boleh dipercayai masa loading).
+    function toEmbedUrl(raw) {
+      const v = String(raw ?? '').trim();
+      if (!v) return '';
+      let u;
+      try { u = new URL(v); } catch { return v; }
+      const host = u.hostname.replace(/^www\./, '');
+      if (host === 'youtu.be') {
+        const id = u.pathname.slice(1);
+        return id ? `https://www.youtube.com/embed/${id}` : v;
+      }
+      if (host === 'youtube.com' || host === 'm.youtube.com') {
+        if (u.pathname === '/watch') {
+          const id = u.searchParams.get('v');
+          return id ? `https://www.youtube.com/embed/${id}` : v;
+        }
+        if (u.pathname.startsWith('/shorts/')) {
+          const id = u.pathname.split('/')[2];
+          return id ? `https://www.youtube.com/embed/${id}` : v;
+        }
+        return v;
+      }
+      if (host === 'vimeo.com') {
+        const id = u.pathname.split('/').filter(Boolean).pop();
+        return id ? `https://player.vimeo.com/video/${id}` : v;
+      }
+      return v;
+    }
+
     function currentDraftSettings() {
       const s = { promo_enabled: $('set-promo-enabled').checked ? 'true' : 'false' };
       for (const [id, key] of Object.entries(FIELD_MAP)) s[key] = $(id).value;
@@ -678,10 +712,21 @@
       const communityCard = doc.getElementById('community-card');
       if (communityCard) communityCard.classList.toggle('hidden', !s.community_link);
       const videoSection = doc.getElementById('video-section');
-      const videoEmbed = doc.getElementById('video-embed');
-      if (videoSection && videoEmbed) {
-        videoSection.classList.toggle('hidden', !s.video_url);
-        if (s.video_url) videoEmbed.src = s.video_url;
+      if (videoSection) {
+        let anyVideo = false;
+        [['video-slot-1', 'video-embed-1', s.video_url], ['video-slot-2', 'video-embed-2', s.video2_url]].forEach(([slotId, iframeId, url]) => {
+          const slot = doc.getElementById(slotId);
+          const iframe = doc.getElementById(iframeId);
+          if (!slot || !iframe) return;
+          if (url) {
+            iframe.src = toEmbedUrl(url);
+            slot.classList.remove('hidden');
+            anyVideo = true;
+          } else {
+            slot.classList.add('hidden');
+          }
+        });
+        videoSection.classList.toggle('hidden', !anyVideo);
       }
     }
 

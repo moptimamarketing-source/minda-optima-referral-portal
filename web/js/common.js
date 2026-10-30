@@ -5,6 +5,38 @@ const MO = (() => {
   // Nilai lalai; ditulis ganti oleh /.netlify/functions/settings (boleh diedit dalam admin.html).
   let PROMO_DEADLINE = new Date('2026-12-31T23:59:59+08:00');
 
+  // Terima link biasa yang orang copy dari browser (YouTube watch/shorts/youtu.be,
+  // Vimeo) dan tukar jadi link embed yang boleh letak dalam <iframe>. Link embed
+  // yang admin dah letak terus (atau host lain) dibiarkan macam asal.
+  function toEmbedUrl(raw) {
+    const v = String(raw ?? '').trim();
+    if (!v) return '';
+    let u;
+    try { u = new URL(v); } catch { return v; }
+    const host = u.hostname.replace(/^www\./, '');
+
+    if (host === 'youtu.be') {
+      const id = u.pathname.slice(1);
+      return id ? `https://www.youtube.com/embed/${id}` : v;
+    }
+    if (host === 'youtube.com' || host === 'm.youtube.com') {
+      if (u.pathname === '/watch') {
+        const id = u.searchParams.get('v');
+        return id ? `https://www.youtube.com/embed/${id}` : v;
+      }
+      if (u.pathname.startsWith('/shorts/')) {
+        const id = u.pathname.split('/')[2];
+        return id ? `https://www.youtube.com/embed/${id}` : v;
+      }
+      return v; // dah /embed/... atau format lain — biar macam asal
+    }
+    if (host === 'vimeo.com') {
+      const id = u.pathname.split('/').filter(Boolean).pop();
+      return id ? `https://player.vimeo.com/video/${id}` : v;
+    }
+    return v;
+  }
+
   function countdownParts(target, now = new Date()) {
     const ms = Math.max(0, target.getTime() - now.getTime());
     const s = Math.floor(ms / 1000);
@@ -133,13 +165,22 @@ const MO = (() => {
       document.querySelectorAll('[data-promo-only]').forEach((el) => { el.classList.add('hidden'); });
     }
 
-    if (s.video_url) {
-      const section = document.getElementById('video-section');
-      const iframe = document.getElementById('video-embed');
-      if (section && iframe) {
-        iframe.src = s.video_url;
-        section.classList.remove('hidden');
-      }
+    const section = document.getElementById('video-section');
+    if (section) {
+      let anyVideo = false;
+      [['video-slot-1', 'video-embed-1', s.video_url], ['video-slot-2', 'video-embed-2', s.video2_url]].forEach(([slotId, iframeId, url]) => {
+        const slot = document.getElementById(slotId);
+        const iframe = document.getElementById(iframeId);
+        if (!slot || !iframe) return;
+        if (url) {
+          iframe.src = toEmbedUrl(url);
+          slot.classList.remove('hidden');
+          anyVideo = true;
+        } else {
+          slot.classList.add('hidden');
+        }
+      });
+      section.classList.toggle('hidden', !anyVideo);
     }
 
     lastSettings = s;
@@ -154,7 +195,7 @@ const MO = (() => {
   });
 
   return {
-    countdownParts, startCountdowns, api, copyText, escapeHtml, initSupportLinks,
+    countdownParts, startCountdowns, api, copyText, escapeHtml, initSupportLinks, toEmbedUrl,
     settingsReady,
     get PROMO_DEADLINE() { return PROMO_DEADLINE; },
     get settings() { return lastSettings; },
