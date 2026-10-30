@@ -11,7 +11,7 @@
     .dash-grid {
       display: grid;
       grid-template-columns: 1fr;
-      grid-template-areas: "banner" "stats" "code" "share" "syarat" "community" "list" "faq";
+      grid-template-areas: "banner" "stats" "code" "share" "syarat" "community" "list" "video" "faq";
       gap: 1.5rem;
     }
     @media (min-width: 1024px) {
@@ -22,6 +22,7 @@
           "code    stats"
           "share   syarat"
           "list    community"
+          "video   video"
           "faq     faq";
         align-items: start;
       }
@@ -33,6 +34,7 @@
     .area-syarat { grid-area: syarat; }
     .area-community { grid-area: community; }
     .area-list { grid-area: list; }
+    .area-video { grid-area: video; }
     .area-faq { grid-area: faq; }
   </style>
 </head>
@@ -188,6 +190,16 @@
       <p id="empty-state" class="hidden px-5 py-10 text-center text-slate-500">
         Belum ada rujukan lagi. Kongsi kod anda sekarang! 🚀
       </p>
+    </section>
+
+    <!-- Video Tutorial (hidden until admin sets a video link in Content Editor) -->
+    <section id="video-section" class="area-video hidden rounded-2xl bg-white border border-slate-200 p-5">
+      <h2 class="font-bold text-brand" data-content="video_title">Lihat Cara Ia Berfungsi</h2>
+      <p class="mt-1 text-sm text-slate-500" data-content="video_desc">Tonton video ringkas di bawah</p>
+      <div class="mt-4 overflow-hidden rounded-xl border border-slate-200" style="aspect-ratio:16/9">
+        <iframe id="video-embed" class="w-full h-full" src="" title="Video Tutorial" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
     </section>
 
     <!-- FAQ -->
