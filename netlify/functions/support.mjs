@@ -78,6 +78,7 @@ export default async (req) => {
     const problem = clean(body.problem, 1000);
 
     if (name.length < 2) return json(422, { error: 'Nama penuh diperlukan.' });
+    if (phone.length < 9) return json(422, { error: 'Nombor telefon diperlukan.' });
     if (problem.length < 5) return json(422, { error: 'Sila terangkan masalah anda.' });
 
     let screenshotPath = null;

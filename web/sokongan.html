@@ -35,9 +35,9 @@
                  class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" placeholder="cth. MO-6789-HKSG">
         </label>
 
-        <label class="block text-sm font-semibold text-slate-700">Nombor Telefon (pilihan)
-          <input id="s-phone" name="phone" type="tel" maxlength="20"
-                 class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" placeholder="cth. 0176629820">
+        <label class="block text-sm font-semibold text-slate-700">Nombor Telefon
+          <input id="s-phone" name="phone" type="tel" maxlength="20" required
+                 class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" placeholder="cth. 0123456789">
         </label>
 
         <label class="block text-sm font-semibold text-slate-700">Masalah Yang Dihadapi
@@ -90,8 +90,10 @@
       $('s-error').classList.add('hidden');
 
       const name = $('s-name').value.trim();
+      const phone = $('s-phone').value.trim();
       const problem = $('s-problem').value.trim();
       if (name.length < 2) return showError('Nama penuh diperlukan.');
+      if (phone.length < 9) return showError('Nombor telefon diperlukan.');
       if (problem.length < 5) return showError('Sila terangkan masalah anda.');
 
       const file = $('s-screenshot').files[0];
