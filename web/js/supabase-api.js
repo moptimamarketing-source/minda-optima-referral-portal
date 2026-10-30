@@ -52,7 +52,7 @@
 
   // Pautan yang dikongsi ke WhatsApp: halaman jemputan portal ini, supaya setiap klik direkod.
   function shareUrl(code) {
-    const u = new URL('daftar.html', window.location.href);
+    const u = new URL('daftar', window.location.href);
     u.search = '';
     u.hash = '';
     u.searchParams.set('ref', code);
