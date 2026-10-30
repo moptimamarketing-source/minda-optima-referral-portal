@@ -177,6 +177,25 @@
     </form>
   </dialog>
 
+  <dialog id="code-dialog" class="w-[min(28rem,92vw)] rounded-2xl p-0 backdrop:bg-black/40">
+    <form id="code-form" class="p-6">
+      <h2 class="text-lg font-extrabold text-brand">Tukar Kod Rujukan</h2>
+      <p class="mt-2 text-sm text-slate-600">Kod lama akan ditukar ke kod baru di sini, <strong>termasuk</strong> semua rekod rujukan sedia ada yang guna kod lama (supaya senarai/statistik kekal betul).</p>
+      <p class="mt-3 text-sm font-semibold">Kod semasa: <code id="code-current" class="rounded bg-slate-100 px-1.5 py-0.5 text-brand"></code></p>
+      <label class="mt-3 block text-sm font-semibold">Taip kod lama untuk sahkan
+        <input id="code-old-input" autocomplete="off" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-mono uppercase outline-none focus:border-brand" placeholder="MO-6789-HKSG">
+      </label>
+      <label class="mt-3 block text-sm font-semibold">Kod baru
+        <input id="code-new-input" autocomplete="off" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-mono uppercase outline-none focus:border-brand" placeholder="MO-6789-HKSG">
+      </label>
+      <p id="code-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+      <div class="mt-5 flex justify-end gap-2">
+        <button type="button" id="code-cancel" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50">Batal</button>
+        <button type="submit" id="code-submit" disabled class="rounded-xl bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed">Tukar Kod</button>
+      </div>
+    </form>
+  </dialog>
+
   <dialog id="delete-dialog" class="w-[min(26rem,92vw)] rounded-2xl p-0 backdrop:bg-black/40">
     <form id="delete-form" class="p-6">
       <h2 class="text-lg font-extrabold text-red-700">Padam Rekod</h2>
@@ -410,6 +429,7 @@
         <td class="px-3 py-3">${esc(r.occupation || '—')}</td>
         <td class="px-3 py-3 text-right whitespace-nowrap">
           <button data-edit-referrer="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button>
+          <button data-change-code="${esc(r.id)}" class="ml-3 text-sm font-semibold text-brand hover:underline">Tukar Kod</button>
           ${r.email ? `<button data-resend-welcome="${esc(r.id)}" class="ml-3 text-sm font-semibold text-brand hover:underline">Welcome</button>` : ''}
           <button data-delete-referrer="${esc(r.id)}" class="ml-3 text-sm font-semibold text-red-600 hover:underline">Padam</button>
         </td>
@@ -573,6 +593,27 @@
       $('edit-dialog').showModal();
     }
 
+    let changingCode = null;
+
+    function openCodeDialog(id) {
+      const row = referrers.find((r) => String(r.id) === id);
+      if (!row) return;
+      changingCode = { id: row.id, code: row.code };
+      $('code-current').textContent = row.code;
+      $('code-old-input').value = '';
+      $('code-new-input').value = '';
+      $('code-submit').disabled = true;
+      $('code-error').classList.add('hidden');
+      $('code-dialog').showModal();
+      $('code-old-input').focus();
+    }
+
+    function validateCodeForm() {
+      const oldOk = $('code-old-input').value.trim().toUpperCase() === (changingCode?.code || '');
+      const newOk = /^MO-\d{4}-[A-Z]{4}$/.test($('code-new-input').value.trim().toUpperCase());
+      $('code-submit').disabled = !(oldOk && newOk);
+    }
+
     let deleting = null;
 
     function openDelete(kind, id) {
@@ -598,13 +639,41 @@
       const dRef = e.target.closest('[data-delete-referrer]');
       const dRel = e.target.closest('[data-delete-referral]');
       const w = e.target.closest('[data-resend-welcome]');
+      const c = e.target.closest('[data-change-code]');
       if (n) sendNotify(n.dataset.notifyEmail, n);
       if (w) sendResendWelcome(w.dataset.resendWelcome, w);
+      if (c) openCodeDialog(c.dataset.changeCode);
       if (a) openEdit('referrer', a.dataset.editReferrer);
       if (b) openEdit('referee', b.dataset.editReferee);
       if (dRef) openDelete('referrer', dRef.dataset.deleteReferrer);
       if (dRel) openDelete('referral', dRel.dataset.deleteReferral);
     });
+    $('code-cancel').addEventListener('click', () => $('code-dialog').close());
+    $('code-old-input').addEventListener('input', validateCodeForm);
+    $('code-new-input').addEventListener('input', validateCodeForm);
+
+    $('code-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!changingCode) return;
+      const btn = $('code-submit');
+      btn.disabled = true;
+      try {
+        await call({
+          action: 'change-referrer-code',
+          id: changingCode.id,
+          oldCode: $('code-old-input').value.trim(),
+          newCode: $('code-new-input').value.trim(),
+        });
+        $('code-dialog').close();
+        await load();
+      } catch (err) {
+        if (err.status === 401) { $('code-dialog').close(); return showLogin('Kata laluan salah.'); }
+        $('code-error').textContent = err.message;
+        $('code-error').classList.remove('hidden');
+        btn.disabled = false;
+      }
+    });
+
     $('edit-cancel').addEventListener('click', () => $('edit-dialog').close());
     $('delete-cancel').addEventListener('click', () => $('delete-dialog').close());
     $('delete-confirm-input').addEventListener('input', (e) => {

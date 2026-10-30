@@ -178,6 +178,39 @@ async function setStatus(body) {
   return json(200, { ok: true });
 }
 
+async function changeReferrerCode(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+
+  const oldCodeTyped = String(body.oldCode ?? '').trim().toUpperCase();
+  const newCode = String(body.newCode ?? '').trim().toUpperCase();
+  if (!/^MO-\d{4}-[A-Z]{4}$/.test(newCode)) return json(422, { error: 'Format kod baru tak sah. Contoh: MO-6789-HKSG' });
+
+  const cur = await sb(`referrers?select=code&id=eq.${id}`);
+  if (!cur.ok) return json(502, { error: 'Gagal baca rekod.' });
+  const referrer = cur.data?.[0];
+  if (!referrer) return json(404, { error: 'Penjemput tak dijumpai.' });
+  if (oldCodeTyped !== referrer.code) return json(422, { error: 'Kod lama tak sepadan. Sila taip kod rujukan semasa dengan betul untuk sahkan.' });
+  if (newCode === referrer.code) return json(422, { error: 'Kod baru sama dengan kod semasa.' });
+
+  const oldCode = referrer.code;
+
+  const up = await sb(`referrers?id=eq.${id}`, { method: 'PATCH', prefer: 'return=representation', body: { code: newCode } });
+  if (!up.ok) {
+    if (up.data?.code === '23505') return json(409, { error: 'Kod ini sudah digunakan penjemput lain.' });
+    console.error('changeReferrerCode (referrers) error:', up.data);
+    return json(502, { error: `Gagal tukar kod: ${up.data?.message || 'Unknown error'}` });
+  }
+  if (!up.data?.length) return json(404, { error: 'Penjemput tak dijumpai.' });
+
+  const upReferrals = await sb(`referrals?code=eq.${oldCode}`, { method: 'PATCH', body: { code: newCode } });
+  if (!upReferrals.ok) console.error('changeReferrerCode (referrals) error:', upReferrals.data);
+  const upEvents = await sb(`referral_events?code=eq.${oldCode}`, { method: 'PATCH', body: { code: newCode } });
+  if (!upEvents.ok) console.error('changeReferrerCode (referral_events) error:', upEvents.data);
+
+  return json(200, { ok: true, oldCode, newCode });
+}
+
 const confirmsDelete = (body) => String(body.confirm ?? '').trim().toLowerCase() === 'delete';
 
 async function deleteReferral(body) {
@@ -579,6 +612,7 @@ export default async (req) => {
     if (body.action === 'add') return await add(body);
     if (body.action === 'status') return await setStatus(body);
     if (body.action === 'edit-referrer') return await editReferrer(body);
+    if (body.action === 'change-referrer-code') return await changeReferrerCode(body);
     if (body.action === 'edit-referee') return await editReferee(body);
     if (body.action === 'delete-referral') return await deleteReferral(body);
     if (body.action === 'delete-referrer') return await deleteReferrer(body);
