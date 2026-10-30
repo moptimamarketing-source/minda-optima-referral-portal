@@ -641,6 +641,9 @@
 
     // Sama macam MO.toEmbedUrl() dalam common.js (iframe pratonton guna salinan sendiri
     // sebab cross-window access ke MO dalam iframe tak boleh dipercayai masa loading).
+    function youtubeEmbed(id) {
+      return `https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0`;
+    }
     function toEmbedUrl(raw) {
       const v = String(raw ?? '').trim();
       if (!v) return '';
@@ -649,22 +652,26 @@
       const host = u.hostname.replace(/^www\./, '');
       if (host === 'youtu.be') {
         const id = u.pathname.slice(1);
-        return id ? `https://www.youtube.com/embed/${id}` : v;
+        return id ? youtubeEmbed(id) : v;
       }
-      if (host === 'youtube.com' || host === 'm.youtube.com') {
+      if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') {
         if (u.pathname === '/watch') {
           const id = u.searchParams.get('v');
-          return id ? `https://www.youtube.com/embed/${id}` : v;
+          return id ? youtubeEmbed(id) : v;
         }
         if (u.pathname.startsWith('/shorts/')) {
           const id = u.pathname.split('/')[2];
-          return id ? `https://www.youtube.com/embed/${id}` : v;
+          return id ? youtubeEmbed(id) : v;
+        }
+        if (u.pathname.startsWith('/embed/')) {
+          const id = u.pathname.split('/')[2];
+          return id ? youtubeEmbed(id) : v;
         }
         return v;
       }
-      if (host === 'vimeo.com') {
+      if (host === 'vimeo.com' || host === 'player.vimeo.com') {
         const id = u.pathname.split('/').filter(Boolean).pop();
-        return id ? `https://player.vimeo.com/video/${id}` : v;
+        return id ? `https://player.vimeo.com/video/${id}?dnt=1` : v;
       }
       return v;
     }

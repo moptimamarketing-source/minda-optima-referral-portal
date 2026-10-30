@@ -6,8 +6,13 @@ const MO = (() => {
   let PROMO_DEADLINE = new Date('2026-12-31T23:59:59+08:00');
 
   // Terima link biasa yang orang copy dari browser (YouTube watch/shorts/youtu.be,
-  // Vimeo) dan tukar jadi link embed yang boleh letak dalam <iframe>. Link embed
-  // yang admin dah letak terus (atau host lain) dibiarkan macam asal.
+  // Vimeo) dan tukar jadi link embed privacy-enhanced (youtube-nocookie.com, tiada
+  // related videos/branding) untuk letak dalam <iframe>. Ini langkah PENCEGAH je,
+  // bukan block sepenuhnya — sesiapa yang buka Inspect/F12 masih boleh jumpa link asal.
+  function youtubeEmbed(id) {
+    return `https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0`;
+  }
+
   function toEmbedUrl(raw) {
     const v = String(raw ?? '').trim();
     if (!v) return '';
@@ -17,22 +22,26 @@ const MO = (() => {
 
     if (host === 'youtu.be') {
       const id = u.pathname.slice(1);
-      return id ? `https://www.youtube.com/embed/${id}` : v;
+      return id ? youtubeEmbed(id) : v;
     }
-    if (host === 'youtube.com' || host === 'm.youtube.com') {
+    if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') {
       if (u.pathname === '/watch') {
         const id = u.searchParams.get('v');
-        return id ? `https://www.youtube.com/embed/${id}` : v;
+        return id ? youtubeEmbed(id) : v;
       }
       if (u.pathname.startsWith('/shorts/')) {
         const id = u.pathname.split('/')[2];
-        return id ? `https://www.youtube.com/embed/${id}` : v;
+        return id ? youtubeEmbed(id) : v;
       }
-      return v; // dah /embed/... atau format lain — biar macam asal
+      if (u.pathname.startsWith('/embed/')) {
+        const id = u.pathname.split('/')[2];
+        return id ? youtubeEmbed(id) : v;
+      }
+      return v;
     }
-    if (host === 'vimeo.com') {
+    if (host === 'vimeo.com' || host === 'player.vimeo.com') {
       const id = u.pathname.split('/').filter(Boolean).pop();
-      return id ? `https://player.vimeo.com/video/${id}` : v;
+      return id ? `https://player.vimeo.com/video/${id}?dnt=1` : v;
     }
     return v;
   }
