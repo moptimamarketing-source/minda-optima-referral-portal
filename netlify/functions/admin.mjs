@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual, randomBytes } from 'node:crypto';
 import { sendEmail, esc, SITE, fetchSettings, imagesBlock } from '../lib/email.mjs';
 import { otpEmail, confirmationEmail } from './auth.mjs';
 
@@ -114,12 +114,13 @@ async function sb(path, { method = 'GET', body, prefer } = {}) {
 }
 
 async function list() {
-  const [funnel, referrals, unknown, referrers, supportRequests] = await Promise.all([
+  const [funnel, referrals, unknown, referrers, supportRequests, materials] = await Promise.all([
     sb('referral_funnel?select=*&order=registrations.desc,landings.desc'),
     sb('referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone,email)&order=registered_at.desc&limit=500'),
     sb('referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
     sb('referrers?select=*&order=created_at.desc&limit=500'),
     sb('support_requests?select=*&order=created_at.desc&limit=200'),
+    sb('creative_materials?select=*&order=category.asc,sort_order.asc,created_at.desc&limit=500'),
   ]);
 
   if (!funnel.ok) {
@@ -146,6 +147,7 @@ async function list() {
     unknown: unknown.data,
     referrers: referrers.data,
     supportRequests: supportRequests.ok ? supportRequests.data : [],
+    materials: materials.ok ? materials.data : [],
   });
 }
 
@@ -331,6 +333,91 @@ async function getScreenshotUrl(body) {
     return json(502, { error: 'Gagal jana link gambar.' });
   }
   return json(200, { url: `${url}/storage/v1${data.signedURL}` });
+}
+
+const MATERIAL_CATEGORIES = ['image', 'text', 'video'];
+const MATERIAL_FILE_TYPES = {
+  'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp',
+  'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov',
+};
+const MAX_MATERIAL_BYTES = 40 * 1024 * 1024;
+
+async function addMaterial(body) {
+  const category = String(body.category ?? '').trim();
+  if (!MATERIAL_CATEGORIES.includes(category)) return json(422, { error: 'Kategori tak sah.' });
+  const title = String(body.title ?? '').trim().slice(0, 120);
+  if (title.length < 2) return json(422, { error: 'Tajuk diperlukan.' });
+  const description = String(body.description ?? '').trim().slice(0, 300) || null;
+
+  let textContent = null;
+  let filePath = null;
+
+  if (category === 'text') {
+    textContent = String(body.textContent ?? '').trim().slice(0, 2000);
+    if (textContent.length < 2) return json(422, { error: 'Teks copywriting diperlukan.' });
+  } else {
+    const ext = MATERIAL_FILE_TYPES[body.fileType];
+    if (!ext) return json(422, { error: 'Jenis fail tak disokong.' });
+    let buf;
+    try {
+      buf = Buffer.from(String(body.fileBase64 ?? ''), 'base64');
+    } catch {
+      return json(422, { error: 'Fail tak sah.' });
+    }
+    if (!buf.length) return json(422, { error: 'Fail tak sah.' });
+    if (buf.length > MAX_MATERIAL_BYTES) return json(422, { error: 'Saiz fail terlalu besar (maks 40MB).' });
+
+    const path = `${category}/${Date.now()}-${randomBytes(6).toString('hex')}.${ext}`;
+    const url = process.env.SUPABASE_URL.replace(/\/+$/, '');
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const up = await fetch(`${url}/storage/v1/object/creative-materials/${path}`, {
+      method: 'POST',
+      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': body.fileType },
+      body: buf,
+    });
+    if (!up.ok) {
+      console.error('material upload failed:', up.status, await up.text().catch(() => ''));
+      return json(502, { error: 'Gagal muat naik fail.' });
+    }
+    filePath = path;
+  }
+
+  const ins = await sb('creative_materials', {
+    method: 'POST',
+    prefer: 'return=representation',
+    body: { category, title, description, text_content: textContent, file_path: filePath },
+  });
+  if (!ins.ok) {
+    console.error('addMaterial insert error:', ins.data);
+    return json(502, { error: 'Gagal simpan bahan.' });
+  }
+  return json(200, { ok: true, material: ins.data?.[0] });
+}
+
+async function deleteMaterial(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  if (!confirmsDelete(body)) return json(422, { error: 'Taip "delete" untuk sahkan.' });
+
+  const found = await sb(`creative_materials?id=eq.${id}&select=file_path`);
+  if (!found.ok || !found.data?.length) return json(404, { error: 'Bahan tak dijumpai.' });
+  const filePath = found.data[0].file_path;
+
+  const del = await sb(`creative_materials?id=eq.${id}`, { method: 'DELETE' });
+  if (!del.ok) {
+    console.error('deleteMaterial error:', del.data);
+    return json(502, { error: 'Gagal padam bahan.' });
+  }
+
+  if (filePath) {
+    const url = process.env.SUPABASE_URL.replace(/\/+$/, '');
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    await fetch(`${url}/storage/v1/object/creative-materials/${filePath}`, {
+      method: 'DELETE',
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    }).catch(() => {});
+  }
+  return json(200, { ok: true });
 }
 
 async function editReferrer(body) {
@@ -669,6 +756,8 @@ export default async (req) => {
     if (body.action === 'mark-support-handled') return await markSupportHandled(body);
     if (body.action === 'get-screenshot-url') return await getScreenshotUrl(body);
     if (body.action === 'notify-email') return await notifyEmail(body);
+    if (body.action === 'add-material') return await addMaterial(body);
+    if (body.action === 'delete-material') return await deleteMaterial(body);
     if (body.action === 'get-settings') return await getSettings();
     if (body.action === 'save-settings') return await saveSettings(body);
     return json(400, { error: 'Tindakan tak dikenali.' });

@@ -38,6 +38,7 @@ const links = [
 const pages = {
   'index.html': { from: pub, edits: [['<script src="/js/common.js"></script>', SCRIPTS, true]] },
   'dashboard.html': { from: pub, edits: [['<script src="/js/common.js"></script>', SCRIPTS, true]] },
+  'bahan.html': { from: pub, edits: [['<script src="/js/common.js"></script>', SCRIPTS, true]] },
   'daftar.html': {
     from: pub,
     edits: [

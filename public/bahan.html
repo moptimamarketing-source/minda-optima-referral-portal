@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bahan Kreatif — Rujukan Minda Optima</title>
+  <meta name="theme-color" content="#0D2A5C">
+  <link rel="stylesheet" href="/css/tailwind.css">
+  <script src="/js/common.js"></script>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased" style="background-image:url('/bg-decor.svg');background-repeat:repeat-y;background-size:100% 700px;background-position:top center;">
+
+  <header class="bg-brand text-white relative">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between relative">
+      <div class="flex items-center gap-3">
+        <a href="/" class="h-16 flex items-center shrink-0">
+          <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-16 w-auto">
+        </a>
+        <div>
+          <p class="text-white/70 text-sm">Bahan Kreatif</p>
+          <h1 class="text-xl sm:text-2xl font-extrabold leading-tight">Promosikan Rujukan Anda</h1>
+        </div>
+      </div>
+      <a href="/dashboard" class="text-sm font-semibold text-white/90 hover:text-white underline shrink-0">← Dashboard</a>
+    </div>
+  </header>
+
+  <main id="app" class="max-w-5xl mx-auto px-4 py-6 space-y-8" aria-busy="true">
+    <p id="loading" class="text-center text-slate-500 py-10">Memuatkan...</p>
+
+    <div id="content" class="hidden space-y-8">
+      <p class="text-slate-600">Guna poster, teks dan video di bawah untuk kongsi program rujukan dengan rakan dan keluarga anda.</p>
+
+      <section>
+        <h2 class="text-lg font-bold text-brand mb-3">🖼️ Poster / Gambar Marketing</h2>
+        <div id="grid-image" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <p id="empty-image" class="hidden text-sm text-slate-400">Belum ada bahan dalam kategori ini.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-brand mb-3">✍️ Copywriting / Teks</h2>
+        <div id="grid-text" class="space-y-3"></div>
+        <p id="empty-text" class="hidden text-sm text-slate-400">Belum ada bahan dalam kategori ini.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-brand mb-3">🎬 Video</h2>
+        <div id="grid-video" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+        <p id="empty-video" class="hidden text-sm text-slate-400">Belum ada bahan dalam kategori ini.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="pb-8 text-center text-xs text-slate-400">
+    Perlu bantuan? <a data-support-link href="#" class="text-sm font-bold text-brand underline hover:text-brand-light">Hubungi Sokongan</a>
+  </footer>
+
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm px-4 py-2 rounded-lg shadow-lg transition-opacity opacity-0 pointer-events-none">
+    <span></span>
+  </div>
+
+  <script>
+    function toast(text) {
+      const el = document.getElementById('toast');
+      el.firstElementChild.textContent = text;
+      el.classList.remove('opacity-0');
+      setTimeout(() => el.classList.add('opacity-0'), 1600);
+    }
+
+    function card(inner) {
+      return `<div class="rounded-xl bg-white shadow p-4 flex flex-col gap-3">${inner}</div>`;
+    }
+
+    function imageCard(m) {
+      return card(`
+        <img src="${m.fileUrl}" alt="${MO.escapeHtml(m.title)}" class="rounded-lg w-full h-40 object-cover bg-slate-100">
+        <div>
+          <p class="font-semibold text-slate-800">${MO.escapeHtml(m.title)}</p>
+          ${m.description ? `<p class="text-sm text-slate-500">${MO.escapeHtml(m.description)}</p>` : ''}
+        </div>
+        <div class="flex gap-2 mt-auto">
+          <a href="${m.fileUrl}" download class="flex-1 text-center rounded-lg bg-brand text-white text-sm font-semibold py-2 hover:bg-brand-light">Muat Turun</a>
+          <button data-share-image="${m.fileUrl}" data-share-title="${MO.escapeHtml(m.title)}" class="flex-1 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2 hover:bg-slate-200">Kongsi</button>
+        </div>
+      `);
+    }
+
+    function videoCard(m) {
+      return card(`
+        <video src="${m.fileUrl}" class="rounded-lg w-full bg-slate-900" controls preload="metadata"></video>
+        <div>
+          <p class="font-semibold text-slate-800">${MO.escapeHtml(m.title)}</p>
+          ${m.description ? `<p class="text-sm text-slate-500">${MO.escapeHtml(m.description)}</p>` : ''}
+        </div>
+        <div class="flex gap-2 mt-auto">
+          <a href="${m.fileUrl}" download class="flex-1 text-center rounded-lg bg-brand text-white text-sm font-semibold py-2 hover:bg-brand-light">Muat Turun</a>
+          <button data-share-video="${m.fileUrl}" data-share-title="${MO.escapeHtml(m.title)}" class="flex-1 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2 hover:bg-slate-200">Kongsi</button>
+        </div>
+      `);
+    }
+
+    function textCard(m) {
+      return card(`
+        <div>
+          <p class="font-semibold text-slate-800">${MO.escapeHtml(m.title)}</p>
+          ${m.description ? `<p class="text-sm text-slate-500 mb-2">${MO.escapeHtml(m.description)}</p>` : ''}
+          <p class="whitespace-pre-wrap text-sm bg-slate-50 rounded-lg p-3 text-slate-700">${MO.escapeHtml(m.textContent)}</p>
+        </div>
+        <button data-copy-text="${encodeURIComponent(m.textContent)}" class="self-start rounded-lg bg-brand text-white text-sm font-semibold px-4 py-2 hover:bg-brand-light">📋 Salin Teks</button>
+      `);
+    }
+
+    function wireActions(root) {
+      root.querySelectorAll('[data-copy-text]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const text = decodeURIComponent(btn.dataset.copyText);
+          toast((await MO.copyText(text)) ? 'Teks disalin!' : 'Gagal salin');
+        });
+      });
+      root.querySelectorAll('[data-share-image], [data-share-video]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const url = btn.dataset.shareImage || btn.dataset.shareVideo;
+          const title = btn.dataset.shareTitle || 'Minda Optima';
+          if (navigator.share) {
+            try {
+              const res = await fetch(url);
+              const blob = await res.blob();
+              const file = new File([blob], url.split('/').pop(), { type: blob.type });
+              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title });
+                return;
+              }
+              await navigator.share({ title, url });
+            } catch { /* user cancelled or share failed, fall through */ }
+          } else {
+            toast((await MO.copyText(url)) ? 'Link disalin!' : 'Gagal salin');
+          }
+        });
+      });
+    }
+
+    MO.api('/api/dashboard').then(async () => {
+      let data = { image: [], text: [], video: [] };
+      try {
+        const res = await fetch('/.netlify/functions/creative');
+        if (res.ok) data = await res.json();
+      } catch { /* guna senarai kosong */ }
+
+      const gridImage = document.getElementById('grid-image');
+      const gridText = document.getElementById('grid-text');
+      const gridVideo = document.getElementById('grid-video');
+
+      gridImage.innerHTML = data.image.map(imageCard).join('');
+      gridText.innerHTML = data.text.map(textCard).join('');
+      gridVideo.innerHTML = data.video.map(videoCard).join('');
+
+      document.getElementById('empty-image').classList.toggle('hidden', data.image.length > 0);
+      document.getElementById('empty-text').classList.toggle('hidden', data.text.length > 0);
+      document.getElementById('empty-video').classList.toggle('hidden', data.video.length > 0);
+
+      wireActions(document.getElementById('content'));
+
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('content').classList.remove('hidden');
+      document.getElementById('app').setAttribute('aria-busy', 'false');
+    }).catch((err) => {
+      if (err.status === 401) {
+        window.location.replace('/login');
+      } else {
+        document.getElementById('loading').textContent = 'Ralat memuatkan halaman. Sila cuba lagi.';
+      }
+    });
+  </script>
+</body>
+</html>

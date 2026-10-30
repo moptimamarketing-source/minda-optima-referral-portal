@@ -68,19 +68,14 @@
         </div>
       </div>
       <div class="flex items-center gap-4 shrink-0 relative">
-        <!-- Desktop: inline links -->
-        <div class="hidden lg:flex items-center gap-4">
-          <button id="profile-btn-desktop" class="text-sm text-white/80 hover:text-white">👤 Profil</button>
-          <button id="logout-desktop" class="text-sm text-white/80 hover:text-white">Log Keluar</button>
-        </div>
-
-        <!-- Mobile: hamburger menu -->
-        <button id="menu-toggle" type="button" class="lg:hidden text-white hover:text-white/80 transition" title="Menu">
+        <!-- Hamburger menu (desktop + mobile) -->
+        <button id="menu-toggle" type="button" class="text-white hover:text-white/80 transition" title="Menu">
           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <div id="menu-dropdown" class="hidden absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg py-2 min-w-40 z-50">
+        <div id="menu-dropdown" class="hidden absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg py-2 min-w-48 z-50">
+          <a href="/bahan" class="block w-full text-left px-4 py-2 text-slate-800 hover:bg-slate-100">🎨 Bahan Kreatif</a>
           <button id="profile-btn" class="w-full text-left px-4 py-2 text-slate-800 hover:bg-slate-100">👤 Profil</button>
           <button id="logout" class="w-full text-left px-4 py-2 text-slate-800 hover:bg-slate-100">Log Keluar</button>
         </div>
@@ -421,12 +416,6 @@
     });
 
     document.getElementById('logout').addEventListener('click', async () => {
-      await MO.api('/api/logout', { method: 'POST' }).catch(() => {});
-      window.location.href = '/';
-    });
-
-    document.getElementById('profile-btn-desktop').addEventListener('click', openProfileModal);
-    document.getElementById('logout-desktop').addEventListener('click', async () => {
       await MO.api('/api/logout', { method: 'POST' }).catch(() => {});
       window.location.href = '/';
     });

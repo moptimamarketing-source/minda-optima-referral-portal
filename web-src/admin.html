@@ -177,6 +177,49 @@
       </section>
 
       <section>
+        <div class="flex items-end justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-brand">Bahan Kreatif</h2>
+            <p class="text-sm text-slate-500">Poster/gambar, teks copywriting &amp; video untuk page "Bahan Kreatif" dalam dashboard parent.</p>
+          </div>
+        </div>
+        <form id="material-form" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+          <label class="block text-sm font-semibold">Kategori
+            <select id="material-category" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand">
+              <option value="image">Poster / Gambar Marketing</option>
+              <option value="text">Copywriting / Teks</option>
+              <option value="video">Video</option>
+            </select>
+          </label>
+          <label class="block text-sm font-semibold">Tajuk
+            <input id="material-title" required class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand" placeholder="Contoh: Poster Promosi Raya">
+          </label>
+          <label class="block text-sm font-semibold sm:col-span-2">Deskripsi ringkas (pilihan)
+            <input id="material-desc" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand" placeholder="Nota ringkas untuk parent">
+          </label>
+          <label id="material-text-field" class="block text-sm font-semibold sm:col-span-2">Teks Copywriting
+            <textarea id="material-text" rows="3" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand" placeholder="Teks untuk parent salin & share..."></textarea>
+          </label>
+          <label id="material-file-field" class="hidden block text-sm font-semibold sm:col-span-2">Fail (gambar/video)
+            <input id="material-file" type="file" accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand">
+          </label>
+          <p id="material-error" class="hidden sm:col-span-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+          <div class="sm:col-span-2 flex justify-end">
+            <button type="submit" id="material-submit" class="rounded-xl bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-light disabled:opacity-60">Tambah Bahan</button>
+          </div>
+        </form>
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr><th class="px-4 py-3">Kategori</th><th class="px-3 py-3">Tajuk</th><th class="px-3 py-3">Butiran</th><th class="px-3 py-3">Tarikh</th><th class="px-3 py-3"></th></tr>
+            </thead>
+            <tbody id="material-rows" class="divide-y divide-slate-100"></tbody>
+          </table>
+          <p id="material-empty" class="hidden px-4 py-8 text-center text-slate-500">Takde bahan kreatif lagi.</p>
+        </div>
+      </section>
+
+      <section>
         <h2 class="text-lg font-bold text-brand">Kod Tak Dikenali (20 Terbaru)</h2>
         <p class="text-sm text-slate-500">Ada orang klik link dengan kod yang takde dalam sistem. Biasanya sebab kod tertaip salah atau link terputus.</p>
         <ul id="unknown-rows" class="mt-3 rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 text-sm"></ul>
@@ -243,6 +286,7 @@
     let referrers = [];
     let funnel = [];
     let supportRequests = [];
+    let materials = [];
 
     // Kata laluan disimpan dalam sessionStorage: hilang bila tab ditutup.
     const pwStore = {
@@ -512,6 +556,88 @@
       }
     }
 
+    const MATERIAL_CATEGORY_LABEL = { image: 'Poster/Gambar', text: 'Copywriting', video: 'Video' };
+
+    function renderMaterials() {
+      $('material-empty').classList.toggle('hidden', materials.length > 0);
+      $('material-rows').innerHTML = materials.map((m) => `<tr>
+        <td class="px-4 py-3">${esc(MATERIAL_CATEGORY_LABEL[m.category] || m.category)}</td>
+        <td class="px-3 py-3 font-medium">${esc(m.title)}</td>
+        <td class="px-3 py-3 max-w-xs truncate text-slate-500" title="${esc(m.description || m.text_content || '')}">${esc(m.description || m.text_content || '—')}</td>
+        <td class="px-3 py-3 whitespace-nowrap text-slate-600">${esc(dt.format(new Date(m.created_at)))}</td>
+        <td class="px-3 py-3 text-right">
+          <button data-delete-material="${esc(m.id)}" class="text-sm font-semibold text-red-600 hover:underline">Padam</button>
+        </td>
+      </tr>`).join('');
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    $('material-category').addEventListener('change', () => {
+      const isText = $('material-category').value === 'text';
+      $('material-text-field').classList.toggle('hidden', !isText);
+      $('material-file-field').classList.toggle('hidden', isText);
+    });
+
+    $('material-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('material-submit');
+      $('material-error').classList.add('hidden');
+      const category = $('material-category').value;
+      const payload = {
+        action: 'add-material',
+        category,
+        title: $('material-title').value.trim(),
+        description: $('material-desc').value.trim(),
+      };
+      if (category === 'text') {
+        payload.textContent = $('material-text').value.trim();
+      } else {
+        const file = $('material-file').files[0];
+        if (!file) {
+          $('material-error').textContent = 'Sila pilih fail.';
+          $('material-error').classList.remove('hidden');
+          return;
+        }
+        payload.fileType = file.type;
+        payload.fileBase64 = await fileToBase64(file);
+      }
+      btn.disabled = true;
+      try {
+        await call(payload);
+        $('material-form').reset();
+        $('material-text-field').classList.remove('hidden');
+        $('material-file-field').classList.add('hidden');
+        await load();
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        $('material-error').textContent = err.message;
+        $('material-error').classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    async function deleteMaterial(id, btn) {
+      if (!confirm('Padam bahan kreatif ini?')) return;
+      btn.disabled = true;
+      try {
+        await call({ action: 'delete-material', id: Number(id), confirm: 'delete' });
+        await load();
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        alert(err.message);
+        btn.disabled = false;
+      }
+    }
+
     function showAppError(message) {
       $('app-error').textContent = message;
       $('app-error').classList.toggle('hidden', !message);
@@ -528,11 +654,13 @@
         referrers = data.referrers || [];
         funnel = data.funnel;
         supportRequests = data.supportRequests || [];
+        materials = data.materials || [];
         renderCards(data.funnel);
         renderFunnel();
         renderReferrals();
         renderReferrers();
         renderSupport();
+        renderMaterials();
         $('unknown-rows').innerHTML = data.unknown.map((e) => `<li class="flex justify-between px-4 py-2"><span class="font-mono">${esc(e.code)}</span><span class="text-slate-500">${esc(dt.format(new Date(e.created_at)))}</span></li>`).join('')
           || '<li class="px-4 py-6 text-center text-slate-500">Takde.</li>';
       } catch (err) {
@@ -720,6 +848,8 @@
       const c = e.target.closest('[data-change-code]');
       const vs = e.target.closest('[data-view-screenshot]');
       const th = e.target.closest('[data-toggle-handled]');
+      const dm = e.target.closest('[data-delete-material]');
+      if (dm) deleteMaterial(dm.dataset.deleteMaterial, dm);
       if (n) sendNotify(n.dataset.notifyEmail, n);
       if (w) sendResendWelcome(w.dataset.resendWelcome, w);
       if (c) openCodeDialog(c.dataset.changeCode);
