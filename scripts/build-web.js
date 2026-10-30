@@ -7,11 +7,20 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 
 const root = path.join(__dirname, '..');
 const pub = path.join(root, 'public');
 const extra = path.join(root, 'web-src');
 const out = path.join(root, 'web');
+
+// Rebuild the compiled Tailwind stylesheet (content = public/**/*.html + web-src/**/*.html,
+// see tailwind.config.js) so web/css/tailwind.css always matches current markup/classes.
+execFileSync(
+  path.join(root, 'node_modules', '.bin', 'tailwindcss'),
+  ['-i', path.join(extra, 'css', 'tailwind-input.css'), '-o', path.join(pub, 'css', 'tailwind.css'), '--minify', '-c', path.join(root, 'tailwind.config.js')],
+  { stdio: 'inherit' },
+);
 
 const SCRIPTS = [
   '<script src="js/common.js"></script>',
@@ -20,6 +29,7 @@ const SCRIPTS = [
 ].join('\n');
 
 const links = [
+  ['href="/css/tailwind.css"', 'href="css/tailwind.css"'],
   ['href="/"', 'href="index.html"'],
   ['href="/login"', 'href="login.html"'],
   ['href="/dashboard"', 'href="dashboard.html"'],
@@ -56,6 +66,8 @@ const pages = {
 
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(path.join(out, 'js'), { recursive: true });
+fs.mkdirSync(path.join(out, 'css'), { recursive: true });
+fs.copyFileSync(path.join(pub, 'css', 'tailwind.css'), path.join(out, 'css', 'tailwind.css'));
 fs.copyFileSync(path.join(pub, 'js', 'common.js'), path.join(out, 'js', 'common.js'));
 for (const f of ['config.js', 'supabase-api.js']) {
   fs.copyFileSync(path.join(extra, 'js', f), path.join(out, 'js', f));

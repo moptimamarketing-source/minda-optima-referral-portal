@@ -1,18 +1,5 @@
-/* Shared helpers for all pages. Loaded right after the Tailwind CDN script. */
-
-tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        brand: { DEFAULT: '#0D2A5C', light: '#1B4A94', dark: '#081B3D' },
-        gold: { DEFAULT: '#FFB800', light: '#FFE08A', dark: '#C98F00' },
-      },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
-      },
-    },
-  },
-};
+/* Shared helpers for all pages. Tailwind is a pre-built stylesheet (css/tailwind.css);
+   colors/fonts live in tailwind.config.js at the repo root, not here. */
 
 const MO = (() => {
   // Nilai lalai; ditulis ganti oleh /.netlify/functions/settings (boleh diedit dalam admin.html).
