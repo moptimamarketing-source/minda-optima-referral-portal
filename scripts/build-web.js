@@ -28,14 +28,11 @@ const SCRIPTS = [
   '  <script src="js/supabase-api.js"></script>',
 ].join('\n');
 
+// Netlify serves the static site at the domain root, so absolute clean paths
+// (/, /login, /dashboard) already resolve correctly there — no .html rewrite
+// needed, and keeping them absolute means the address bar never shows .html.
 const links = [
   ['href="/css/tailwind.css"', 'href="css/tailwind.css"'],
-  ['href="/"', 'href="index.html"'],
-  ['href="/login"', 'href="login.html"'],
-  ['href="/dashboard"', 'href="dashboard.html"'],
-  ["window.location.replace('/login')", "window.location.replace('login.html')"],
-  ["window.location.href = '/';", "window.location.href = 'index.html';"],
-  ["data.redirect || '/dashboard'", "data.redirect || 'dashboard.html'"],
 ];
 
 const pages = {
@@ -77,14 +74,6 @@ for (const f of fs.readdirSync(pub)) {
     fs.copyFileSync(path.join(pub, f), path.join(out, f));
   }
 }
-const audioDir = path.join(pub, 'audio');
-if (fs.existsSync(audioDir)) {
-  fs.mkdirSync(path.join(out, 'audio'), { recursive: true });
-  for (const f of fs.readdirSync(audioDir)) {
-    fs.copyFileSync(path.join(audioDir, f), path.join(out, 'audio', f));
-  }
-}
-
 for (const [name, { from, edits }] of Object.entries(pages)) {
   let html = fs.readFileSync(path.join(from, name), 'utf8');
   for (const [a, b, required] of [...edits, ...links.map((l) => [...l, false])]) {

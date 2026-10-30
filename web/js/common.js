@@ -143,49 +143,14 @@ const MO = (() => {
     return s;
   }
 
-  function initBgMusic() {
-    const audio = document.getElementById('bg-music');
-    const btn = document.getElementById('music-toggle');
-    if (!audio || !btn) return;
-
-    const KEY = 'mo_music_muted';
-    let muted = localStorage.getItem(KEY) === '1';
-
-    function applyIcon() {
-      btn.textContent = muted ? '🔇' : '🔊';
-    }
-
-    function attemptPlay() {
-      audio.muted = muted;
-      audio.play().catch(() => {});
-    }
-
-    applyIcon();
-    attemptPlay();
-
-    // Mobile browsers block audio until the user interacts with the page at least
-    // once; retry on the first tap/click anywhere, using the *current* mute state.
-    ['click', 'touchend', 'pointerdown'].forEach((evt) => {
-      document.addEventListener(evt, attemptPlay, { once: true, passive: true });
-    });
-
-    btn.addEventListener('click', () => {
-      muted = !muted;
-      localStorage.setItem(KEY, muted ? '1' : '0');
-      applyIcon();
-      attemptPlay();
-    });
-  }
-
   document.addEventListener('DOMContentLoaded', async () => {
     await loadSiteSettings();
     startCountdowns();
     initSupportLinks();
-    initBgMusic();
   });
 
   return {
-    countdownParts, startCountdowns, api, copyText, escapeHtml, initSupportLinks, initBgMusic,
+    countdownParts, startCountdowns, api, copyText, escapeHtml, initSupportLinks,
     settingsReady,
     get PROMO_DEADLINE() { return PROMO_DEADLINE; },
     get settings() { return lastSettings; },

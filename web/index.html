@@ -13,8 +13,6 @@
 </head>
 <body class="bg-white font-sans text-slate-800 antialiased" style="background-image:url('/bg-decor.svg');background-repeat:repeat-y;background-size:100% 700px;background-position:top center;">
 
-  <audio id="bg-music" src="/audio/theme.mp3" loop preload="auto"></audio>
-
   <!-- Countdown banner -->
   <div data-promo-only class="bg-gold text-brand text-center text-sm font-semibold px-4 py-2" data-content="promo_banner_text">
     🎁 Kongsi Peluang, Bawa Pulang RM100! Rebut ganjaran RM100 untuk setiap rujukan berjaya sebelum 31 Disember. Selepas tarikh itu, ganjarannya hanya RM50 sahaja tau!
@@ -23,12 +21,11 @@
 
   <header class="bg-brand">
     <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="index.html" class="h-28 flex items-center">
+      <a href="/" class="h-28 flex items-center">
         <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-28 w-auto">
       </a>
       <div class="flex items-center gap-4">
-        <button id="music-toggle" type="button" class="text-sm text-white/80 hover:text-white" title="Muzik">🔊</button>
-        <a href="dashboard.html" class="text-white/80 hover:text-white text-sm font-medium">Masuk Dashboard →</a>
+        <a href="/dashboard" class="text-white/80 hover:text-white text-sm font-medium">Masuk Dashboard →</a>
       </div>
     </div>
   </header>
@@ -64,10 +61,10 @@
         Anak mereka dapat satu sesi kelas percuma. Bila anak hadir, RM100 Touch 'n Go jadi milik anda!
       </p>
       <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-        <a href="login.html" class="rounded-xl bg-gold px-6 py-4 text-brand font-bold text-lg shadow-lg hover:bg-gold-light transition" data-content="cta_button_label">
+        <a href="/login" class="rounded-xl bg-gold px-6 py-4 text-brand font-bold text-lg shadow-lg hover:bg-gold-light transition" data-content="cta_button_label">
           Dapatkan Kod Rujukan Saya
         </a>
-        <a href="dashboard.html" class="rounded-xl border-2 border-white/40 px-6 py-4 font-semibold text-lg hover:bg-white/10 transition">
+        <a href="/dashboard" class="rounded-xl border-2 border-white/40 px-6 py-4 font-semibold text-lg hover:bg-white/10 transition">
           Masuk Dashboard
         </a>
       </div>
@@ -111,7 +108,7 @@
       <p data-promo-only class="text-gold font-bold">⏳ Tinggal <span class="tabular-nums" data-countdown>&nbsp;</span></p>
       <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold" data-content="cta_heading">Masih Sempat Rebut RM100!</h2>
       <p class="mt-2 text-white/70" data-content="cta_sub">Pastikan rujukan anda berjaya sebelum 31 Disember. Mulai 1 Januari 2027, ganjarannya RM50.</p>
-      <a href="login.html" class="mt-6 inline-block rounded-xl bg-gold px-6 py-4 text-brand font-bold text-lg hover:bg-gold-light transition" data-content="cta_button_label">
+      <a href="/login" class="mt-6 inline-block rounded-xl bg-gold px-6 py-4 text-brand font-bold text-lg hover:bg-gold-light transition" data-content="cta_button_label">
         Dapatkan Kod Rujukan Saya
       </a>
     </div>
