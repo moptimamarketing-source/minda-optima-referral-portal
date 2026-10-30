@@ -6,7 +6,8 @@
 create table if not exists public.support_requests (
   id              bigserial primary key,
   name            text not null,
-  account_code    text,
+  code            text,
+  phone           text,
   problem         text not null,
   screenshot_path text,
   handled         boolean not null default false,

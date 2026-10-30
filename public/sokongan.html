@@ -30,9 +30,14 @@
                  class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
         </label>
 
-        <label class="block text-sm font-semibold text-slate-700">Kod Rujukan / Nombor Telefon (jika ada)
-          <input id="s-account" name="account" type="text" maxlength="40"
-                 class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" placeholder="cth. MO-6789-HKSG atau 0176629820">
+        <label class="block text-sm font-semibold text-slate-700">Kod Rujukan (pilihan)
+          <input id="s-code" name="code" type="text" maxlength="20"
+                 class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" placeholder="cth. MO-6789-HKSG">
+        </label>
+
+        <label class="block text-sm font-semibold text-slate-700">Nombor Telefon (pilihan)
+          <input id="s-phone" name="phone" type="tel" maxlength="20"
+                 class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" placeholder="cth. 0176629820">
         </label>
 
         <label class="block text-sm font-semibold text-slate-700">Masalah Yang Dihadapi
@@ -99,7 +104,8 @@
       try {
         const payload = {
           name,
-          accountCode: $('s-account').value.trim(),
+          code: $('s-code').value.trim(),
+          phone: $('s-phone').value.trim(),
           problem,
         };
         if (file) {

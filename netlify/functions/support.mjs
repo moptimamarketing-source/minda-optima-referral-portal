@@ -70,7 +70,8 @@ export default async (req) => {
     }
 
     const name = clean(body.name, 80);
-    const accountCode = clean(body.accountCode, 40);
+    const code = clean(body.code, 20);
+    const phone = clean(body.phone, 20);
     const problem = clean(body.problem, 1000);
 
     if (name.length < 2) return json(422, { error: 'Nama penuh diperlukan.' });
@@ -85,7 +86,7 @@ export default async (req) => {
 
     const ins = await sb('support_requests', {
       method: 'POST',
-      body: { name, account_code: accountCode || null, problem, screenshot_path: screenshotPath },
+      body: { name, code: code || null, phone: phone || null, problem, screenshot_path: screenshotPath },
     });
     if (!ins.ok) {
       console.error('support_requests insert error:', ins.data);
