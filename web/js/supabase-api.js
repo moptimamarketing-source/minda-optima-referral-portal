@@ -126,7 +126,7 @@
         name: body.name,
         occupation: body.occupation,
       });
-      return { ok: true, code: data.code, redirect: 'dashboard.html' };
+      return { ok: true, code: data.code, redirect: 'dashboard' };
     }
 
     if (method === 'GET' && path === '/api/dashboard') {

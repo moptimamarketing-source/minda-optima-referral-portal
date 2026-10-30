@@ -204,7 +204,7 @@
           showForm(registerForm);
           document.getElementById('reg-name').focus();
         } else {
-          window.location.href = '/dashboard.html';
+          window.location.href = '/dashboard';
         }
       } catch (err) {
         showError('otp-error', err.message);
@@ -233,7 +233,7 @@
             occupation: occupation || null,
           },
         });
-        window.location.href = '/dashboard.html';
+        window.location.href = '/dashboard';
       } catch (err) {
         showError('register-error', err.message);
         btn.disabled = false;
