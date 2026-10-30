@@ -49,7 +49,7 @@ async function sessionFor(token) {
 }
 
 export function confirmationEmail({ name, code, phone, email, occupation, s = {} }) {
-  const share = `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, anak dapat 1 kelas PERCUMA & saya dapat RM100 🎉 👉 ${SITE}/daftar.html?ref=${code}`;
+  const share = `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, anak dapat 1 kelas PERCUMA & saya dapat RM100 🎉 👉 ${SITE}/daftar?ref=${code}`;
   const waLink = `https://wa.me/?text=${encodeURIComponent(share)}`;
   const waGroupLink = s.community_link || 'https://chat.whatsapp.com/Ech6q73TWPH9qFC5en8gDm';
   const headerImage = s.welcome_email_header_image || 'https://drive.google.com/uc?id=15gWaMZTfS9d8-z1yN7dKLmvDgjPYGbud';
@@ -101,7 +101,7 @@ export function confirmationEmail({ name, code, phone, email, occupation, s = {}
 
         <!-- Dashboard Button -->
         <div style="text-align:center;margin:32px 0">
-          <a href="${SITE}/dashboard.html" style="display:block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);color:white">Buka Dashboard</a>
+          <a href="${SITE}/dashboard" style="display:block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);color:white">Buka Dashboard</a>
         </div>
 
         <!-- Marketing Images -->${images}

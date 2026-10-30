@@ -358,7 +358,7 @@ async function notifyEmail(body) {
 
           <!-- CTA Button -->
           <div style="text-align:center;margin:32px 0">
-            <a href="${SITE}/dashboard.html" style="display:inline-block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);color:white">Buka Dashboard</a>
+            <a href="${SITE}/dashboard" style="display:inline-block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);color:white">Buka Dashboard</a>
           </div>${images}
         </div>
 
@@ -424,7 +424,7 @@ async function notifyEmail(body) {
 
           <!-- CTA Button -->
           <div style="text-align:center;margin:32px 0">
-            <a href="${SITE}/dashboard.html" style="display:inline-block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);color:white">Buka Dashboard</a>
+            <a href="${SITE}/dashboard" style="display:inline-block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);color:white">Buka Dashboard</a>
           </div>${images}
         </div>
 
