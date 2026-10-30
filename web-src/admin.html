@@ -179,8 +179,8 @@
       <section>
         <div class="flex items-end justify-between gap-3">
           <div>
-            <h2 class="text-lg font-bold text-brand">Bahan Kreatif</h2>
-            <p class="text-sm text-slate-500">Poster/gambar, teks copywriting &amp; video untuk page "Bahan Kreatif" dalam dashboard parent.</p>
+            <h2 class="text-lg font-bold text-brand">Komuniti — Creative Content</h2>
+            <p class="text-sm text-slate-500">Poster/gambar, teks copywriting &amp; video untuk tab "Creative Content" dalam page /komuniti parent.</p>
           </div>
         </div>
         <form id="material-form" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-white p-4">
@@ -216,6 +216,36 @@
             <tbody id="material-rows" class="divide-y divide-slate-100"></tbody>
           </table>
           <p id="material-empty" class="hidden px-4 py-8 text-center text-slate-500">Takde bahan kreatif lagi.</p>
+        </div>
+      </section>
+
+      <section>
+        <div class="flex items-end justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-brand">Komuniti — Info / Pengumuman</h2>
+            <p class="text-sm text-slate-500">Pengumuman/FAQ untuk tab "Info" dalam page /komuniti parent.</p>
+          </div>
+        </div>
+        <form id="info-form" class="mt-3 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+          <label class="block text-sm font-semibold">Tajuk
+            <input id="info-title" required class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand" placeholder="Contoh: Cuti Perayaan">
+          </label>
+          <label class="block text-sm font-semibold">Kandungan
+            <textarea id="info-body" required rows="3" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand" placeholder="Pengumuman atau FAQ..."></textarea>
+          </label>
+          <p id="info-error" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+          <div class="flex justify-end">
+            <button type="submit" id="info-submit" class="rounded-xl bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-light disabled:opacity-60">Tambah Pengumuman</button>
+          </div>
+        </form>
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr><th class="px-4 py-3">Tajuk</th><th class="px-3 py-3">Kandungan</th><th class="px-3 py-3">Tarikh</th><th class="px-3 py-3"></th></tr>
+            </thead>
+            <tbody id="info-rows" class="divide-y divide-slate-100"></tbody>
+          </table>
+          <p id="info-empty" class="hidden px-4 py-8 text-center text-slate-500">Takde pengumuman lagi.</p>
         </div>
       </section>
 
@@ -287,6 +317,7 @@
     let funnel = [];
     let supportRequests = [];
     let materials = [];
+    let infoPosts = [];
 
     // Kata laluan disimpan dalam sessionStorage: hilang bila tab ditutup.
     const pwStore = {
@@ -638,6 +669,49 @@
       }
     }
 
+    function renderInfo() {
+      $('info-empty').classList.toggle('hidden', infoPosts.length > 0);
+      $('info-rows').innerHTML = infoPosts.map((p) => `<tr>
+        <td class="px-4 py-3 font-medium">${esc(p.title)}</td>
+        <td class="px-3 py-3 max-w-xs truncate text-slate-500" title="${esc(p.body)}">${esc(p.body)}</td>
+        <td class="px-3 py-3 whitespace-nowrap text-slate-600">${esc(dt.format(new Date(p.created_at)))}</td>
+        <td class="px-3 py-3 text-right">
+          <button data-delete-info="${esc(p.id)}" class="text-sm font-semibold text-red-600 hover:underline">Padam</button>
+        </td>
+      </tr>`).join('');
+    }
+
+    $('info-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('info-submit');
+      $('info-error').classList.add('hidden');
+      btn.disabled = true;
+      try {
+        await call({ action: 'add-info', title: $('info-title').value.trim(), body: $('info-body').value.trim() });
+        $('info-form').reset();
+        await load();
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        $('info-error').textContent = err.message;
+        $('info-error').classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    async function deleteInfo(id, btn) {
+      if (!confirm('Padam pengumuman ini?')) return;
+      btn.disabled = true;
+      try {
+        await call({ action: 'delete-info', id: Number(id), confirm: 'delete' });
+        await load();
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        alert(err.message);
+        btn.disabled = false;
+      }
+    }
+
     function showAppError(message) {
       $('app-error').textContent = message;
       $('app-error').classList.toggle('hidden', !message);
@@ -655,12 +729,14 @@
         funnel = data.funnel;
         supportRequests = data.supportRequests || [];
         materials = data.materials || [];
+        infoPosts = data.infoPosts || [];
         renderCards(data.funnel);
         renderFunnel();
         renderReferrals();
         renderReferrers();
         renderSupport();
         renderMaterials();
+        renderInfo();
         $('unknown-rows').innerHTML = data.unknown.map((e) => `<li class="flex justify-between px-4 py-2"><span class="font-mono">${esc(e.code)}</span><span class="text-slate-500">${esc(dt.format(new Date(e.created_at)))}</span></li>`).join('')
           || '<li class="px-4 py-6 text-center text-slate-500">Takde.</li>';
       } catch (err) {
@@ -849,7 +925,9 @@
       const vs = e.target.closest('[data-view-screenshot]');
       const th = e.target.closest('[data-toggle-handled]');
       const dm = e.target.closest('[data-delete-material]');
+      const di = e.target.closest('[data-delete-info]');
       if (dm) deleteMaterial(dm.dataset.deleteMaterial, dm);
+      if (di) deleteInfo(di.dataset.deleteInfo, di);
       if (n) sendNotify(n.dataset.notifyEmail, n);
       if (w) sendResendWelcome(w.dataset.resendWelcome, w);
       if (c) openCodeDialog(c.dataset.changeCode);

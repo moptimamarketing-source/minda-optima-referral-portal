@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Komuniti — Rujukan Minda Optima</title>
+  <meta name="theme-color" content="#0D2A5C">
+  <link rel="stylesheet" href="/css/tailwind.css">
+  <script src="/js/common.js"></script>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased" style="background-image:url('/bg-decor.svg');background-repeat:repeat-y;background-size:100% 700px;background-position:top center;">
+
+  <header class="bg-brand text-white relative">
+    <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between relative">
+      <div class="flex items-center gap-3">
+        <a href="/" class="h-16 flex items-center shrink-0">
+          <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-16 w-auto">
+        </a>
+        <h1 class="text-xl sm:text-2xl font-extrabold leading-tight">Komuniti</h1>
+      </div>
+      <a href="/dashboard" class="text-sm font-semibold text-white/90 hover:text-white underline shrink-0">← Dashboard</a>
+    </div>
+    <!-- Tabs -->
+    <div class="max-w-3xl mx-auto px-4 flex gap-1 overflow-x-auto">
+      <button data-tab="referral" class="tab-btn whitespace-nowrap px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-white/70 hover:text-white">👤 Referral</button>
+      <button data-tab="creative" class="tab-btn whitespace-nowrap px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-white/70 hover:text-white">🎨 Creative Content</button>
+      <button data-tab="info" class="tab-btn whitespace-nowrap px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-white/70 hover:text-white">📢 Info</button>
+    </div>
+  </header>
+
+  <main id="app" class="max-w-3xl mx-auto px-4 py-6" aria-busy="true">
+    <p id="loading" class="text-center text-slate-500 py-10">Memuatkan...</p>
+
+    <!-- Referral tab -->
+    <section id="panel-referral" class="hidden space-y-4">
+      <div class="rounded-xl bg-white shadow p-5 text-center">
+        <p class="text-sm text-slate-500">Kod Rujukan Anda</p>
+        <p id="ref-code" class="mt-1 text-3xl font-extrabold text-brand tracking-wide cursor-pointer" title="Klik untuk salin">…</p>
+        <p class="mt-1 text-xs text-slate-400">Klik kod untuk salin</p>
+      </div>
+      <div class="rounded-xl bg-white shadow p-5">
+        <p class="text-sm font-semibold text-slate-700 mb-2">Mesej Untuk Dikongsi</p>
+        <p id="share-preview" class="rounded-lg bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap"></p>
+        <div class="mt-3 grid grid-cols-2 gap-2">
+          <button id="copy-message" class="rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2.5 hover:bg-slate-200">📋 Salin Mesej</button>
+          <a id="share-wa" target="_blank" rel="noopener" class="text-center rounded-lg bg-emerald-500 text-white text-sm font-semibold py-2.5 hover:bg-emerald-600">WhatsApp</a>
+        </div>
+      </div>
+      <div class="rounded-xl bg-white shadow p-5 text-center">
+        <p class="text-sm font-semibold text-slate-700 mb-3">Kod QR</p>
+        <img id="qr-code" class="mx-auto rounded-lg border border-slate-100" width="220" height="220" alt="QR kod rujukan">
+      </div>
+    </section>
+
+    <!-- Creative Content tab: satu feed campur (poster/teks/video), macam ruangan chat -->
+    <section id="panel-creative" class="hidden">
+      <p class="text-slate-600 mb-4">Guna bahan di bawah untuk kongsi program rujukan dengan rakan dan keluarga anda.</p>
+      <div id="feed-creative" class="space-y-4"></div>
+      <p id="empty-creative" class="hidden text-sm text-slate-400 text-center py-10">Belum ada bahan kreatif lagi.</p>
+    </section>
+
+    <!-- Info tab -->
+    <section id="panel-info" class="hidden">
+      <div id="feed-info" class="space-y-4"></div>
+      <p id="empty-info" class="hidden text-sm text-slate-400 text-center py-10">Belum ada pengumuman lagi.</p>
+    </section>
+  </main>
+
+  <footer class="pb-8 text-center text-xs text-slate-400">
+    Perlu bantuan? <a data-support-link href="#" class="text-sm font-bold text-brand underline hover:text-brand-light">Hubungi Sokongan</a>
+  </footer>
+
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm px-4 py-2 rounded-lg shadow-lg transition-opacity opacity-0 pointer-events-none">
+    <span></span>
+  </div>
+
+  <style>
+    .tab-btn.active { color: #fff; border-color: #D4AF37; }
+  </style>
+
+  <script>
+    function toast(text) {
+      const el = document.getElementById('toast');
+      el.firstElementChild.textContent = text;
+      el.classList.remove('opacity-0');
+      setTimeout(() => el.classList.add('opacity-0'), 1600);
+    }
+
+    const dt = new Intl.DateTimeFormat('ms-MY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' });
+
+    function shareMessage(code, url) {
+      const tpl = (MO.settings || {}).share_message_template
+        || "Anak saya dah pandai baca dengan Minda Optima! Guna kod *{code}* bila daftar, anak dapat satu sesi kelas PERCUMA & saya dapat RM100 🎉 👉 {url}";
+      return tpl.replace(/\{code\}/g, code).replace(/\{url\}/g, url);
+    }
+
+    // --- Tabs ---
+    const TABS = ['referral', 'creative', 'info'];
+    function setTab(tab) {
+      TABS.forEach((t) => {
+        document.getElementById(`panel-${t}`).classList.toggle('hidden', t !== tab);
+        document.querySelector(`[data-tab="${t}"]`).classList.toggle('active', t === tab);
+      });
+      try { sessionStorage.setItem('mo_komuniti_tab', tab); } catch { /* ignore */ }
+    }
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => setTab(btn.dataset.tab));
+    });
+
+    // --- Creative content feed cards ---
+    function feedCard(inner) {
+      return `<div class="rounded-xl bg-white shadow p-4">${inner}</div>`;
+    }
+
+    const CATEGORY_LABEL = { image: '🖼️ Poster/Gambar', text: '✍️ Copywriting', video: '🎬 Video' };
+
+    function materialCard(m) {
+      const head = `<div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-brand">${CATEGORY_LABEL[m.category] || m.category}</span>
+        <span class="text-xs text-slate-400">${dt.format(new Date(m.createdAt))}</span>
+      </div>
+      <p class="font-semibold text-slate-800">${MO.escapeHtml(m.title)}</p>
+      ${m.description ? `<p class="text-sm text-slate-500 mb-2">${MO.escapeHtml(m.description)}</p>` : ''}`;
+
+      if (m.category === 'text') {
+        return feedCard(`
+          ${head}
+          <p class="whitespace-pre-wrap text-sm bg-slate-50 rounded-lg p-3 text-slate-700 mt-2">${MO.escapeHtml(m.textContent)}</p>
+          <button data-copy-text="${encodeURIComponent(m.textContent)}" class="mt-3 rounded-lg bg-brand text-white text-sm font-semibold px-4 py-2 hover:bg-brand-light">📋 Salin Teks</button>
+        `);
+      }
+      if (m.category === 'video') {
+        return feedCard(`
+          ${head}
+          <video src="${m.fileUrl}" class="rounded-lg w-full bg-slate-900 mt-2" controls preload="metadata"></video>
+          <div class="flex gap-2 mt-3">
+            <a href="${m.fileUrl}" download class="flex-1 text-center rounded-lg bg-brand text-white text-sm font-semibold py-2 hover:bg-brand-light">Muat Turun</a>
+            <button data-share-file="${m.fileUrl}" data-share-title="${MO.escapeHtml(m.title)}" class="flex-1 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2 hover:bg-slate-200">Kongsi</button>
+          </div>
+        `);
+      }
+      return feedCard(`
+        ${head}
+        <img src="${m.fileUrl}" alt="${MO.escapeHtml(m.title)}" class="rounded-lg w-full max-h-72 object-cover bg-slate-100 mt-2">
+        <div class="flex gap-2 mt-3">
+          <a href="${m.fileUrl}" download class="flex-1 text-center rounded-lg bg-brand text-white text-sm font-semibold py-2 hover:bg-brand-light">Muat Turun</a>
+          <button data-share-file="${m.fileUrl}" data-share-title="${MO.escapeHtml(m.title)}" class="flex-1 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2 hover:bg-slate-200">Kongsi</button>
+        </div>
+      `);
+    }
+
+    function infoCard(p) {
+      return feedCard(`
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-brand">📢 Pengumuman</span>
+          <span class="text-xs text-slate-400">${dt.format(new Date(p.createdAt))}</span>
+        </div>
+        <p class="font-semibold text-slate-800">${MO.escapeHtml(p.title)}</p>
+        <p class="whitespace-pre-wrap text-sm text-slate-600 mt-1">${MO.escapeHtml(p.body)}</p>
+      `);
+    }
+
+    function wireActions(root) {
+      root.querySelectorAll('[data-copy-text]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const text = decodeURIComponent(btn.dataset.copyText);
+          toast((await MO.copyText(text)) ? 'Teks disalin!' : 'Gagal salin');
+        });
+      });
+      root.querySelectorAll('[data-share-file]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const url = btn.dataset.shareFile;
+          const title = btn.dataset.shareTitle || 'Minda Optima';
+          if (navigator.share) {
+            try {
+              const res = await fetch(url);
+              const blob = await res.blob();
+              const file = new File([blob], url.split('/').pop(), { type: blob.type });
+              if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title });
+                return;
+              }
+              await navigator.share({ title, url });
+            } catch { /* user cancelled or share failed, fall through */ }
+          } else {
+            toast((await MO.copyText(url)) ? 'Link disalin!' : 'Gagal salin');
+          }
+        });
+      });
+    }
+
+    async function loadReferral(data) {
+      const { referrer, shareUrl } = data;
+      const codeEl = document.getElementById('ref-code');
+      codeEl.textContent = referrer.code;
+      codeEl.onclick = async () => {
+        toast((await MO.copyText(referrer.code)) ? 'Kod disalin!' : 'Gagal salin');
+      };
+      const message = shareMessage(referrer.code, shareUrl);
+      document.getElementById('share-preview').textContent = message;
+      document.getElementById('share-wa').href = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      document.getElementById('copy-message').addEventListener('click', async () => {
+        toast((await MO.copyText(message)) ? 'Mesej disalin!' : 'Gagal salin');
+      });
+      document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(shareUrl)}`;
+    }
+
+    async function loadCommunity() {
+      let data = { materials: [], info: [] };
+      try {
+        const res = await fetch('/.netlify/functions/community');
+        if (res.ok) data = await res.json();
+      } catch { /* guna senarai kosong */ }
+
+      const feedCreative = document.getElementById('feed-creative');
+      feedCreative.innerHTML = data.materials.map(materialCard).join('');
+      document.getElementById('empty-creative').classList.toggle('hidden', data.materials.length > 0);
+      wireActions(feedCreative);
+
+      const feedInfo = document.getElementById('feed-info');
+      feedInfo.innerHTML = data.info.map(infoCard).join('');
+      document.getElementById('empty-info').classList.toggle('hidden', data.info.length > 0);
+    }
+
+    MO.api('/api/dashboard').then(async (data) => {
+      await Promise.all([loadReferral(data), loadCommunity()]);
+      document.getElementById('loading').classList.add('hidden');
+      let initialTab = 'referral';
+      try { initialTab = sessionStorage.getItem('mo_komuniti_tab') || 'referral'; } catch { /* ignore */ }
+      setTab(TABS.includes(initialTab) ? initialTab : 'referral');
+      document.getElementById('app').setAttribute('aria-busy', 'false');
+    }).catch((err) => {
+      if (err.status === 401) {
+        window.location.replace('/login');
+      } else {
+        document.getElementById('loading').textContent = 'Ralat memuatkan halaman. Sila cuba lagi.';
+      }
+    });
+  </script>
+</body>
+</html>

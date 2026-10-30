@@ -114,13 +114,14 @@ async function sb(path, { method = 'GET', body, prefer } = {}) {
 }
 
 async function list() {
-  const [funnel, referrals, unknown, referrers, supportRequests, materials] = await Promise.all([
+  const [funnel, referrals, unknown, referrers, supportRequests, materials, infoPosts] = await Promise.all([
     sb('referral_funnel?select=*&order=registrations.desc,landings.desc'),
     sb('referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone,email)&order=registered_at.desc&limit=500'),
     sb('referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
     sb('referrers?select=*&order=created_at.desc&limit=500'),
     sb('support_requests?select=*&order=created_at.desc&limit=200'),
     sb('creative_materials?select=*&order=category.asc,sort_order.asc,created_at.desc&limit=500'),
+    sb('community_info?select=*&order=created_at.desc&limit=200'),
   ]);
 
   if (!funnel.ok) {
@@ -148,6 +149,7 @@ async function list() {
     referrers: referrers.data,
     supportRequests: supportRequests.ok ? supportRequests.data : [],
     materials: materials.ok ? materials.data : [],
+    infoPosts: infoPosts.ok ? infoPosts.data : [],
   });
 }
 
@@ -416,6 +418,33 @@ async function deleteMaterial(body) {
       method: 'DELETE',
       headers: { apikey: key, Authorization: `Bearer ${key}` },
     }).catch(() => {});
+  }
+  return json(200, { ok: true });
+}
+
+async function addInfo(body) {
+  const title = String(body.title ?? '').trim().slice(0, 120);
+  const infoBody = String(body.body ?? '').trim().slice(0, 2000);
+  if (title.length < 2) return json(422, { error: 'Tajuk diperlukan.' });
+  if (infoBody.length < 2) return json(422, { error: 'Kandungan diperlukan.' });
+
+  const ins = await sb('community_info', { method: 'POST', prefer: 'return=representation', body: { title, body: infoBody } });
+  if (!ins.ok) {
+    console.error('addInfo insert error:', ins.data);
+    return json(502, { error: 'Gagal simpan pengumuman.' });
+  }
+  return json(200, { ok: true, post: ins.data?.[0] });
+}
+
+async function deleteInfo(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  if (!confirmsDelete(body)) return json(422, { error: 'Taip "delete" untuk sahkan.' });
+
+  const del = await sb(`community_info?id=eq.${id}`, { method: 'DELETE' });
+  if (!del.ok) {
+    console.error('deleteInfo error:', del.data);
+    return json(502, { error: 'Gagal padam pengumuman.' });
   }
   return json(200, { ok: true });
 }
@@ -758,6 +787,8 @@ export default async (req) => {
     if (body.action === 'notify-email') return await notifyEmail(body);
     if (body.action === 'add-material') return await addMaterial(body);
     if (body.action === 'delete-material') return await deleteMaterial(body);
+    if (body.action === 'add-info') return await addInfo(body);
+    if (body.action === 'delete-info') return await deleteInfo(body);
     if (body.action === 'get-settings') return await getSettings();
     if (body.action === 'save-settings') return await saveSettings(body);
     return json(400, { error: 'Tindakan tak dikenali.' });
