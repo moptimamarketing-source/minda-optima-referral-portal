@@ -9,12 +9,14 @@ const PUBLIC_KEYS = [
   'cta_heading', 'cta_sub', 'cta_button_label',
   'syarat_items', 'syarat_notes', 'reward_terms',
   'login_hero_title_line1', 'login_hero_title_line2', 'login_hero_benefits',
+  'reg_heading', 'reg_subtitle', 'reg_name_label', 'reg_occupation_label', 'reg_submit_label',
   'dashboard_code_label', 'dashboard_share_heading',
   'promo_banner_text',
   'community_title', 'community_desc', 'community_button_label', 'community_link', 'community_color',
   'share_message_template',
   'faq1_q', 'faq1_a', 'faq2_q', 'faq2_a', 'faq3_q', 'faq3_a',
   'faq4_q', 'faq4_a', 'faq5_q', 'faq5_a', 'faq6_q', 'faq6_a',
+  'video_title', 'video_desc', 'video_url',
 ];
 
 const json = (status, body, cacheControl) => new Response(JSON.stringify(body), {

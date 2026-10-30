@@ -47,6 +47,12 @@ const pages = {
     ],
   },
   'login.html': { from: extra, edits: [['<script src="/js/common.js"></script>', SCRIPTS, true]] },
+  'sokongan.html': {
+    from: pub,
+    edits: [
+      ['<script src="/js/common.js"></script>', '<script src="js/common.js"></script>', true],
+    ],
+  },
   'admin.html': {
     from: extra,
     edits: [

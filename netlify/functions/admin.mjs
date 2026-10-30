@@ -25,6 +25,7 @@ const SETTINGS_KEYS = [
   'approved_email_image1', 'approved_email_image2',
   'paid_email_header_image', 'paid_email_heading', 'paid_email_subtitle',
   'paid_email_image1', 'paid_email_image2',
+  'video_title', 'video_desc', 'video_url',
 ];
 const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
 const REQUIRED_IMAGE_SETTINGS = [
@@ -36,6 +37,8 @@ const OPTIONAL_IMAGE_SETTINGS = [
   'approved_email_image1', 'approved_email_image2',
   'paid_email_image1', 'paid_email_image2',
 ];
+const OPTIONAL_URL_SETTINGS = ['video_url'];
+const OPTIONAL_TEXT_SETTINGS = ['video_title', 'video_desc'];
 const TEXT_SETTINGS_MAX = {
   hero_badge_label: 60, hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300,
   how_it_works_title: 60, how_it_works_subtitle: 100,
@@ -58,6 +61,7 @@ const TEXT_SETTINGS_MAX = {
   approved_email_image1: 500, approved_email_image2: 500,
   paid_email_header_image: 500, paid_email_heading: 80, paid_email_subtitle: 200,
   paid_email_image1: 500, paid_email_image2: 500,
+  video_title: 80, video_desc: 200, video_url: 500,
 };
 
 const json = (status, body) => new Response(JSON.stringify(body), {
@@ -110,11 +114,12 @@ async function sb(path, { method = 'GET', body, prefer } = {}) {
 }
 
 async function list() {
-  const [funnel, referrals, unknown, referrers] = await Promise.all([
+  const [funnel, referrals, unknown, referrers, supportRequests] = await Promise.all([
     sb('referral_funnel?select=*&order=registrations.desc,landings.desc'),
     sb('referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone,email)&order=registered_at.desc&limit=500'),
     sb('referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
     sb('referrers?select=*&order=created_at.desc&limit=500'),
+    sb('support_requests?select=*&order=created_at.desc&limit=200'),
   ]);
 
   if (!funnel.ok) {
@@ -135,7 +140,13 @@ async function list() {
     return json(502, { error: `Gagal baca referrers: ${referrers.data?.message || 'Unknown error'}` });
   }
 
-  return json(200, { funnel: funnel.data, referrals: referrals.data, unknown: unknown.data, referrers: referrers.data });
+  return json(200, {
+    funnel: funnel.data,
+    referrals: referrals.data,
+    unknown: unknown.data,
+    referrers: referrers.data,
+    supportRequests: supportRequests.ok ? supportRequests.data : [],
+  });
 }
 
 async function add(body) {
@@ -287,6 +298,39 @@ async function resendWelcome(body) {
   const sent = await sendEmail(ref.email, `Pendaftaran Berjaya — Kod Rujukan ${ref.code}`, html);
   if (!sent.ok) return json(502, { error: sent.error });
   return json(200, { ok: true, to: ref.email });
+}
+
+async function markSupportHandled(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  const handled = body.handled !== false;
+
+  const up = await sb(`support_requests?id=eq.${id}`, { method: 'PATCH', prefer: 'return=representation', body: { handled } });
+  if (!up.ok) {
+    console.error('markSupportHandled error:', up.data);
+    return json(502, { error: 'Gagal kemas kini status.' });
+  }
+  if (!up.data?.length) return json(404, { error: 'Permintaan tak dijumpai.' });
+  return json(200, { ok: true });
+}
+
+async function getScreenshotUrl(body) {
+  const path = String(body.path ?? '').trim();
+  if (!path) return json(422, { error: 'Path tak sah.' });
+
+  const url = process.env.SUPABASE_URL.replace(/\/+$/, '');
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const res = await fetch(`${url}/storage/v1/object/sign/support-screenshots/${path}`, {
+    method: 'POST',
+    headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ expiresIn: 300 }),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.signedURL) {
+    console.error('getScreenshotUrl error:', res.status, data);
+    return json(502, { error: 'Gagal jana link gambar.' });
+  }
+  return json(200, { url: `${url}/storage/v1${data.signedURL}` });
 }
 
 async function editReferrer(body) {
@@ -521,6 +565,10 @@ function validateSetting(key, raw) {
     if (v && !/^https:\/\/\S+$/.test(v)) return { error: 'Link gambar tak sah. Kena mula dengan https://' };
     return { value: v };
   }
+  if (OPTIONAL_URL_SETTINGS.includes(key)) {
+    if (v && !/^https:\/\/\S+$/.test(v)) return { error: 'Link tak sah. Kena mula dengan https://' };
+    return { value: v };
+  }
   if (key === 'promo_enabled') {
     return { value: v === 'true' || v === 'on' || v === '1' ? 'true' : 'false' };
   }
@@ -556,7 +604,7 @@ function validateSetting(key, raw) {
     return { value: v };
   }
   if (key in TEXT_SETTINGS_MAX) {
-    if (!v) return { error: 'Medan ini tak boleh kosong.' };
+    if (!v && !OPTIONAL_TEXT_SETTINGS.includes(key)) return { error: 'Medan ini tak boleh kosong.' };
     if (v.length > TEXT_SETTINGS_MAX[key]) return { error: `Teks terlalu panjang (maks ${TEXT_SETTINGS_MAX[key]} aksara).` };
     return { value: v };
   }
@@ -618,6 +666,8 @@ export default async (req) => {
     if (body.action === 'delete-referrer') return await deleteReferrer(body);
     if (body.action === 'resend-otp') return await resendOtp(body);
     if (body.action === 'resend-welcome') return await resendWelcome(body);
+    if (body.action === 'mark-support-handled') return await markSupportHandled(body);
+    if (body.action === 'get-screenshot-url') return await getScreenshotUrl(body);
     if (body.action === 'notify-email') return await notifyEmail(body);
     if (body.action === 'get-settings') return await getSettings();
     if (body.action === 'save-settings') return await saveSettings(body);

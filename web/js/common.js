@@ -74,13 +74,9 @@ const MO = (() => {
     }[c]));
   }
 
-  let SUPPORT_PHONE = '601158526817';
-
   function initSupportLinks() {
     document.querySelectorAll('[data-support-link]').forEach((a) => {
-      a.href = `https://wa.me/${SUPPORT_PHONE}?text=${encodeURIComponent('Salam, saya memerlukan bantuan')}`;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
+      a.href = '/sokongan';
     });
   }
 
@@ -107,7 +103,6 @@ const MO = (() => {
       const d = new Date(s.promo_deadline);
       if (!Number.isNaN(d.getTime())) PROMO_DEADLINE = d;
     }
-    if (s.support_phone) SUPPORT_PHONE = s.support_phone;
 
     document.querySelectorAll('[data-content]').forEach((el) => {
       const v = s[el.dataset.content];
@@ -136,6 +131,15 @@ const MO = (() => {
 
     if (s.promo_enabled === 'false') {
       document.querySelectorAll('[data-promo-only]').forEach((el) => { el.classList.add('hidden'); });
+    }
+
+    if (s.video_url) {
+      const section = document.getElementById('video-section');
+      const iframe = document.getElementById('video-embed');
+      if (section && iframe) {
+        iframe.src = s.video_url;
+        section.classList.remove('hidden');
+      }
     }
 
     lastSettings = s;

@@ -166,6 +166,22 @@
             </label>
           </div>
         </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Video Tutorial</h2>
+          <p class="text-sm text-slate-500">Letak link embed (bukan link biasa). Contoh YouTube: <code class="rounded bg-slate-100 px-1">https://www.youtube.com/embed/VIDEO_ID</code>. Kosongkan link untuk sembunyikan section ni terus dari landing page.</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold">Tajuk
+              <input id="set-video-title" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Sub-teks
+              <input id="set-video-desc" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Link Embed Video (kosongkan untuk sembunyi)
+              <input id="set-video-url" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://www.youtube.com/embed/VIDEO_ID">
+            </label>
+          </div>
+        </section>
       </div>
 
       <!-- ===== TAB: Pendaftaran ===== -->
@@ -555,6 +571,10 @@
       'set-cta-heading': 'cta_heading',
       'set-cta-sub': 'cta_sub',
 
+      'set-video-title': 'video_title',
+      'set-video-desc': 'video_desc',
+      'set-video-url': 'video_url',
+
       'set-login-hero-title-line1': 'login_hero_title_line1',
       'set-login-hero-title-line2': 'login_hero_title_line2',
       'set-login-hero-benefits': 'login_hero_benefits',
@@ -657,6 +677,12 @@
       });
       const communityCard = doc.getElementById('community-card');
       if (communityCard) communityCard.classList.toggle('hidden', !s.community_link);
+      const videoSection = doc.getElementById('video-section');
+      const videoEmbed = doc.getElementById('video-embed');
+      if (videoSection && videoEmbed) {
+        videoSection.classList.toggle('hidden', !s.video_url);
+        if (s.video_url) videoEmbed.src = s.video_url;
+      }
     }
 
     let syncTimer;

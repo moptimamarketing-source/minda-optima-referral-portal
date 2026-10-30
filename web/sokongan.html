@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hubungi Sokongan — Minda Optima</title>
+  <meta name="description" content="Hantar masalah anda kepada team sokongan Minda Optima.">
+  <meta name="theme-color" content="#0D2A5C">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <script src="js/common.js"></script>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+
+  <header class="bg-brand">
+    <div class="max-w-md mx-auto px-4 py-3">
+      <a href="/" class="h-28 flex items-center">
+        <img src="/logo-mindaoptima.webp" alt="Minda Optima" class="h-28 w-auto">
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto px-4 py-8">
+    <div id="form-wrap">
+      <h1 class="text-2xl font-extrabold text-brand">Hubungi Sokongan</h1>
+      <p class="mt-1 text-sm text-slate-500">Isi maklumat di bawah dan team kami akan hubungi anda melalui WhatsApp secepat mungkin.</p>
+
+      <form id="support-form" class="mt-6 space-y-4" novalidate>
+        <label class="block text-sm font-semibold text-slate-700">Nama Penuh
+          <input id="s-name" name="name" type="text" maxlength="80" required
+                 class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+        </label>
+
+        <label class="block text-sm font-semibold text-slate-700">Kod Rujukan / Nombor Telefon (jika ada)
+          <input id="s-account" name="account" type="text" maxlength="40"
+                 class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" placeholder="cth. MO-6789-HKSG atau 0176629820">
+        </label>
+
+        <label class="block text-sm font-semibold text-slate-700">Masalah Yang Dihadapi
+          <textarea id="s-problem" name="problem" rows="4" maxlength="1000" required
+                    class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" placeholder="Terangkan masalah anda di sini..."></textarea>
+        </label>
+
+        <label class="block text-sm font-semibold text-slate-700">Screenshot (pilihan)
+          <input id="s-screenshot" name="screenshot" type="file" accept="image/png,image/jpeg,image/webp"
+                 class="mt-2 w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-light">
+          <span class="mt-1 block text-xs text-slate-400">PNG, JPG atau WEBP, maksimum 4MB.</span>
+        </label>
+
+        <p id="s-error" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+
+        <button type="submit" class="w-full rounded-xl bg-brand py-3.5 text-white font-bold hover:bg-brand-light disabled:opacity-60 transition">
+          Hantar
+        </button>
+      </form>
+    </div>
+
+    <div id="success-wrap" class="hidden text-center py-10">
+      <p class="text-5xl">✅</p>
+      <h1 class="mt-4 text-2xl font-extrabold text-brand">Permintaan Dihantar!</h1>
+      <p class="mt-2 text-slate-500">Terima kasih. Team sokongan kami akan hubungi anda melalui WhatsApp secepat mungkin.</p>
+      <a href="/" class="mt-6 inline-block rounded-xl bg-brand px-6 py-3 text-white font-bold hover:bg-brand-light transition">Kembali ke Laman Utama</a>
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const MAX_BYTES = 4 * 1024 * 1024;
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function showError(msg) {
+      $('s-error').textContent = msg;
+      $('s-error').classList.remove('hidden');
+    }
+
+    $('support-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('s-error').classList.add('hidden');
+
+      const name = $('s-name').value.trim();
+      const problem = $('s-problem').value.trim();
+      if (name.length < 2) return showError('Nama penuh diperlukan.');
+      if (problem.length < 5) return showError('Sila terangkan masalah anda.');
+
+      const file = $('s-screenshot').files[0];
+      if (file && file.size > MAX_BYTES) return showError('Saiz gambar terlalu besar (maks 4MB).');
+
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true;
+      btn.textContent = 'Menghantar...';
+
+      try {
+        const payload = {
+          name,
+          accountCode: $('s-account').value.trim(),
+          problem,
+        };
+        if (file) {
+          payload.screenshotBase64 = await fileToBase64(file);
+          payload.screenshotType = file.type;
+        }
+
+        const res = await fetch('/.netlify/functions/support', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Ralat pelayan. Sila cuba lagi.');
+
+        $('form-wrap').classList.add('hidden');
+        $('success-wrap').classList.remove('hidden');
+      } catch (err) {
+        showError(err.message);
+        btn.disabled = false;
+        btn.textContent = 'Hantar';
+      }
+    });
+  </script>
+</body>
+</html>
