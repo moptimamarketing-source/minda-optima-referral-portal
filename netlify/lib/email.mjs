@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-export const SITE = (process.env.PUBLIC_SITE_URL || 'https://minda-optima-referral.netlify.app').replace(/\/+$/, '');
+export const SITE = (process.env.PUBLIC_SITE_URL || 'https://referral.mindaoptima.com').replace(/\/+$/, '');
 export const TELEGRAM_LINK = process.env.TELEGRAM_LINK || 'https://t.me/mindaoptimaofficial';
 
 export const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({
