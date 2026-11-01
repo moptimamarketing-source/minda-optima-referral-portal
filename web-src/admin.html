@@ -776,6 +776,15 @@
       }
     });
 
+    // Auto-lookup referrer name when code is entered
+    $('add-code').addEventListener('blur', () => {
+      const code = $('add-code').value.trim().toUpperCase();
+      const ref = (referrers || []).find(r => r.code === code);
+      if (ref && !$('add-name').value) {
+        $('add-name').value = ref.name || '';
+      }
+    });
+
     $('add-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = e.target.querySelector('button[type=submit]');
