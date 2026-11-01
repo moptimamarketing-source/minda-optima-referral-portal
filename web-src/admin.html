@@ -63,6 +63,13 @@
       </section>
 
       <section class="rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 class="text-lg font-bold text-brand">Sync Google Sheet</h2>
+        <p class="text-sm text-slate-500">Tarik data rujukan terkini dari Google Sheet (CC2) terus masuk sistem — tak payah key in manual.</p>
+        <button id="sync-sheet-btn" class="mt-4 rounded-xl bg-brand px-6 py-2.5 text-white font-bold hover:bg-brand-light disabled:opacity-60">🔄 Sync Sekarang</button>
+        <p id="sync-sheet-result" class="mt-3 hidden rounded-lg px-3 py-2 text-sm" role="status"></p>
+      </section>
+
+      <section class="rounded-2xl border border-slate-200 bg-white p-5">
         <h2 class="text-lg font-bold text-brand">Push OTP Manual</h2>
         <p class="text-sm text-slate-500">Kalau parent risau emel automatik ada masalah (tak sampai, masuk spam, dll), hantar kod OTP baru terus kat emel dia dari sini.</p>
         <form id="otp-form" class="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
@@ -802,6 +809,29 @@
         $('add-error').classList.remove('hidden');
       } finally {
         btn.disabled = false;
+      }
+    });
+
+    $('sync-sheet-btn').addEventListener('click', async () => {
+      const btn = $('sync-sheet-btn');
+      const result = $('sync-sheet-result');
+      btn.disabled = true;
+      btn.textContent = 'Syncing...';
+      result.classList.add('hidden');
+      try {
+        const d = await call({ action: 'sync-google-sheet' });
+        const parts = [`${d.synced} rujukan baru ditambah`, `${d.skipped} dilangkau (dah wujud/tak sah)`];
+        if (d.unknownCodes?.length) parts.push(`kod tak dijumpai: ${d.unknownCodes.join(', ')}`);
+        result.textContent = parts.join(' · ');
+        result.className = 'mt-3 rounded-lg px-3 py-2 text-sm bg-green-50 text-green-700';
+        await load();
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        result.textContent = err.message;
+        result.className = 'mt-3 rounded-lg px-3 py-2 text-sm bg-red-50 text-red-700';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔄 Sync Sekarang';
       }
     });
 

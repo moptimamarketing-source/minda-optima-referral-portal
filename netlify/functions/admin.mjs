@@ -179,6 +179,76 @@ async function add(body) {
   return json(200, { ok: true });
 }
 
+const GOOGLE_SHEET_ID = '1NSi6hm2tVt1fyoqfFSgYRBiwNQfQ9lXjlTBKztsVGas';
+// Columns in the CC2-fed sheet (0-indexed): B=Tarikh, E=Keyword, F=No.Telefon, AA=Nama Parents
+const SHEET_COL = { tarikh: 1, keyword: 4, phone: 5, name: 26 };
+
+function parseCsv(text) {
+  // Minimal CSV parser handling quoted fields with commas/escaped quotes.
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else field += c;
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ',') {
+      row.push(field); field = '';
+    } else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i++;
+      row.push(field); field = '';
+      rows.push(row); row = [];
+    } else {
+      field += c;
+    }
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+async function syncGoogleSheet() {
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=csv&gid=0`;
+  const csvRes = await fetch(csvUrl);
+  if (!csvRes.ok) return json(502, { error: 'Gagal baca Google Sheet.' });
+  const csv = await csvRes.text();
+  const rows = parseCsv(csv).slice(1); // skip header
+
+  const referrersRes = await sb('referrers?select=id,code');
+  if (!referrersRes.ok) return json(502, { error: 'Gagal baca pangkalan data penjemput.' });
+  const codeToId = new Map((referrersRes.data || []).map((r) => [r.code, r.id]));
+
+  let synced = 0;
+  let skipped = 0;
+  const unknownCodes = new Set();
+  const reward = await rewardFor(new Date());
+
+  for (const row of rows) {
+    const code = (row[SHEET_COL.keyword] || '').trim().toUpperCase();
+    const phone = normalizePhone(row[SHEET_COL.phone] || '');
+    const name = (row[SHEET_COL.name] || '').replace(/\s+/g, ' ').trim().slice(0, 80) || null;
+
+    if (!code || !phone) { skipped++; continue; }
+
+    const referrerId = codeToId.get(code);
+    if (!referrerId) { unknownCodes.add(code); skipped++; continue; }
+
+    const ins = await sb('referrals', {
+      method: 'POST',
+      body: { referrer_id: referrerId, code, referee_phone: phone, referee_name: name, reward, status: 'pending' },
+    });
+    if (ins.ok) synced++;
+    else if (ins.data?.code === '23505') skipped++; // already exists
+    else console.error('syncGoogleSheet insert error:', ins.data);
+  }
+
+  return json(200, { synced, skipped, rowsProcessed: rows.length, unknownCodes: [...unknownCodes] });
+}
+
 async function setStatus(body) {
   const id = Number(body.id);
   if (!Number.isInteger(id) || !STATUSES.includes(body.status)) return json(422, { error: 'Data status tak sah.' });
@@ -774,6 +844,7 @@ export default async (req) => {
 
     if (body.action === 'list') return await list();
     if (body.action === 'add') return await add(body);
+    if (body.action === 'sync-google-sheet') return await syncGoogleSheet();
     if (body.action === 'status') return await setStatus(body);
     if (body.action === 'edit-referrer') return await editReferrer(body);
     if (body.action === 'change-referrer-code') return await changeReferrerCode(body);
