@@ -180,8 +180,24 @@ async function add(body) {
 }
 
 const GOOGLE_SHEET_ID = '1NSi6hm2tVt1fyoqfFSgYRBiwNQfQ9lXjlTBKztsVGas';
-// Columns in the CC2-fed sheet (0-indexed): B=Tarikh, E=Keyword, F=No.Telefon, AA=Nama Parents
-const SHEET_COL = { tarikh: 1, keyword: 4, phone: 5, name: 26 };
+// Matched by header text (not fixed column position) so the sync survives
+// columns being added/reordered in the sheet. Header matching is
+// case-insensitive and ignores spaces/punctuation.
+const SHEET_HEADERS = {
+  keyword: ['keyword'],
+  phone: ['notelefon', 'nophone', 'phone'],
+  name: ['parentsname', 'namaparents', 'nama'],
+};
+const normalizeHeader = (h) => String(h ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+function findColumns(headerRow) {
+  const normalized = headerRow.map(normalizeHeader);
+  const out = {};
+  for (const [field, candidates] of Object.entries(SHEET_HEADERS)) {
+    out[field] = normalized.findIndex((h) => candidates.includes(h));
+  }
+  return out;
+}
 
 function parseCsv(text) {
   // Minimal CSV parser handling quoted fields with commas/escaped quotes.
@@ -216,7 +232,14 @@ async function syncGoogleSheet() {
   const csvRes = await fetch(csvUrl);
   if (!csvRes.ok) return json(502, { error: 'Gagal baca Google Sheet.' });
   const csv = await csvRes.text();
-  const rows = parseCsv(csv).slice(1); // skip header
+  const allRows = parseCsv(csv);
+  const headerRow = allRows[0] || [];
+  const rows = allRows.slice(1);
+
+  const col = findColumns(headerRow);
+  if (col.keyword < 0 || col.phone < 0) {
+    return json(502, { error: `Tak jumpa column "Keyword"/"No.Telefon" dalam sheet. Headers dijumpai: ${headerRow.join(', ')}` });
+  }
 
   const referrersRes = await sb('referrers?select=id,code');
   if (!referrersRes.ok) return json(502, { error: 'Gagal baca pangkalan data penjemput.' });
@@ -228,9 +251,9 @@ async function syncGoogleSheet() {
   const reward = await rewardFor(new Date());
 
   for (const row of rows) {
-    const code = (row[SHEET_COL.keyword] || '').trim().toUpperCase();
-    const phone = normalizePhone(row[SHEET_COL.phone] || '');
-    const name = (row[SHEET_COL.name] || '').replace(/\s+/g, ' ').trim().slice(0, 80) || null;
+    const code = (row[col.keyword] || '').trim().toUpperCase();
+    const phone = normalizePhone(row[col.phone] || '');
+    const name = col.name >= 0 ? (row[col.name] || '').replace(/\s+/g, ' ').trim().slice(0, 80) || null : null;
 
     if (!code || !phone) { skipped++; continue; }
 
