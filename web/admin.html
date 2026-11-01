@@ -821,6 +821,7 @@
       try {
         const d = await call({ action: 'sync-google-sheet' });
         const parts = [`${d.synced} rujukan baru ditambah`, `${d.skipped} dilangkau (dah wujud/tak sah)`];
+        if (d.backfilled) parts.push(`${d.backfilled} nama dikemaskini`);
         if (d.unknownCodes?.length) parts.push(`kod tak dijumpai: ${d.unknownCodes.join(', ')}`);
         result.textContent = parts.join(' · ');
         result.className = 'mt-3 rounded-lg px-3 py-2 text-sm bg-green-50 text-green-700';

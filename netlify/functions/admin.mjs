@@ -247,6 +247,7 @@ async function syncGoogleSheet() {
 
   let synced = 0;
   let skipped = 0;
+  let backfilled = 0;
   const unknownCodes = new Set();
   const reward = await rewardFor(new Date());
 
@@ -264,12 +265,24 @@ async function syncGoogleSheet() {
       method: 'POST',
       body: { referrer_id: referrerId, code, referee_phone: phone, referee_name: name, reward, status: 'pending' },
     });
-    if (ins.ok) synced++;
-    else if (ins.data?.code === '23505') skipped++; // already exists
-    else console.error('syncGoogleSheet insert error:', ins.data);
+    if (ins.ok) { synced++; continue; }
+    if (ins.data?.code !== '23505') { console.error('syncGoogleSheet insert error:', ins.data); continue; }
+
+    // Already exists — backfill name if the sheet has one and the stored row doesn't.
+    if (name) {
+      const patch = await sb(`referrals?referee_phone=eq.${encodeURIComponent(phone)}&referee_name=is.null`, {
+        method: 'PATCH',
+        prefer: 'return=representation',
+        body: { referee_name: name },
+      });
+      if (patch.ok && patch.data?.length) backfilled++;
+      else skipped++;
+    } else {
+      skipped++;
+    }
   }
 
-  return json(200, { synced, skipped, rowsProcessed: rows.length, unknownCodes: [...unknownCodes] });
+  return json(200, { synced, skipped, backfilled, rowsProcessed: rows.length, unknownCodes: [...unknownCodes] });
 }
 
 async function setStatus(body) {
