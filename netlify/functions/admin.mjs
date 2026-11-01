@@ -26,6 +26,7 @@ const SETTINGS_KEYS = [
   'paid_email_header_image', 'paid_email_heading', 'paid_email_subtitle',
   'paid_email_image1', 'paid_email_image2',
   'video_title', 'video_desc', 'video_url', 'video2_url',
+  'google_sheet_url',
 ];
 const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
 const REQUIRED_IMAGE_SETTINGS = [
@@ -114,7 +115,7 @@ async function sb(path, { method = 'GET', body, prefer } = {}) {
 }
 
 async function list() {
-  const [funnel, referrals, unknown, referrers, supportRequests, materials, infoPosts] = await Promise.all([
+  const [funnel, referrals, unknown, referrers, supportRequests, materials, infoPosts, googleSheetSetting] = await Promise.all([
     sb('referral_funnel?select=*&order=registrations.desc,landings.desc'),
     sb('referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone,email)&order=registered_at.desc&limit=500'),
     sb('referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
@@ -122,6 +123,7 @@ async function list() {
     sb('support_requests?select=*&order=created_at.desc&limit=200'),
     sb('creative_materials?select=*&order=category.asc,sort_order.asc,created_at.desc&limit=500'),
     sb('community_info?select=*&order=created_at.desc&limit=200'),
+    sb('settings?select=value&key=eq.google_sheet_url'),
   ]);
 
   if (!funnel.ok) {
@@ -150,6 +152,7 @@ async function list() {
     supportRequests: supportRequests.ok ? supportRequests.data : [],
     materials: materials.ok ? materials.data : [],
     infoPosts: infoPosts.ok ? infoPosts.data : [],
+    googleSheetUrl: googleSheetSetting.ok ? (googleSheetSetting.data?.[0]?.value ?? '') : '',
   });
 }
 
@@ -179,7 +182,15 @@ async function add(body) {
   return json(200, { ok: true });
 }
 
-const GOOGLE_SHEET_ID = '1NSi6hm2tVt1fyoqfFSgYRBiwNQfQ9lXjlTBKztsVGas';
+const DEFAULT_GOOGLE_SHEET_ID = '1NSi6hm2tVt1fyoqfFSgYRBiwNQfQ9lXjlTBKztsVGas';
+
+function extractSheetInfo(url) {
+  const idMatch = String(url ?? '').match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if (!idMatch) return null;
+  const gidMatch = String(url ?? '').match(/[#&?]gid=(\d+)/);
+  return { id: idMatch[1], gid: gidMatch ? gidMatch[1] : '0' };
+}
+
 // Matched by header text (not fixed column position) so the sync survives
 // columns being added/reordered in the sheet. Header matching is
 // case-insensitive and ignores spaces/punctuation.
@@ -228,7 +239,11 @@ function parseCsv(text) {
 }
 
 async function syncGoogleSheet() {
-  const csvUrl = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=csv&gid=0`;
+  const setRes = await sb('settings?select=value&key=eq.google_sheet_url');
+  const configuredUrl = setRes.ok ? setRes.data?.[0]?.value : null;
+  const sheet = (configuredUrl && extractSheetInfo(configuredUrl)) || { id: DEFAULT_GOOGLE_SHEET_ID, gid: '0' };
+
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${sheet.id}/export?format=csv&gid=${sheet.gid}`;
   const csvRes = await fetch(csvUrl);
   if (!csvRes.ok) return json(502, { error: 'Gagal baca Google Sheet.' });
   const csv = await csvRes.text();
@@ -808,6 +823,11 @@ function validateSetting(key, raw) {
     const d = v.replace(/\D/g, '');
     if (!/^60\d{8,10}$/.test(d)) return { error: 'Nombor sokongan tak sah. Contoh: 60123456789' };
     return { value: d };
+  }
+  if (key === 'google_sheet_url') {
+    if (!v) return { error: 'Link Google Sheet tak boleh kosong.' };
+    if (!extractSheetInfo(v)) return { error: 'Link Google Sheet tak sah. Copy terus dari address bar bila sheet tu terbuka.' };
+    return { value: v };
   }
   if (key === 'community_link') {
     if (v && !/^https:\/\/\S+$/.test(v)) return { error: 'Link komuniti tak sah. Kena mula dengan https://' };
