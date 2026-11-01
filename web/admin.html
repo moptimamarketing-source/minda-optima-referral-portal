@@ -145,7 +145,7 @@
         <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
           <table class="w-full text-sm">
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-              <tr><th class="px-4 py-3">Referrer</th><th class="px-3 py-3">Kod</th><th class="px-3 py-3">Email</th><th class="px-3 py-3">Kerja</th><th class="px-3 py-3"></th></tr>
+              <tr><th class="px-4 py-3">Referrer</th><th class="px-3 py-3">Kod</th><th class="px-3 py-3">Email</th><th class="px-3 py-3">Anak / Centre</th><th class="px-3 py-3">Pengesahan</th><th class="px-3 py-3"></th></tr>
             </thead>
             <tbody id="referrer-rows" class="divide-y divide-slate-100"></tbody>
           </table>
@@ -526,25 +526,75 @@
     function filterReferrers() {
       const q = $('referrer-search').value.trim().toLowerCase();
       if (!q) return referrers;
-      return referrers.filter((r) => [r.name, r.code, r.email, r.occupation, r.phone]
+      return referrers.filter((r) => [r.name, r.code, r.email, r.occupation, r.phone, r.child_name, r.centre]
         .join(' ').toLowerCase().includes(q));
     }
+
+    const VERIFICATION_LABEL = {
+      unverified: { label: 'Belum Disahkan', cls: 'bg-amber-100 text-amber-800' },
+      verified: { label: 'Disahkan', cls: 'bg-emerald-100 text-emerald-800' },
+      rejected: { label: 'Ditolak', cls: 'bg-red-100 text-red-700' },
+    };
 
     function renderReferrers() {
       const filtered = filterReferrers();
       const rows = paginate(filtered, 'referrer');
-      $('referrer-rows').innerHTML = rows.map((r) => `<tr>
+      $('referrer-rows').innerHTML = rows.map((r) => {
+        const v = VERIFICATION_LABEL[r.verification_status] || VERIFICATION_LABEL.unverified;
+        return `<tr class="${r.clash ? 'bg-red-50' : ''}">
         <td class="px-4 py-3"><div class="font-medium">${esc(r.name)}</div><div class="text-xs text-slate-500 tabular-nums">${esc(fmtPhone(r.phone))}</div></td>
         <td class="px-3 py-3 font-mono text-xs">${esc(r.code)}</td>
         <td class="px-3 py-3">${esc(r.email || '—')}</td>
-        <td class="px-3 py-3">${esc(r.occupation || '—')}</td>
+        <td class="px-3 py-3">
+          <div>${esc(r.child_name || '—')}</div>
+          <div class="text-xs text-slate-500">${esc(r.enroll_year || '—')} · ${esc(r.centre || '—')}</div>
+          ${r.clash ? '<div class="mt-0.5 text-xs font-semibold text-red-600">⚠️ Sama anak/centre dgn referrer lain</div>' : ''}
+          ${r.signup_note ? `<div class="mt-0.5 text-xs text-slate-400">Nota: ${esc(r.signup_note)}</div>` : ''}
+        </td>
+        <td class="px-3 py-3">
+          <span class="rounded-full px-2.5 py-1 text-xs font-semibold ${v.cls}">${v.label}</span>
+        </td>
         <td class="px-3 py-3 text-right whitespace-nowrap">
-          <button data-edit-referrer="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button>
+          ${r.verification_status !== 'verified' ? `<button data-verify-referrer="${esc(r.id)}" class="text-sm font-semibold text-emerald-700 hover:underline">Sahkan</button>` : ''}
+          ${r.verification_status !== 'rejected' ? `<button data-reject-referrer="${esc(r.id)}" class="ml-3 text-sm font-semibold text-red-600 hover:underline">Tolak</button>` : ''}
+          <button data-edit-referrer="${esc(r.id)}" class="ml-3 text-sm font-semibold text-brand hover:underline">Edit</button>
           <button data-change-code="${esc(r.id)}" class="ml-3 text-sm font-semibold text-brand hover:underline">Tukar Kod</button>
           ${r.email ? `<button data-resend-welcome="${esc(r.id)}" class="ml-3 text-sm font-semibold text-brand hover:underline">Welcome</button>` : ''}
           <button data-delete-referrer="${esc(r.id)}" class="ml-3 text-sm font-semibold text-red-600 hover:underline">Padam</button>
         </td>
-      </tr>`).join('') || '<tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">Takde referrer lagi.</td></tr>';
+      </tr>`;
+      }).join('') || '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Takde referrer lagi.</td></tr>';
+    }
+
+    async function verifyReferrer(id, btn) {
+      const r = referrers.find((x) => String(x.id) === String(id));
+      if (!r) return;
+      if (!confirm(`Sahkan "${r.name}" sebagai referrer yang layak? Semua rujukan dia (lama & akan datang) boleh diapprove selepas ni.`)) return;
+      btn.disabled = true;
+      try {
+        await call({ action: 'verify-referrer', id: Number(id) });
+        await load();
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        alert(err.message);
+        btn.disabled = false;
+      }
+    }
+
+    async function rejectReferrer(id, btn) {
+      const r = referrers.find((x) => String(x.id) === String(id));
+      if (!r) return;
+      if (!confirm(`Tolak "${r.name}"? SEMUA rujukan PENDING bawah dia akan ditolak sekali. Tindakan ni tak boleh diundur secara automatik.`)) return;
+      btn.disabled = true;
+      try {
+        const d = await call({ action: 'reject-referrer', id: Number(id) });
+        await load();
+        if (d.cascaded) alert(`${d.cascaded} rujukan pending bawah referrer ni turut ditolak.`);
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        alert(err.message);
+        btn.disabled = false;
+      }
     }
 
     function supportWaLink(r) {
@@ -922,7 +972,10 @@
     });
 
     const EDIT_FIELDS = {
-      referrer: [['name', 'Nama'], ['phone', 'Phone (TnG)'], ['email', 'Email'], ['occupation', 'Kerja']],
+      referrer: [
+        ['name', 'Nama'], ['phone', 'Phone (TnG)'], ['email', 'Email'], ['occupation', 'Kerja'],
+        ['child_name', 'Nama Anak'], ['enroll_year', 'Tahun Hantar Anak'], ['centre', 'Pusat Pembelajaran'],
+      ],
       referee: [['name', 'Nama'], ['phone', 'Phone']],
     };
     let editing = null;
@@ -992,6 +1045,8 @@
       const dRel = e.target.closest('[data-delete-referral]');
       const w = e.target.closest('[data-resend-welcome]');
       const c = e.target.closest('[data-change-code]');
+      const vr = e.target.closest('[data-verify-referrer]');
+      const rr = e.target.closest('[data-reject-referrer]');
       const vs = e.target.closest('[data-view-screenshot]');
       const th = e.target.closest('[data-toggle-handled]');
       const dm = e.target.closest('[data-delete-material]');
@@ -1001,6 +1056,8 @@
       if (n) sendNotify(n.dataset.notifyEmail, n);
       if (w) sendResendWelcome(w.dataset.resendWelcome, w);
       if (c) openCodeDialog(c.dataset.changeCode);
+      if (vr) verifyReferrer(vr.dataset.verifyReferrer, vr);
+      if (rr) rejectReferrer(rr.dataset.rejectReferrer, rr);
       if (vs) viewScreenshot(vs.dataset.viewScreenshot, vs);
       if (th) toggleSupportHandled(th.dataset.toggleHandled, th.dataset.next === 'true', th);
       if (a) openEdit('referrer', a.dataset.editReferrer);

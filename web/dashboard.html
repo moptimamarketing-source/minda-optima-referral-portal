@@ -65,6 +65,7 @@
         <div>
           <p class="text-white/70 text-sm">Selamat Datang,</p>
           <h1 id="parent-name" class="text-xl sm:text-2xl font-extrabold leading-tight">…</h1>
+          <span id="verification-badge" class="hidden mt-1 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold"></span>
         </div>
       </div>
       <div class="flex items-center gap-4 shrink-0 relative">
@@ -288,6 +289,14 @@
             <p class="text-xs text-slate-500 uppercase tracking-wider">Pekerjaan</p>
             <p id="profile-occupation" class="mt-1 font-medium text-slate-800">—</p>
           </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Nama Anak</p>
+            <p id="profile-child-name" class="mt-1 font-medium text-slate-800">—</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Tahun Hantar / Pusat</p>
+            <p id="profile-centre" class="mt-1 font-medium text-slate-800">—</p>
+          </div>
         </div>
         <p class="text-sm text-slate-600 bg-blue-50 p-3 rounded-lg">
           💬 Untuk mengubah atau membetulkan butiran, sila <a data-support-link href="#" class="font-semibold text-blue-600 hover:text-blue-800 underline">hubungi sokongan</a>.
@@ -317,6 +326,11 @@
       paid: { label: 'Dibayar', cls: 'bg-emerald-100 text-emerald-800' },
       rejected: { label: 'Ditolak', cls: 'bg-slate-200 text-slate-600' },
     };
+    const VERIFICATION = {
+      unverified: { label: '⏳ Belum Disahkan', cls: 'bg-amber-100 text-amber-800' },
+      verified: { label: '✓ Disahkan', cls: 'bg-emerald-100 text-emerald-800' },
+      rejected: { label: 'Ditolak — Hubungi Sokongan', cls: 'bg-red-100 text-red-700' },
+    };
     const rm = (n) => `RM${Number(n).toLocaleString('ms-MY')}`;
     const dateFmt = new Intl.DateTimeFormat('ms-MY', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kuala_Lumpur' });
 
@@ -337,6 +351,14 @@
       await MO.settingsReady;
       const { referrer, stats, referrals, shareUrl } = data;
       document.getElementById('parent-name').textContent = referrer.name;
+      const badge = document.getElementById('verification-badge');
+      const v = VERIFICATION[referrer.verificationStatus];
+      if (v) {
+        badge.textContent = v.label;
+        badge.className = `mt-1 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${v.cls}`;
+      } else {
+        badge.classList.add('hidden');
+      }
       const codeEl = document.getElementById('ref-code');
       codeEl.textContent = referrer.code;
       codeEl.onclick = async () => {
@@ -350,6 +372,8 @@
       document.getElementById('profile-phone').textContent = referrer.phone || '—';
       document.getElementById('profile-email').textContent = referrer.email || '—';
       document.getElementById('profile-occupation').textContent = referrer.occupation || '—';
+      document.getElementById('profile-child-name').textContent = referrer.childName || '—';
+      document.getElementById('profile-centre').textContent = [referrer.enrollYear, referrer.centre].filter(Boolean).join(' · ') || '—';
 
       if ((MO.settings || {}).community_link) {
         document.getElementById('community-card').classList.remove('hidden');
@@ -426,7 +450,7 @@
       // Admin Content Editor preview: skip login, use mock data so the
       // real layout can be shown live without an authenticated session.
       render({
-        referrer: { name: 'Demo Parent', code: 'MO-1111-YADG', phone: '0171234567', email: 'demo@example.com', occupation: 'Guru' },
+        referrer: { name: 'Demo Parent', code: 'MO-1111-YADG', phone: '0171234567', email: 'demo@example.com', occupation: 'Guru', childName: 'Ahmad bin Ali', enrollYear: '2025', centre: 'Minda Optima Shah Alam', verificationStatus: 'verified' },
         shareUrl: 'https://referral.mindaoptima.com/daftar?ref=MO-1111-YADG',
         stats: { totalReferrals: 3, rewardPending: 100, totalEarned: 200 },
         referrals: [

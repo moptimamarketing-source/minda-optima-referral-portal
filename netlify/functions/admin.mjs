@@ -3,6 +3,7 @@ import { sendEmail, esc, SITE, fetchSettings, imagesBlock } from '../lib/email.m
 import { otpEmail, confirmationEmail } from './auth.mjs';
 
 const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
+const REFERRER_VERIFICATION_STATUSES = ['unverified', 'verified', 'rejected'];
 const SETTINGS_KEYS = [
   'promo_enabled', 'promo_deadline', 'reward_before', 'reward_after', 'support_phone',
   'hero_badge_label', 'hero_title_line1', 'hero_title_line2', 'hero_subtitle',
@@ -114,6 +115,23 @@ async function sb(path, { method = 'GET', body, prefer } = {}) {
   return { ok: res.ok, data };
 }
 
+// Kalau 2 referrer berlainan claim nama anak+centre yang sama, tandakan untuk disiasat
+// admin sebelum sahkan mana-mana (mungkin satu daripada mereka tipu details anak orang lain).
+function detectClashes(referrerRows) {
+  const groups = new Map();
+  for (const r of referrerRows) {
+    if (!r.child_name || !r.centre) continue;
+    const key = `${r.child_name.trim().toLowerCase()}|${r.centre.trim().toLowerCase()}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r.id);
+  }
+  const clashIds = new Set();
+  for (const ids of groups.values()) {
+    if (ids.length > 1) ids.forEach((id) => clashIds.add(id));
+  }
+  return clashIds;
+}
+
 async function list() {
   const [funnel, referrals, unknown, referrers, supportRequests, materials, infoPosts, googleSheetSetting] = await Promise.all([
     sb('referral_funnel?select=*&order=registrations.desc,landings.desc'),
@@ -144,11 +162,14 @@ async function list() {
     return json(502, { error: `Gagal baca referrers: ${referrers.data?.message || 'Unknown error'}` });
   }
 
+  const clashIds = detectClashes(referrers.data || []);
+  const referrersOut = (referrers.data || []).map((r) => ({ ...r, clash: clashIds.has(r.id) }));
+
   return json(200, {
     funnel: funnel.data,
     referrals: referrals.data,
     unknown: unknown.data,
-    referrers: referrers.data,
+    referrers: referrersOut,
     supportRequests: supportRequests.ok ? supportRequests.data : [],
     materials: materials.ok ? materials.data : [],
     infoPosts: infoPosts.ok ? infoPosts.data : [],
@@ -304,6 +325,15 @@ async function setStatus(body) {
   const id = Number(body.id);
   if (!Number.isInteger(id) || !STATUSES.includes(body.status)) return json(422, { error: 'Data status tak sah.' });
 
+  if (body.status === 'approved' || body.status === 'paid') {
+    const check = await sb(`referrals?select=referrers(name,verification_status)&id=eq.${id}`);
+    if (!check.ok) return json(502, { error: 'Gagal semak status referrer.' });
+    const ref = check.data?.[0]?.referrers;
+    if (ref && ref.verification_status !== 'verified') {
+      return json(422, { error: `Referrer "${ref.name}" belum disahkan. Sahkan referrer tu dulu (bahagian Pengesahan Referrer) sebelum approve/bayar rujukan ni.` });
+    }
+  }
+
   const up = await sb(`referrals?id=eq.${id}`, {
     method: 'PATCH',
     prefer: 'return=representation',
@@ -345,6 +375,48 @@ async function changeReferrerCode(body) {
   if (!upEvents.ok) console.error('changeReferrerCode (referral_events) error:', upEvents.data);
 
   return json(200, { ok: true, oldCode, newCode });
+}
+
+async function verifyReferrer(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+
+  const up = await sb(`referrers?id=eq.${id}`, {
+    method: 'PATCH',
+    prefer: 'return=representation',
+    body: { verification_status: 'verified', verification_note: clean(body.note, 300) || null },
+  });
+  if (!up.ok) {
+    console.error('verifyReferrer error:', up.data);
+    return json(502, { error: `Gagal sahkan referrer: ${up.data?.message || 'Unknown error'}` });
+  }
+  if (!up.data?.length) return json(404, { error: 'Referrer tak dijumpai.' });
+  return json(200, { ok: true });
+}
+
+async function rejectReferrer(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+
+  const up = await sb(`referrers?id=eq.${id}`, {
+    method: 'PATCH',
+    prefer: 'return=representation',
+    body: { verification_status: 'rejected', verification_note: clean(body.note, 300) || null },
+  });
+  if (!up.ok) {
+    console.error('rejectReferrer error:', up.data);
+    return json(502, { error: `Gagal tolak referrer: ${up.data?.message || 'Unknown error'}` });
+  }
+  if (!up.data?.length) return json(404, { error: 'Referrer tak dijumpai.' });
+
+  // Cascade: tolak semua rujukan PENDING bawah referrer ni sekali. Rujukan yang dah
+  // approved/paid sebelum ni TAK disentuh — perlu keputusan manual berasingan untuk itu.
+  const cascade = await sb(`referrals?referrer_id=eq.${id}&status=eq.pending`, {
+    method: 'PATCH',
+    prefer: 'return=representation',
+    body: { status: 'rejected' },
+  });
+  return json(200, { ok: true, cascaded: cascade.ok ? (cascade.data?.length || 0) : 0 });
 }
 
 const confirmsDelete = (body) => String(body.confirm ?? '').trim().toLowerCase() === 'delete';
@@ -589,6 +661,13 @@ async function editReferrer(body) {
     if (patch.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(patch.email)) return json(422, { error: 'Emel tak sah.' });
   }
   if ('occupation' in f) patch.occupation = clean(f.occupation, 50) || null;
+  if ('child_name' in f) patch.child_name = clean(f.child_name, 80) || null;
+  if ('enroll_year' in f) {
+    const year = clean(f.enroll_year, 4);
+    if (year && !/^\d{4}$/.test(year)) return json(422, { error: 'Tahun hantar anak tak sah. Contoh: 2025' });
+    patch.enroll_year = year || null;
+  }
+  if ('centre' in f) patch.centre = clean(f.centre, 100) || null;
   if (!Object.keys(patch).length) return json(422, { error: 'Tiada perubahan.' });
 
   const up = await sb(`referrers?id=eq.${id}`, { method: 'PATCH', prefer: 'return=representation', body: patch });
@@ -902,6 +981,8 @@ export default async (req) => {
     if (body.action === 'add') return await add(body);
     if (body.action === 'sync-google-sheet') return await syncGoogleSheet();
     if (body.action === 'status') return await setStatus(body);
+    if (body.action === 'verify-referrer') return await verifyReferrer(body);
+    if (body.action === 'reject-referrer') return await rejectReferrer(body);
     if (body.action === 'edit-referrer') return await editReferrer(body);
     if (body.action === 'change-referrer-code') return await changeReferrerCode(body);
     if (body.action === 'edit-referee') return await editReferee(body);

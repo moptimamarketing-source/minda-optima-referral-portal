@@ -263,7 +263,11 @@ async function register(body) {
       p_phone: s.phone,
       p_name: body.name ?? null,
       p_email: s.email,
+      p_child_name: body.childName ?? null,
+      p_enroll_year: body.enrollYear ?? null,
+      p_centre: body.centre ?? null,
       p_occupation: body.occupation ?? null,
+      p_note: body.note ?? null,
     },
   });
   if (!r.ok) return json(502, { error: 'Gagal daftar. Sila cuba lagi.' });
@@ -272,6 +276,9 @@ async function register(body) {
     name_required: 'Nama penuh diperlukan (2-80 aksara).',
     email_invalid: 'Emel tidak sah.',
     invalid_phone: 'Nombor telefon tidak sah.',
+    child_name_required: 'Nama anak diperlukan (2-80 aksara).',
+    enroll_year_invalid: 'Tahun hantar anak tidak sah. Contoh: 2025',
+    centre_required: 'Pusat/centre diperlukan.',
   };
   if (!r.data?.ok) {
     return json(422, { error: REG_ERRORS[r.data?.reason] || 'Tidak dapat meneruskan. Sila cuba lagi.' });

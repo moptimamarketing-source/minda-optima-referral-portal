@@ -124,7 +124,11 @@
         action: 'register',
         token: store.get(SESSION_KEY),
         name: body.name,
+        childName: body.childName,
+        enrollYear: body.enrollYear,
+        centre: body.centre,
         occupation: body.occupation,
+        note: body.note,
       });
       return { ok: true, code: data.code, redirect: 'dashboard' };
     }

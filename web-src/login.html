@@ -114,8 +114,28 @@
 
         <p class="mt-4 text-xs text-slate-500">Reward RM anda akan dihantar ke Touch 'n Go yang dikaitkan dengan nombor telefon <strong id="reg-tng-phone"></strong> yang anda daftarkan tadi. Sila sahkan nombor tersebut betul sebelum meneruskan.</p>
 
+        <div class="mt-4 rounded-lg bg-blue-50 border border-blue-200 p-3">
+          <p class="text-xs text-blue-800 leading-relaxed">Program ini khusus untuk ibu bapa/penjaga sedia ada Minda Optima. Sila isi maklumat anak di bawah untuk pengesahan.</p>
+        </div>
+
+        <label for="reg-child-name" class="mt-4 block text-sm font-semibold text-slate-700">Nama Anak</label>
+        <input id="reg-child-name" name="childName" type="text" maxlength="80" placeholder="cth. Ahmad bin Ali" required
+               class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+
+        <label for="reg-enroll-year" class="mt-4 block text-sm font-semibold text-slate-700">Tahun Hantar Anak</label>
+        <input id="reg-enroll-year" name="enrollYear" type="text" inputmode="numeric" maxlength="4" placeholder="cth. 2025" required
+               class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+
+        <label for="reg-centre" class="mt-4 block text-sm font-semibold text-slate-700">Pusat Pembelajaran</label>
+        <input id="reg-centre" name="centre" type="text" maxlength="100" placeholder="cth. Minda Optima Shah Alam" required
+               class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+
         <label for="reg-occupation" class="mt-4 block text-sm font-semibold text-slate-700" data-content="reg_occupation_label">Pekerjaan (Pilihan)</label>
         <input id="reg-occupation" name="occupation" type="text" maxlength="50" placeholder="cth. Guru, Doktor, Entrepreneur"
+               class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+
+        <label for="reg-note" class="mt-4 block text-sm font-semibold text-slate-700">Nota Tambahan (Pilihan)</label>
+        <input id="reg-note" name="note" type="text" maxlength="200" placeholder="cth. Guna nombor suami/isteri saya"
                class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
 
         <p id="register-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
@@ -246,9 +266,16 @@
       e.preventDefault();
       showError('register-error');
       const name = document.getElementById('reg-name').value.trim();
+      const childName = document.getElementById('reg-child-name').value.trim();
+      const enrollYear = document.getElementById('reg-enroll-year').value.trim();
+      const centre = document.getElementById('reg-centre').value.trim();
       const occupation = document.getElementById('reg-occupation').value.trim();
+      const note = document.getElementById('reg-note').value.trim();
 
       if (name.length < 2) return showError('register-error', 'Nama penuh diperlukan.');
+      if (childName.length < 2) return showError('register-error', 'Nama anak diperlukan.');
+      if (!/^\d{4}$/.test(enrollYear)) return showError('register-error', 'Tahun hantar anak tidak sah. Contoh: 2025');
+      if (centre.length < 2) return showError('register-error', 'Pusat pembelajaran diperlukan.');
 
       const btn = registerForm.querySelector('button[type=submit]');
       btn.disabled = true;
@@ -257,7 +284,11 @@
           method: 'POST',
           body: {
             name,
+            childName,
+            enrollYear,
+            centre,
             occupation: occupation || null,
+            note: note || null,
           },
         });
         window.location.href = regData.redirect;
