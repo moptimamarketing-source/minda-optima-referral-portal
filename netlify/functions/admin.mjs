@@ -330,7 +330,7 @@ async function setStatus(body) {
     if (!check.ok) return json(502, { error: 'Gagal semak status referrer.' });
     const ref = check.data?.[0]?.referrers;
     if (ref && ref.verification_status !== 'verified') {
-      return json(422, { error: `Referrer "${ref.name}" belum disahkan. Sahkan referrer tu dulu (bahagian Pengesahan Referrer) sebelum approve/bayar rujukan ni.` });
+      return json(422, { error: `Referrer "${ref.name}" belum disahkan. Sahkan referrer tu dulu (bahagian Referrers) sebelum approve/bayar rujukan ni.` });
     }
   }
 

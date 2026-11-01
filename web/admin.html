@@ -552,7 +552,7 @@
           ${r.signup_note ? `<div class="mt-0.5 text-xs text-slate-400">Nota: ${esc(r.signup_note)}</div>` : ''}
         </td>
         <td class="px-3 py-3">
-          <span class="rounded-full px-2.5 py-1 text-xs font-semibold ${v.cls}">${v.label}</span>
+          <span class="whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${v.cls}">${v.label}</span>
         </td>
         <td class="px-3 py-3 text-right whitespace-nowrap">
           ${r.verification_status !== 'verified' ? `<button data-verify-referrer="${esc(r.id)}" class="text-sm font-semibold text-emerald-700 hover:underline">Sahkan</button>` : ''}
