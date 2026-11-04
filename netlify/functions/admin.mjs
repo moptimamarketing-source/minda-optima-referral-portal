@@ -758,6 +758,11 @@ async function editReferee(body) {
     patch.referee_phone = normalizePhone(f.phone);
     if (!patch.referee_phone) return json(422, { error: 'Nombor telefon tak sah. Contoh: 0176629820' });
   }
+  if ('reward' in f) {
+    const n = Number(f.reward);
+    if (!Number.isInteger(n) || n < 0 || n > 10000) return json(422, { error: 'Jumlah reward tak sah.' });
+    patch.reward = n;
+  }
   if (!Object.keys(patch).length) return json(422, { error: 'Tiada perubahan.' });
 
   const up = await sb(`referrals?id=eq.${id}`, { method: 'PATCH', prefer: 'return=representation', body: patch });

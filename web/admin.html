@@ -1062,7 +1062,7 @@
         ['name', 'Nama'], ['phone', 'Phone'], ['email', 'Email'], ['occupation', 'Kerja'],
         ['child_name', 'Nama Anak'], ['enroll_year', 'Tahun Hantar Anak'], ['centre', 'Pusat Pembelajaran'],
       ],
-      referee: [['name', 'Nama'], ['phone', 'Phone']],
+      referee: [['name', 'Nama'], ['phone', 'Phone'], ['reward', 'Reward (RM)']],
     };
     let editing = null;
 
@@ -1073,12 +1073,12 @@
       if (!row) return;
       const values = kind === 'referrer'
         ? row
-        : { name: row.referee_name, phone: row.referee_phone };
+        : { name: row.referee_name, phone: row.referee_phone, reward: row.reward };
       editing = { kind, id: row.id };
       $('edit-title').textContent = kind === 'referrer' ? 'Edit Referrer' : 'Edit Referee';
       $('edit-fields').innerHTML = EDIT_FIELDS[kind].map(([k, label]) => `
         <label class="block text-sm font-semibold">${label}
-          <input name="${k}" value="${esc(values[k] ?? '')}" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          <input name="${k}" type="${k === 'reward' ? 'number' : 'text'}" min="${k === 'reward' ? '0' : ''}" value="${esc(values[k] ?? '')}" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
         </label>`).join('');
       $('edit-error').classList.add('hidden');
       $('edit-dialog').showModal();
