@@ -289,14 +289,6 @@
             <p id="profile-email" class="mt-1 font-medium text-slate-800 break-all">—</p>
           </div>
           <div>
-            <p class="text-xs text-slate-500 uppercase tracking-wider">Touch 'n Go Payout</p>
-            <p class="mt-1 font-medium text-slate-800">Nombor telefon di atas</p>
-          </div>
-          <div>
-            <p class="text-xs text-slate-500 uppercase tracking-wider">Pekerjaan</p>
-            <p id="profile-occupation" class="mt-1 font-medium text-slate-800">—</p>
-          </div>
-          <div>
             <p class="text-xs text-slate-500 uppercase tracking-wider">Nama Anak</p>
             <p id="profile-child-name" class="mt-1 font-medium text-slate-800">—</p>
           </div>
@@ -371,7 +363,6 @@
       document.getElementById('profile-name').textContent = referrer.name || '—';
       document.getElementById('profile-phone').textContent = referrer.phone || '—';
       document.getElementById('profile-email').textContent = referrer.email || '—';
-      document.getElementById('profile-occupation').textContent = referrer.occupation || '—';
       document.getElementById('profile-child-name').textContent = referrer.childName || '—';
       document.getElementById('profile-centre').textContent = [referrer.enrollYear, referrer.centre].filter(Boolean).join(' · ') || '—';
 
@@ -509,7 +500,7 @@
       // Admin Content Editor preview: skip login, use mock data so the
       // real layout can be shown live without an authenticated session.
       render({
-        referrer: { name: 'Demo Parent', code: 'MO-1111-YADG', phone: '0171234567', email: 'demo@example.com', occupation: 'Guru', childName: 'Ahmad bin Ali', enrollYear: '2025', centre: 'Minda Optima Shah Alam', verificationStatus: 'verified' },
+        referrer: { name: 'Demo Parent', code: 'MO-1111-YADG', phone: '0171234567', email: 'demo@example.com', childName: 'Ahmad bin Ali', enrollYear: '2025', centre: 'Minda Optima Shah Alam', verificationStatus: 'verified' },
         shareUrl: 'https://referral.mindaoptima.com/daftar?ref=MO-1111-YADG',
         stats: { totalReferrals: 3, rewardPending: 50, totalEarned: 100 },
         referrals: [

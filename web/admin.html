@@ -136,7 +136,7 @@
 
       <section>
         <h2 class="text-lg font-bold text-brand">Referrers</h2>
-        <p class="text-sm text-slate-500">Edit details referrer (nama, phone, email, kerja) kalau depa typo salah. Phone digunakan untuk transfer reward Touch 'n Go.</p>
+        <p class="text-sm text-slate-500">Edit details referrer (nama, phone, email) kalau depa typo salah. Phone digunakan untuk pengesahan akaun.</p>
         <div class="mt-3">
           <label class="block text-sm font-semibold">Cari
             <input id="referrer-search" placeholder="Nama, kod, email, kerja..." class="mt-1 w-72 rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand">
@@ -498,9 +498,9 @@
     function waMessage(r) {
       const name = r.referrers?.name || '';
       if (r.status === 'paid') {
-        return `Salam ${name}, pembayaran reward RM${r.reward} untuk rujukan anda telah dibuat. Sila semak Touch 'n Go anda. Terima kasih! – Minda Optima`;
+        return `Salam ${name}, ganjaran RM${r.reward} untuk rujukan anda telah ditebus. Terima kasih! – Minda Optima`;
       }
-      return `Salam ${name}, rujukan anda telah disahkan layak. Reward RM${r.reward} akan dibayar selepas proses pembayaran selesai. Kami akan maklumkan semula. – Minda Optima`;
+      return `Salam ${name}, rujukan anda telah disahkan layak. Sila pilih jenis ganjaran RM${r.reward} (Rebat Yuran/Voucher Buku) di dashboard anda. – Minda Optima`;
     }
 
     function notifyButtons(r) {
@@ -1059,7 +1059,7 @@
 
     const EDIT_FIELDS = {
       referrer: [
-        ['name', 'Nama'], ['phone', 'Phone (TnG)'], ['email', 'Email'], ['occupation', 'Kerja'],
+        ['name', 'Nama'], ['phone', 'Phone'], ['email', 'Email'], ['occupation', 'Kerja'],
         ['child_name', 'Nama Anak'], ['enroll_year', 'Tahun Hantar Anak'], ['centre', 'Pusat Pembelajaran'],
       ],
       referee: [['name', 'Nama'], ['phone', 'Phone']],

@@ -19,7 +19,7 @@ const SETTINGS_KEYS = [
   'cta_heading', 'cta_sub', 'cta_button_label',
   'syarat_items', 'syarat_notes', 'reward_terms',
   'login_hero_title_line1', 'login_hero_title_line2', 'login_hero_benefits',
-  'reg_heading', 'reg_subtitle', 'reg_name_label', 'reg_occupation_label', 'reg_submit_label',
+  'reg_heading', 'reg_subtitle', 'reg_name_label', 'reg_submit_label',
   'dashboard_code_label', 'dashboard_share_heading',
   'promo_banner_text',
   'community_title', 'community_desc', 'community_button_label', 'community_link', 'community_color',
@@ -55,7 +55,7 @@ const TEXT_SETTINGS_MAX = {
   cta_heading: 100, cta_sub: 150, cta_button_label: 60,
   syarat_items: 1500, syarat_notes: 800, reward_terms: 300,
   login_hero_title_line1: 60, login_hero_title_line2: 60, login_hero_benefits: 150,
-  reg_heading: 80, reg_subtitle: 150, reg_name_label: 40, reg_occupation_label: 40, reg_submit_label: 40,
+  reg_heading: 80, reg_subtitle: 150, reg_name_label: 40, reg_submit_label: 40,
   dashboard_code_label: 60, dashboard_share_heading: 60,
   promo_banner_text: 200,
   community_title: 60, community_desc: 200, community_button_label: 60,
@@ -89,7 +89,7 @@ function normalizePhone(raw) {
 }
 
 async function promoSettings() {
-  const out = { promo_enabled: 'true', promo_deadline: '2026-12-31T23:59:59+08:00', reward_before: 100, reward_after: 50 };
+  const out = { promo_enabled: 'false', promo_deadline: '2026-12-31T23:59:59+08:00', reward_before: 50, reward_after: 50 };
   const res = await sb('settings?select=key,value&key=in.(promo_enabled,promo_deadline,reward_before,reward_after)');
   if (res.ok) {
     for (const row of res.data || []) {
@@ -774,7 +774,7 @@ async function notifyEmail(body) {
   const id = Number(body.id);
   if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
 
-  const r = await sb(`referrals?select=status,reward,referrers(name,email,phone)&id=eq.${id}`);
+  const r = await sb(`referrals?select=status,reward,referrers(name,email,phone),reward_codes(type,code,status)&id=eq.${id}`);
   if (!r.ok) return json(502, { error: 'Gagal baca rekod.' });
   const row = r.data?.[0];
   if (!row) return json(404, { error: 'Rujukan tak dijumpai.' });
@@ -790,6 +790,10 @@ async function notifyEmail(body) {
     'paid_email_header_image', 'paid_email_heading', 'paid_email_subtitle',
     'paid_email_image1', 'paid_email_image2',
   ]);
+
+  const rewardCode = Array.isArray(row.reward_codes) ? row.reward_codes[0] : row.reward_codes;
+  const REWARD_TYPE_NAMES = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku' };
+  const rewardTypeLabel = rewardCode ? (REWARD_TYPE_NAMES[rewardCode.type] || rewardCode.type) : null;
 
   let subject;
   let html;
@@ -832,8 +836,8 @@ async function notifyEmail(body) {
 
           <!-- Timeline Info -->
           <div style="background:#f0fdf4;border-left:4px solid #10b981;padding:16px;border-radius:6px;margin:32px 0;font-size:13px;color:#065f46;line-height:1.6">
-            <strong style="display:block;margin-bottom:8px">⏱️ Garis Masa Pembayaran:</strong>
-            Pembayaran reward akan diproses dalam <strong>5-7 hari kerja</strong> ke akaun Touch 'n Go anda.
+            <strong style="display:block;margin-bottom:8px">⏱️ Langkah Seterusnya:</strong>
+            Sila log masuk ke dashboard anda untuk pilih jenis ganjaran (Rebat Yuran atau Voucher Buku). Admin kami akan hubungi anda melalui WhatsApp untuk proses penebusan.
           </div>
 
           <!-- CTA Button -->
@@ -855,10 +859,10 @@ async function notifyEmail(body) {
         </div>
       </div>`;
   } else {
-    const acc = ref.phone ? `Touch 'n Go •••• ${esc(String(ref.phone).slice(-4))}` : "Touch 'n Go anda";
+    const acc = rewardTypeLabel ? `${rewardTypeLabel}${rewardCode.code ? ` (${esc(rewardCode.code)})` : ''}` : 'Ganjaran Digital';
     const headerImage = emailSettings.paid_email_header_image || 'https://drive.google.com/uc?id=12SPd0G_EfTz-_OdPcAba5xwMNzKBQ_ip';
-    const heading = emailSettings.paid_email_heading || '🎉 Pembayaran Selesai!';
-    const subtitle = emailSettings.paid_email_subtitle || 'Ganjaran anda telah diproses dan akan masuk ke akaun Touch \'n Go anda.';
+    const heading = emailSettings.paid_email_heading || '🎉 Ganjaran Ditebus!';
+    const subtitle = emailSettings.paid_email_subtitle || 'Ganjaran anda telah berjaya ditebus.';
     const images = imagesBlock(emailSettings.paid_email_image1, emailSettings.paid_email_image2);
     subject = '🎉 Pembayaran Reward Selesai';
     html = `
@@ -887,19 +891,19 @@ async function notifyEmail(body) {
               <span style="font-weight:700;color:#0D2A5C">RM${esc(row.reward)}</span>
             </div>
             <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #e2e8f0">
-              <span style="color:#64748b">Akaun Tujuan</span>
+              <span style="color:#64748b">Jenis Ganjaran</span>
               <span style="font-weight:700;color:#0D2A5C">${acc}</span>
             </div>
             <div style="display:flex;justify-content:space-between;padding:12px 0">
-              <span style="color:#64748b">Tarikh Pembayaran</span>
+              <span style="color:#64748b">Tarikh Ditebus</span>
               <span style="font-weight:700;color:#0D2A5C">${new Date().toLocaleDateString('ms-MY')}</span>
             </div>
           </div>
 
           <!-- Confirmation Info -->
           <div style="background:#fdf4f5;border-left:4px solid #8b5cf6;padding:16px;border-radius:6px;margin:32px 0;font-size:13px;color:#581c87;line-height:1.6">
-            <strong style="display:block;margin-bottom:8px">✓ Pembayaran Diproses</strong>
-            Sila semak akaun Touch 'n Go anda dalam <strong>1-2 hari kerja</strong>. Terima kasih kerana menjadi bagian dari komuniti Minda Optima!
+            <strong style="display:block;margin-bottom:8px">✓ Ganjaran Ditebus</strong>
+            Terima kasih kerana menjadi sebahagian daripada komuniti Minda Optima!
           </div>
 
           <!-- CTA Button -->

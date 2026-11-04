@@ -41,6 +41,13 @@ Maklumat anak digunakan semata-mata untuk tujuan pengesahan.')
 on conflict (key) do update set value = excluded.value;
 
 insert into public.settings (key, value) values
+  ('approved_email_heading', '✓ Rujukan Anda Layak!'),
+  ('approved_email_subtitle', 'Tahniah! Rujukan anda telah disahkan memenuhi kriteria program kami.'),
+  ('paid_email_heading', '🎉 Ganjaran Ditebus!'),
+  ('paid_email_subtitle', 'Ganjaran anda telah berjaya ditebus.')
+on conflict (key) do update set value = excluded.value;
+
+insert into public.settings (key, value) values
   ('faq1_q', 'Apa itu kod rujukan dan macam mana cara guna?'),
   ('faq1_a', 'Kod rujukan adalah kod unik anda (cth: MO-2531-YHLA). Kongsi kod ini kepada ibu bapa lain. Bila mereka daftar menggunakan kod anda dan layak, anda akan menerima ganjaran RM50 (Rebat Yuran atau Voucher Buku).'),
   ('faq2_q', 'Bila saya layak dapat ganjaran?'),
