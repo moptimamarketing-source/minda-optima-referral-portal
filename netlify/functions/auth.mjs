@@ -48,13 +48,30 @@ async function sessionFor(token) {
   return row;
 }
 
-export function confirmationEmail({ name, code, phone, email, occupation, s = {} }) {
-  const share = `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila daftar, anak dapat 1 kelas PERCUMA & saya dapat RM100 🎉 👉 ${SITE}/daftar?ref=${code}`;
+export function pendingEmail({ name, phone, email, s = {} }) {
+  return `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
+      <div style="padding:40px 24px;text-align:center">
+        <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 8px 0">⏳ Pendaftaran Diterima</h1>
+        <p style="font-size:14px;color:#64748b;margin:0 0 32px 0;line-height:1.6">Terima kasih, ${esc(String(name || '').trim() || 'Ibu Bapa')}. Maklumat anda sedang disemak oleh pasukan kami. Kod rujukan anda akan tersedia di dashboard sebaik sahaja akaun disahkan.</p>
+        <div style="background:#fff9e6;border-left:4px solid #f59e0b;padding:14px 16px;border-radius:4px;margin:24px 0;font-size:13px;color:#78350f;line-height:1.6;text-align:left">
+          <strong>Nombor:</strong> ${esc(phone || '—')}<br><strong>Emel:</strong> ${esc(email || '—')}
+        </div>
+        <a href="${SITE}/dashboard" style="display:inline-block;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;background:linear-gradient(135deg,#0D2A5C 0%,#1a3a7a 100%);color:white">Buka Dashboard</a>
+      </div>
+      <div style="background:#1a1a1a;color:white;padding:24px;text-align:center;font-size:12px">
+        <p style="color:#999;font-size:11px;margin:0">© 2026 Minda Optima</p>
+      </div>
+    </div>`;
+}
+
+export function confirmationEmail({ name, code, phone, email, s = {} }) {
+  const share = `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila kawan saya daftar — saya layak ganjaran RM50 (Rebat Yuran/Voucher Buku) 🎉 👉 ${SITE}/daftar?ref=${code}`;
   const waLink = `https://wa.me/?text=${encodeURIComponent(share)}`;
   const waGroupLink = s.community_link || 'https://chat.whatsapp.com/Ech6q73TWPH9qFC5en8gDm';
   const headerImage = s.welcome_email_header_image || 'https://drive.google.com/uc?id=15gWaMZTfS9d8-z1yN7dKLmvDgjPYGbud';
-  const heading = s.welcome_email_heading || '🎉 Selamat Datang!';
-  const subtitle = s.welcome_email_subtitle || 'Terima kasih telah mendaftar. Kod rujukan anda sudah siap untuk dikongsi.';
+  const heading = s.welcome_email_heading || '🎉 Akaun Anda Disahkan!';
+  const subtitle = s.welcome_email_subtitle || 'Akaun Rakan Rujukan anda telah disahkan. Kod rujukan anda sudah siap untuk dikongsi.';
   const image1 = s.welcome_email_image1 ?? 'https://drive.google.com/uc?id=12BtXDOAxv_ofGCpDuTdUQHPhWt6ZMtL2';
   const image2 = s.welcome_email_image2 ?? 'https://drive.google.com/uc?id=1PzIvylgBQPfawl2JxyHRAKGH_gdEOBmE';
   const images = imagesBlock(image1, image2);
@@ -266,8 +283,7 @@ async function register(body) {
       p_child_name: body.childName ?? null,
       p_enroll_year: body.enrollYear ?? null,
       p_centre: body.centre ?? null,
-      p_occupation: body.occupation ?? null,
-      p_note: body.note ?? null,
+      p_tnc_agreed: body.tncAgreed === true,
     },
   });
   if (!r.ok) return json(502, { error: 'Gagal daftar. Sila cuba lagi.' });
@@ -279,25 +295,61 @@ async function register(body) {
     child_name_required: 'Nama anak diperlukan (2-80 aksara).',
     enroll_year_invalid: 'Tahun hantar anak tidak sah. Contoh: 2025',
     centre_required: 'Pusat/centre diperlukan.',
+    tnc_required: 'Sila bersetuju dengan Terma & Syarat untuk teruskan.',
   };
   if (!r.data?.ok) {
     return json(422, { error: REG_ERRORS[r.data?.reason] || 'Tidak dapat meneruskan. Sila cuba lagi.' });
   }
 
-  const details = {
-    name: String(body.name ?? '').trim(),
-    code: r.data.code,
-    phone: s.phone,
-    email: s.email,
-    occupation: String(body.occupation ?? '').trim(),
-  };
-  const emailSettings = await fetchSettings([
-    'community_link', 'welcome_email_header_image', 'welcome_email_heading',
-    'welcome_email_subtitle', 'welcome_email_image1', 'welcome_email_image2',
-  ]);
-  await sendEmail(s.email, `Pendaftaran Berjaya — Kod Rujukan ${r.data.code}`, confirmationEmail({ ...details, s: emailSettings }));
+  await sendEmail(s.email, `Pendaftaran Diterima — Minda Optima`, pendingEmail({ name: body.name, phone: s.phone, email: s.email }));
 
   return json(200, { ok: true, code: r.data.code });
+}
+
+const REWARD_TYPES = ['rebat_yuran', 'voucher_buku'];
+
+function newRewardCode(type, phone) {
+  const prefix = type === 'rebat_yuran' ? 'RB' : 'VB';
+  const letters = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
+  return `${prefix}-${String(phone).slice(-4)}-${letters}`;
+}
+
+async function chooseReward(body) {
+  const s = await sessionFor(body.token);
+  if (!s) return json(401, { error: 'Sesi tamat. Sila log masuk semula.' });
+
+  const type = String(body.type ?? '').trim();
+  if (!REWARD_TYPES.includes(type)) return json(422, { error: 'Jenis ganjaran tak sah.' });
+  const referralId = Number(body.referralId);
+  if (!Number.isInteger(referralId)) return json(422, { error: 'Rujukan tak sah.' });
+
+  const refRes = await sb(`referrers?select=id&phone=eq.${s.phone}`);
+  const referrer = refRes.data?.[0];
+  if (!refRes.ok || !referrer) return json(401, { error: 'Sila log masuk.' });
+
+  const referralRes = await sb(`referrals?select=id,status,referrer_id&id=eq.${referralId}`);
+  const referral = referralRes.data?.[0];
+  if (!referralRes.ok || !referral || referral.referrer_id !== referrer.id) {
+    return json(404, { error: 'Rujukan tak dijumpai.' });
+  }
+  if (referral.status !== 'approved') {
+    return json(422, { error: 'Rujukan ni belum diluluskan lagi.' });
+  }
+
+  let code;
+  for (let i = 0; i < 5; i++) {
+    code = newRewardCode(type, s.phone);
+    const ins = await sb('reward_codes', {
+      method: 'POST',
+      body: { referral_id: referralId, referrer_id: referrer.id, type, code, value: 50 },
+    });
+    if (ins.ok) return json(200, { ok: true, code });
+    if (ins.data?.code === '23505' && ins.data?.details?.includes?.('referral_id')) {
+      return json(422, { error: 'Ganjaran untuk rujukan ni dah dipilih.' });
+    }
+    // unique code clash on `code` column — retry with a new random suffix
+  }
+  return json(502, { error: 'Gagal jana kod. Sila cuba lagi.' });
 }
 
 async function dashboard(body) {
@@ -339,6 +391,7 @@ export default async (req) => {
     if (body.action === 'send-otp') return await sendOtp(body);
     if (body.action === 'verify-otp') return await verifyOtp(body);
     if (body.action === 'register') return await register(body);
+    if (body.action === 'choose-reward') return await chooseReward(body);
     if (body.action === 'dashboard') return await dashboard(body);
     if (body.action === 'logout') return await logout(body);
 

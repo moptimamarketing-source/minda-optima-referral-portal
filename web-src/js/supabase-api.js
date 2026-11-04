@@ -127,10 +127,13 @@
         childName: body.childName,
         enrollYear: body.enrollYear,
         centre: body.centre,
-        occupation: body.occupation,
-        note: body.note,
+        tncAgreed: body.tncAgreed,
       });
       return { ok: true, code: data.code, redirect: 'dashboard' };
+    }
+
+    if (method === 'POST' && path === '/api/choose-reward') {
+      return callAuth({ action: 'choose-reward', token: store.get(SESSION_KEY), referralId: body.referralId, type: body.type });
     }
 
     if (method === 'GET' && path === '/api/dashboard') {

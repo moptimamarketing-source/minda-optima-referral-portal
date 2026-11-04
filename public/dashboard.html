@@ -82,7 +82,16 @@
     </div>
   </header>
 
-  <main id="app" class="max-w-5xl mx-auto px-4 py-6 dash-grid" aria-busy="true">
+  <div id="pending-gate" class="hidden max-w-lg mx-auto px-4 py-16 text-center">
+    <div class="rounded-2xl bg-white border border-slate-200 p-8 shadow-sm">
+      <p id="pending-icon" class="text-5xl">⏳</p>
+      <h1 id="pending-title" class="mt-4 text-2xl font-extrabold text-brand">Menunggu Kelulusan</h1>
+      <p id="pending-desc" class="mt-2 text-slate-500">Akaun anda sedang disemak oleh pasukan kami. Kod rujukan dan maklumat penuh program akan tersedia sebaik sahaja akaun disahkan.</p>
+      <p class="mt-4 text-sm text-slate-400">Perlu bantuan? <a data-support-link href="#" class="font-semibold text-brand underline">Hubungi Sokongan</a></p>
+    </div>
+  </div>
+
+  <main id="app" class="hidden max-w-5xl mx-auto px-4 py-6 dash-grid" aria-busy="true">
 
     <!-- Promo banner -->
     <div data-promo-only class="area-banner relative overflow-hidden rounded-2xl bg-gold px-5 py-4 text-brand shadow-sm flex flex-wrap items-center gap-4">
@@ -90,7 +99,7 @@
       <span class="pointer-events-none absolute right-10 bottom-1 text-xl opacity-25 -rotate-12" aria-hidden="true">⭐</span>
       <span class="pointer-events-none absolute left-1/3 -top-2 text-lg opacity-20" aria-hidden="true">🎉</span>
       <div class="relative shrink-0 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-2xl">🎁</div>
-      <p class="relative flex-1 min-w-[180px] font-extrabold" data-content="promo_banner_text">Kongsi Peluang, Bawa Pulang RM100! Rebut ganjaran RM100 untuk setiap rujukan berjaya sebelum 31 Disember. Selepas tarikh itu, ganjarannya hanya RM50 sahaja tau!</p>
+      <p class="relative flex-1 min-w-[180px] font-extrabold" data-content="promo_banner_text">Kongsi Peluang, Dapat Ganjaran! Setiap rujukan berjaya layak ganjaran RM50 (Rebat Yuran/Voucher Buku).</p>
       <p class="relative shrink-0 inline-flex items-center gap-1 rounded-full bg-white/70 px-3 py-1.5 text-xs font-semibold">⏳ <span class="tabular-nums" data-countdown>&nbsp;</span></p>
     </div>
 
@@ -99,7 +108,7 @@
       <div class="shrink-0 flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-lg">📋</div>
       <div class="min-w-0">
         <p class="font-bold text-amber-900">Syarat Kelayakan Ganjaran</p>
-        <p class="mt-1 text-sm text-amber-800" data-content="reward_terms">Kawan anda mesti DAFTAR dan HADIR KELAS (bukan sekadar intro atau isi borang) untuk terima reward.</p>
+        <p class="mt-1 text-sm text-amber-800" data-content="reward_terms">Kawan anda mesti DAFTAR, BAYAR YURAN dan anak HADIR SEKURANG-KURANGNYA 3 SESI KELAS (bukan sekadar intro) untuk anda layak ganjaran.</p>
         <button id="syarat-btn" type="button" class="mt-2 text-sm font-semibold text-brand underline">Lihat syarat penuh →</button>
       </div>
     </div>
@@ -213,35 +222,35 @@
             <span data-content="faq1_q">Apa itu kod rujukan dan macam mana cara guna?</span>
             <span class="text-slate-400 group-open:rotate-45 transition-transform shrink-0 ml-2">+</span>
           </summary>
-          <p class="mt-2 text-sm text-slate-600" data-content="faq1_a">Kod rujukan adalah kod unik anda (cth: MO-2531-YHLA). Kongsi kod ini kepada ibu bapa lain. Bila mereka daftar anak menggunakan kod anda, mereka akan dapat satu sesi percuma dan anda akan layak untuk RM100.</p>
+          <p class="mt-2 text-sm text-slate-600" data-content="faq1_a">Kod rujukan adalah kod unik anda (cth: MO-2531-YHLA). Kongsi kod ini kepada ibu bapa lain. Bila mereka daftar menggunakan kod anda dan layak, anda akan menerima ganjaran RM50 (Rebat Yuran atau Voucher Buku).</p>
         </details>
         <details class="group py-3">
           <summary class="flex items-center justify-between cursor-pointer list-none font-semibold text-sm text-slate-800">
-            <span data-content="faq2_q">Bila saya layak dapat RM100?</span>
+            <span data-content="faq2_q">Bila saya layak dapat ganjaran?</span>
             <span class="text-slate-400 group-open:rotate-45 transition-transform shrink-0 ml-2">+</span>
           </summary>
-          <p class="mt-2 text-sm text-slate-600" data-content="faq2_a">Anda layak dapat RM100 apabila anak yang dirujuk didaftarkan melalui kod anda, dan hadir ke sesi pertama (kelas pertama percuma). Selepas itu, admin akan proses payout dalam 3-5 hari kerja.</p>
+          <p class="mt-2 text-sm text-slate-600" data-content="faq2_a">Anda layak apabila rakan yang dirujuk berjaya mendaftar, membayar yuran, dan anak mereka hadir sekurang-kurangnya 3 sesi kelas. Selepas disahkan, status bertukar "Layak" dan anda boleh pilih ganjaran di dashboard.</p>
         </details>
         <details class="group py-3">
           <summary class="flex items-center justify-between cursor-pointer list-none font-semibold text-sm text-slate-800">
-            <span data-content="faq3_q">Kawan saya dah daftar, bila reward saya masuk?</span>
+            <span data-content="faq3_q">Bila saya boleh kongsi kod rujukan saya?</span>
             <span class="text-slate-400 group-open:rotate-45 transition-transform shrink-0 ml-2">+</span>
           </summary>
-          <p class="mt-2 text-sm text-slate-600" data-content="faq3_a">Selepas kawan anda daftar dan anak mereka hadir ke kelas, status akan berubah menjadi "Approved". Payout akan dilakukan dalam 3-5 hari kerja ke akaun Touch 'n Go yang didaftarkan.</p>
+          <p class="mt-2 text-sm text-slate-600" data-content="faq3_a">Kod rujukan anda hanya dipaparkan selepas akaun disahkan oleh pasukan kami. Anda akan menerima emel sebaik sahaja akaun disahkan.</p>
         </details>
         <details class="group py-3">
           <summary class="flex items-center justify-between cursor-pointer list-none font-semibold text-sm text-slate-800">
-            <span data-content="faq4_q">Kenapa status rujukan saya masih "Pending"?</span>
+            <span data-content="faq4_q">Kenapa status rujukan saya masih "Menunggu"?</span>
             <span class="text-slate-400 group-open:rotate-45 transition-transform shrink-0 ml-2">+</span>
           </summary>
-          <p class="mt-2 text-sm text-slate-600" data-content="faq4_a">Status "Pending" bermakna anak yang dirujuk dah daftar tapi belum hadir ke kelas lagi. Selepas hadir ke sesi pertama, status akan berubah menjadi "Approved" dan anda akan layak untuk reward.</p>
+          <p class="mt-2 text-sm text-slate-600" data-content="faq4_a">Status "Menunggu" bermakna rakan sudah didaftarkan tapi belum memenuhi semua syarat (daftar, bayar yuran, 3 sesi kehadiran). Selepas lengkap, status akan berubah menjadi "Layak".</p>
         </details>
         <details class="group py-3">
           <summary class="flex items-center justify-between cursor-pointer list-none font-semibold text-sm text-slate-800">
-            <span data-content="faq5_q">Bila dan bagaimana RM100 akan dibayar?</span>
+            <span data-content="faq5_q">Bagaimana ganjaran RM50 diberikan?</span>
             <span class="text-slate-400 group-open:rotate-45 transition-transform shrink-0 ml-2">+</span>
           </summary>
-          <p class="mt-2 text-sm text-slate-600" data-content="faq5_a">RM100 akan dibayar terus ke nombor Touch 'n Go yang anda daftarkan semasa sign-up. Payout dilakukan dalam 3-5 hari kerja selepas anak yang dirujuk hadir ke kelas.</p>
+          <p class="mt-2 text-sm text-slate-600" data-content="faq5_a">Ganjaran diberikan dalam bentuk Rebat Yuran atau Voucher Buku, bukan tunai. Selepas anda pilih di dashboard, satu kod digital dijana — hubungi Admin Operation melalui WhatsApp untuk menebusnya.</p>
         </details>
         <details class="group py-3">
           <summary class="flex items-center justify-between cursor-pointer list-none font-semibold text-sm text-slate-800">
@@ -324,6 +333,7 @@
       paid: { label: 'Dibayar', cls: 'bg-emerald-100 text-emerald-800' },
       rejected: { label: 'Ditolak', cls: 'bg-slate-200 text-slate-600' },
     };
+    const REWARD_TYPE_LABEL = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku' };
     const VERIFICATION = {
       unverified: { label: '⏳ Belum Disahkan', cls: 'bg-amber-100 text-amber-800' },
       verified: { label: '✓ Disahkan', cls: 'bg-emerald-100 text-emerald-800' },
@@ -334,7 +344,7 @@
 
     function shareMessage(code, url) {
       const tpl = (MO.settings || {}).share_message_template
-        || "Anak saya dah pandai baca dengan Minda Optima! Guna kod *{code}* bila daftar, anak dapat satu sesi kelas PERCUMA & saya dapat RM100 🎉 👉 {url}";
+        || "Anak saya dah pandai baca dengan Minda Optima! Guna kod *{code}* bila kawan saya daftar — saya layak ganjaran RM50 (Rebat Yuran/Voucher Buku) 🎉 👉 {url}";
       return tpl.replace(/\{code\}/g, code).replace(/\{url\}/g, url);
     }
 
@@ -357,6 +367,29 @@
       } else {
         badge.classList.add('hidden');
       }
+
+      document.getElementById('profile-name').textContent = referrer.name || '—';
+      document.getElementById('profile-phone').textContent = referrer.phone || '—';
+      document.getElementById('profile-email').textContent = referrer.email || '—';
+      document.getElementById('profile-occupation').textContent = referrer.occupation || '—';
+      document.getElementById('profile-child-name').textContent = referrer.childName || '—';
+      document.getElementById('profile-centre').textContent = [referrer.enrollYear, referrer.centre].filter(Boolean).join(' · ') || '—';
+
+      if (referrer.verificationStatus !== 'verified') {
+        const rejected = referrer.verificationStatus === 'rejected';
+        document.getElementById('pending-icon').textContent = rejected ? '✕' : '⏳';
+        document.getElementById('pending-title').textContent = rejected ? 'Pendaftaran Tidak Diluluskan' : 'Menunggu Kelulusan';
+        document.getElementById('pending-desc').textContent = rejected
+          ? 'Maaf, akaun anda tidak dapat disahkan. Sila hubungi Sokongan jika anda rasa ini satu kesilapan.'
+          : 'Akaun anda sedang disemak oleh pasukan kami. Kod rujukan dan maklumat penuh program akan tersedia sebaik sahaja akaun disahkan.';
+        document.getElementById('pending-gate').classList.remove('hidden');
+        document.getElementById('app').classList.add('hidden');
+        document.getElementById('app').setAttribute('aria-busy', 'false');
+        return;
+      }
+      document.getElementById('pending-gate').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+
       const codeEl = document.getElementById('ref-code');
       codeEl.textContent = referrer.code;
       codeEl.onclick = async () => {
@@ -365,13 +398,6 @@
       document.getElementById('stat-count').textContent = stats.totalReferrals;
       document.getElementById('stat-pending').textContent = rm(stats.rewardPending);
       document.getElementById('stat-earned').textContent = rm(stats.totalEarned);
-
-      document.getElementById('profile-name').textContent = referrer.name || '—';
-      document.getElementById('profile-phone').textContent = referrer.phone || '—';
-      document.getElementById('profile-email').textContent = referrer.email || '—';
-      document.getElementById('profile-occupation').textContent = referrer.occupation || '—';
-      document.getElementById('profile-child-name').textContent = referrer.childName || '—';
-      document.getElementById('profile-centre').textContent = [referrer.enrollYear, referrer.centre].filter(Boolean).join(' · ') || '—';
 
       if ((MO.settings || {}).community_link) {
         document.getElementById('community-card').classList.remove('hidden');
@@ -396,6 +422,27 @@
       document.getElementById('empty-state').classList.toggle('hidden', referrals.length > 0);
       tbody.innerHTML = referrals.map((r) => {
         const s = STATUS[r.status] || STATUS.pending;
+        let rewardCell;
+        if (r.status === 'rejected') {
+          rewardCell = `<span class="text-slate-400 line-through">RM${r.reward}</span>`;
+        } else if (r.status === 'approved' && !r.rewardType) {
+          rewardCell = `<div class="flex flex-col items-end gap-1">
+            <span class="text-xs text-amber-700 font-semibold">Pilih ganjaran:</span>
+            <div class="flex gap-1.5">
+              <button data-choose-reward="${r.id}" data-reward-type="rebat_yuran" class="rounded-lg bg-brand px-2.5 py-1.5 text-xs font-bold text-white hover:bg-brand-light">Rebat Yuran</button>
+              <button data-choose-reward="${r.id}" data-reward-type="voucher_buku" class="rounded-lg border border-brand px-2.5 py-1.5 text-xs font-bold text-brand hover:bg-brand/5">Voucher Buku</button>
+            </div>
+          </div>`;
+        } else if (r.rewardType) {
+          const typeLabel = REWARD_TYPE_LABEL[r.rewardType] || r.rewardType;
+          const redeemed = r.rewardStatus === 'redeemed';
+          rewardCell = `<div class="text-right">
+            <div class="font-bold text-brand">${typeLabel} RM${r.reward}</div>
+            <div class="text-xs ${redeemed ? 'text-emerald-600' : 'text-slate-400'}">${redeemed ? '✓ Ditebus' : 'Kod: ' + MO.escapeHtml(r.rewardCode || '')}</div>
+          </div>`;
+        } else {
+          rewardCell = `<span class="font-bold text-brand">RM${r.reward}</span>`;
+        }
         return `<tr>
           <td class="px-5 py-3">
             <div class="font-medium text-slate-800">${MO.escapeHtml(r.name || '—')}</div>
@@ -403,9 +450,23 @@
           </td>
           <td class="px-3 py-3 whitespace-nowrap text-slate-600">${dateFmt.format(new Date(r.registeredAt))}</td>
           <td class="px-3 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold ${s.cls}">${s.label}</span></td>
-          <td class="px-5 py-3 text-right font-bold ${r.status === 'rejected' ? 'text-slate-400 line-through' : 'text-brand'}">${rm(r.reward)}</td>
+          <td class="px-5 py-3 text-right">${rewardCell}</td>
         </tr>`;
       }).join('');
+
+      tbody.querySelectorAll('[data-choose-reward]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          tbody.querySelectorAll('[data-choose-reward]').forEach((b) => { b.disabled = true; });
+          try {
+            await MO.api('/api/choose-reward', { method: 'POST', body: { referralId: Number(btn.dataset.chooseReward), type: btn.dataset.rewardType } });
+            toast('Ganjaran dipilih!');
+            MO.api('/api/dashboard').then(render);
+          } catch (err) {
+            toast(err.message || 'Gagal pilih ganjaran');
+            tbody.querySelectorAll('[data-choose-reward]').forEach((b) => { b.disabled = false; });
+          }
+        });
+      });
 
       document.getElementById('app').setAttribute('aria-busy', 'false');
     }
@@ -450,11 +511,11 @@
       render({
         referrer: { name: 'Demo Parent', code: 'MO-1111-YADG', phone: '0171234567', email: 'demo@example.com', occupation: 'Guru', childName: 'Ahmad bin Ali', enrollYear: '2025', centre: 'Minda Optima Shah Alam', verificationStatus: 'verified' },
         shareUrl: 'https://referral.mindaoptima.com/daftar?ref=MO-1111-YADG',
-        stats: { totalReferrals: 3, rewardPending: 100, totalEarned: 200 },
+        stats: { totalReferrals: 3, rewardPending: 50, totalEarned: 100 },
         referrals: [
-          { name: 'Demo 24', phone: '0171234567', registeredAt: new Date().toISOString(), status: 'approved', reward: 100 },
-          { name: 'demo3', phone: '0121112222', registeredAt: new Date().toISOString(), status: 'paid', reward: 100 },
-          { name: 'demo2', phone: '0179990000', registeredAt: new Date().toISOString(), status: 'pending', reward: 100 },
+          { id: 1, name: 'Demo 24', phone: '0171234567', registeredAt: new Date().toISOString(), status: 'approved', reward: 50, rewardType: null },
+          { id: 2, name: 'demo3', phone: '0121112222', registeredAt: new Date().toISOString(), status: 'paid', reward: 50, rewardType: 'voucher_buku', rewardCode: 'VB-2222-ABCD', rewardStatus: 'redeemed' },
+          { id: 3, name: 'demo2', phone: '0179990000', registeredAt: new Date().toISOString(), status: 'pending', reward: 50 },
         ],
       });
     } else {
@@ -471,21 +532,22 @@
   <!-- Syarat Kelayakan Modal -->
   <dialog id="syarat-modal" class="fixed inset-0 z-50 w-full max-w-2xl rounded-2xl shadow-xl backdrop:bg-black/40 p-6">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-bold text-brand">Syarat Kelayakan — RM100 TnG Referral</h2>
+      <h2 class="text-xl font-bold text-brand">Syarat Kelayakan — Ganjaran Rujukan</h2>
       <button id="syarat-close" type="button" class="text-2xl text-slate-400 hover:text-slate-600">×</button>
     </div>
     <div class="space-y-4 max-h-96 overflow-y-auto text-sm text-slate-700">
       <ol data-content-list="syarat_items" class="space-y-3 list-decimal list-inside">
-        <li>Ibu bapa atau penjaga mendaftarkan anak menggunakan kod rujukan anda.</li>
-        <li>Anak mereka mesti menghadiri sesi kelas percuma pertama bersama Minda Optima.</li>
-        <li>Selepas kehadiran disahkan, status rujukan akan berubah kepada "Diluluskan/Approved" dalam tempoh 1–2 hari.</li>
-        <li>Ganjaran akan dihantar ke nombor Touch 'n Go eWallet yang didaftarkan dalam tempoh 3–5 hari bekerja.</li>
+        <li>Ibu bapa/penjaga wajib membaca dan bersetuju dengan Terma &amp; Syarat semasa mendaftar.</li>
+        <li>Akaun Rakan Rujukan perlu disahkan oleh pihak kami sebelum kod dipaparkan.</li>
+        <li>Rujukan tanpa kod rujukan yang sah tidak layak menerima ganjaran.</li>
+        <li>Rakan yang dirujuk mesti berjaya mendaftar, membayar yuran, dan anak hadir sekurang-kurangnya 3 sesi kelas.</li>
+        <li>Ganjaran RM50 diberikan dalam bentuk Rebat Yuran atau Voucher Buku, bukan tunai.</li>
       </ol>
       <div class="bg-blue-50 rounded-lg p-3 mt-4 border-l-4 border-blue-400">
         <p class="font-semibold text-slate-800 mb-2">Catatan Penting:</p>
         <ul data-content-list="syarat_notes" class="list-disc list-inside space-y-1 text-slate-700">
-          <li>Sesi percuma adalah kelas pertama sahaja. Tidak termasuk intro atau ujian.</li>
           <li>Tiada had bilangan rujukan. Kamu boleh refer sebanyak yang kamu mahu.</li>
+          <li>Pendaftaran Rakan Rujukan tidak disekat — hanya kelulusan dan ganjaran yang menunggu pengesahan.</li>
         </ul>
       </div>
     </div>

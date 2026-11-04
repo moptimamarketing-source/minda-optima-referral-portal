@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Anda Dijemput! — Minda Optima</title>
-  <meta name="description" content="Dapatkan satu sesi kelas PERCUMA di Minda Optima.">
+  <meta name="description" content="Daftar kelas membaca di Minda Optima.">
   <meta name="theme-color" content="#0D2A5C">
   <link rel="stylesheet" href="/css/tailwind.css">
   <script src="/js/common.js"></script>
@@ -27,9 +27,9 @@
 
       <!-- Offer card -->
       <div class="mt-8 rounded-3xl bg-white p-6 text-brand shadow-xl">
-        <p class="text-xs font-bold uppercase tracking-wider text-gold-dark">Tawaran Istimewa</p>
-        <p class="mt-2 text-2xl font-extrabold">Satu Sesi Kelas <span class="bg-gold px-2 rounded">PERCUMA</span></p>
-        <p class="mt-1 text-slate-500">(nilai <span class="line-through">RM90</span>)</p>
+        <p class="text-xs font-bold uppercase tracking-wider text-gold-dark">Jemputan Istimewa</p>
+        <p class="mt-2 text-2xl font-extrabold">Jom Daftar Kelas Membaca</p>
+        <p class="mt-1 text-slate-500">bersama Minda Optima</p>
 
         <div id="code-box" class="hidden mt-5 rounded-xl border-2 border-dashed border-brand px-4 py-3">
           <p class="text-xs text-slate-500">Kod rujukan</p>
@@ -84,7 +84,7 @@
         .then((data) => {
           show({
             headline: `Anda dijemput oleh ${data.referrerName}!`,
-            subhead: 'Guna kod di bawah semasa mendaftar untuk tebus tawaran anda.',
+            subhead: 'Guna kod di bawah semasa mendaftar.',
           });
           $('code').textContent = data.code;
           $('code-box').classList.remove('hidden');

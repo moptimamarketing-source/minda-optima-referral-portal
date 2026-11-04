@@ -97,7 +97,7 @@
         <div class="flex items-end justify-between gap-3">
           <div>
             <h2 class="text-lg font-bold text-brand">List Referral</h2>
-            <p class="text-sm text-slate-500">Tukar status lepas confirm referee dah register & dah hadir sesi percuma.</p>
+            <p class="text-sm text-slate-500">Tukar status lepas confirm referee dah register, bayar yuran & anak hadir sekurang-kurangnya 3 sesi.</p>
           </div>
           <button id="export" class="shrink-0 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50">Download CSV</button>
         </div>
@@ -151,6 +151,26 @@
           </table>
         </div>
         <div id="referrer-pagination" class="mt-3 flex items-center justify-center gap-3"></div>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-brand">Ganjaran Digital</h2>
+        <p class="text-sm text-slate-500">Kod Rebat Yuran / Voucher Buku yang dipilih Parent. Tebus bila Parent sudah guna di pusat/kedai buku (urusan melalui WhatsApp).</p>
+        <div class="mt-3">
+          <label class="block text-sm font-semibold">Cari
+            <input id="reward-search" placeholder="Nama, kod, phone..." class="mt-1 w-72 rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand">
+          </label>
+        </div>
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr><th class="px-4 py-3">Referrer</th><th class="px-3 py-3">Kod</th><th class="px-3 py-3">Jenis</th><th class="px-3 py-3">Status</th><th class="px-3 py-3">Nota</th><th class="px-3 py-3"></th></tr>
+            </thead>
+            <tbody id="reward-rows" class="divide-y divide-slate-100"></tbody>
+          </table>
+          <p id="reward-empty" class="hidden px-4 py-8 text-center text-slate-500">Takde ganjaran dipilih Parent lagi.</p>
+        </div>
+        <div id="reward-pagination" class="mt-3 flex items-center justify-center gap-3"></div>
       </section>
 
       <section>
@@ -333,6 +353,7 @@
     let supportRequests = [];
     let materials = [];
     let infoPosts = [];
+    let rewardCodes = [];
 
     // Kata laluan disimpan dalam sessionStorage: hilang bila tab ditutup.
     const pwStore = {
@@ -379,7 +400,7 @@
     }
 
     const PAGE_SIZE = 7;
-    const page = { referral: 1, referrer: 1, funnel: 1, support: 1 };
+    const page = { referral: 1, referrer: 1, funnel: 1, support: 1, reward: 1 };
 
     function paginate(rows, key) {
       const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
@@ -777,6 +798,69 @@
       }
     }
 
+    const REWARD_TYPE_LABEL = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku' };
+
+    function filterRewards() {
+      const q = $('reward-search').value.trim().toLowerCase();
+      if (!q) return rewardCodes;
+      return rewardCodes.filter((r) => [r.referrers?.name, r.referrers?.phone, r.code].join(' ').toLowerCase().includes(q));
+    }
+
+    function renderRewards() {
+      const filtered = filterRewards();
+      $('reward-empty').classList.toggle('hidden', filtered.length > 0);
+      const rows = paginate(filtered, 'reward');
+      $('reward-rows').innerHTML = rows.map((r) => `<tr>
+        <td class="px-4 py-3"><div class="font-medium">${esc(r.referrers?.name || '')}</div><div class="text-xs text-slate-500 tabular-nums">${esc(fmtPhone(r.referrers?.phone))}</div></td>
+        <td class="px-3 py-3 font-mono text-xs">${esc(r.code)}</td>
+        <td class="px-3 py-3">${esc(REWARD_TYPE_LABEL[r.type] || r.type)}</td>
+        <td class="px-3 py-3">
+          <span class="rounded-full px-2.5 py-1 text-xs font-semibold ${r.status === 'redeemed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${r.status === 'redeemed' ? 'Ditebus' : 'Diterbit'}</span>
+        </td>
+        <td class="px-3 py-3 max-w-xs truncate text-slate-500" title="${esc(r.redeemed_note || '')}">${esc(r.redeemed_note || '—')}</td>
+        <td class="px-3 py-3 text-right whitespace-nowrap">
+          ${r.status !== 'redeemed' ? `<button data-redeem-reward="${esc(r.id)}" class="text-sm font-semibold text-emerald-700 hover:underline">Tebus</button>
+          <button data-change-reward="${esc(r.id)}" data-current-type="${esc(r.type)}" class="ml-3 text-sm font-semibold text-brand hover:underline">Tukar Jenis</button>` : ''}
+        </td>
+      </tr>`).join('') || '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Takde ganjaran dipilih Parent lagi.</td></tr>';
+    }
+
+    async function redeemReward(id, btn) {
+      const note = prompt('Nota penebusan (contoh: "tebus utk buku BM Tingkatan 2", atau "potong yuran Nov 2026"):') || '';
+      if (note === null) return;
+      btn.disabled = true;
+      try {
+        await call({ action: 'redeem-reward', id: Number(id), note });
+        await load();
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        alert(err.message);
+        btn.disabled = false;
+      }
+    }
+
+    async function changeRewardType(id, currentType, btn) {
+      const newType = currentType === 'rebat_yuran' ? 'voucher_buku' : 'rebat_yuran';
+      if (!confirm(`Tukar jenis ganjaran kepada "${REWARD_TYPE_LABEL[newType]}"? Kod baharu akan dijana.`)) return;
+      btn.disabled = true;
+      try {
+        await call({ action: 'change-reward-type', id: Number(id), type: newType });
+        await load();
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        alert(err.message);
+        btn.disabled = false;
+      }
+    }
+
+    $('reward-search').addEventListener('input', () => { page.reward = 1; renderRewards(); });
+    document.addEventListener('click', (e) => {
+      const rd = e.target.closest('[data-redeem-reward]');
+      const ct = e.target.closest('[data-change-reward]');
+      if (rd) redeemReward(rd.dataset.redeemReward, rd);
+      if (ct) changeRewardType(ct.dataset.changeReward, ct.dataset.currentType, ct);
+    });
+
     function showAppError(message) {
       $('app-error').textContent = message;
       $('app-error').classList.toggle('hidden', !message);
@@ -795,6 +879,7 @@
         supportRequests = data.supportRequests || [];
         materials = data.materials || [];
         infoPosts = data.infoPosts || [];
+        rewardCodes = data.rewardCodes || [];
         if (!document.activeElement || document.activeElement.id !== 'sheet-link-input') {
           $('sheet-link-input').value = data.googleSheetUrl || '';
         }
@@ -805,6 +890,7 @@
         renderSupport();
         renderMaterials();
         renderInfo();
+        renderRewards();
         $('unknown-rows').innerHTML = data.unknown.map((e) => `<li class="flex justify-between px-4 py-2"><span class="font-mono">${esc(e.code)}</span><span class="text-slate-500">${esc(dt.format(new Date(e.created_at)))}</span></li>`).join('')
           || '<li class="px-4 py-6 text-center text-slate-500">Takde.</li>';
       } catch (err) {

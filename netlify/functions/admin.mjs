@@ -2,6 +2,13 @@ import { createHash, timingSafeEqual, randomBytes } from 'node:crypto';
 import { sendEmail, esc, SITE, fetchSettings, imagesBlock } from '../lib/email.mjs';
 import { otpEmail, confirmationEmail } from './auth.mjs';
 
+const REWARD_TYPES = ['rebat_yuran', 'voucher_buku'];
+function newRewardCode(type, phone) {
+  const prefix = type === 'rebat_yuran' ? 'RB' : 'VB';
+  const letters = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
+  return `${prefix}-${String(phone ?? '0000').slice(-4)}-${letters}`;
+}
+
 const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
 const REFERRER_VERIFICATION_STATUSES = ['unverified', 'verified', 'rejected'];
 const SETTINGS_KEYS = [
@@ -133,7 +140,7 @@ function detectClashes(referrerRows) {
 }
 
 async function list() {
-  const [funnel, referrals, unknown, referrers, supportRequests, materials, infoPosts, googleSheetSetting] = await Promise.all([
+  const [funnel, referrals, unknown, referrers, supportRequests, materials, infoPosts, googleSheetSetting, rewardCodes] = await Promise.all([
     sb('referral_funnel?select=*&order=registrations.desc,landings.desc'),
     sb('referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone,email)&order=registered_at.desc&limit=500'),
     sb('referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
@@ -142,6 +149,7 @@ async function list() {
     sb('creative_materials?select=*&order=category.asc,sort_order.asc,created_at.desc&limit=500'),
     sb('community_info?select=*&order=created_at.desc&limit=200'),
     sb('settings?select=value&key=eq.google_sheet_url'),
+    sb('reward_codes?select=*,referrers(name,phone),referrals(referee_name,referee_phone)&order=created_at.desc&limit=500'),
   ]);
 
   if (!funnel.ok) {
@@ -174,6 +182,7 @@ async function list() {
     materials: materials.ok ? materials.data : [],
     infoPosts: infoPosts.ok ? infoPosts.data : [],
     googleSheetUrl: googleSheetSetting.ok ? (googleSheetSetting.data?.[0]?.value ?? '') : '',
+    rewardCodes: rewardCodes.ok ? rewardCodes.data : [],
   });
 }
 
@@ -391,7 +400,65 @@ async function verifyReferrer(body) {
     return json(502, { error: `Gagal sahkan referrer: ${up.data?.message || 'Unknown error'}` });
   }
   if (!up.data?.length) return json(404, { error: 'Referrer tak dijumpai.' });
+
+  const ref = up.data[0];
+  if (ref.email) {
+    const emailSettings = await fetchSettings([
+      'community_link', 'welcome_email_header_image', 'welcome_email_heading',
+      'welcome_email_subtitle', 'welcome_email_image1', 'welcome_email_image2',
+    ]);
+    const html = confirmationEmail({ name: ref.name, code: ref.code, phone: ref.phone, email: ref.email, s: emailSettings });
+    const sent = await sendEmail(ref.email, `Akaun Disahkan — Kod Rujukan ${ref.code}`, html);
+    if (!sent.ok) console.error('verifyReferrer: gagal hantar emel kelulusan:', sent.error);
+  }
   return json(200, { ok: true });
+}
+
+async function redeemReward(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+
+  const up = await sb(`reward_codes?id=eq.${id}&status=eq.issued`, {
+    method: 'PATCH',
+    prefer: 'return=representation',
+    body: { status: 'redeemed', redeemed_at: new Date().toISOString(), redeemed_note: clean(body.note, 300) || null },
+  });
+  if (!up.ok) {
+    console.error('redeemReward error:', up.data);
+    return json(502, { error: `Gagal tebus kod: ${up.data?.message || 'Unknown error'}` });
+  }
+  if (!up.data?.length) return json(404, { error: 'Kod tak dijumpai atau dah ditebus.' });
+
+  const referralId = up.data[0].referral_id;
+  const upReferral = await sb(`referrals?id=eq.${referralId}`, { method: 'PATCH', body: { status: 'paid' } });
+  if (!upReferral.ok) console.error('redeemReward: gagal kemas kini status rujukan:', upReferral.data);
+
+  return json(200, { ok: true });
+}
+
+async function changeRewardType(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  const type = String(body.type ?? '').trim();
+  if (!REWARD_TYPES.includes(type)) return json(422, { error: 'Jenis ganjaran tak sah.' });
+
+  const cur = await sb(`reward_codes?id=eq.${id}&select=status,code,referrers(phone)`);
+  if (!cur.ok) return json(502, { error: 'Gagal baca rekod.' });
+  const row = cur.data?.[0];
+  if (!row) return json(404, { error: 'Kod tak dijumpai.' });
+  if (row.status !== 'issued') return json(422, { error: 'Kod yang dah ditebus tak boleh tukar jenis.' });
+
+  const newCode = newRewardCode(type, row.referrers?.phone);
+  const up = await sb(`reward_codes?id=eq.${id}`, {
+    method: 'PATCH',
+    prefer: 'return=representation',
+    body: { type, code: newCode },
+  });
+  if (!up.ok) {
+    console.error('changeRewardType error:', up.data);
+    return json(502, { error: `Gagal tukar jenis: ${up.data?.message || 'Unknown error'}` });
+  }
+  return json(200, { ok: true, code: newCode });
 }
 
 async function rejectReferrer(body) {
@@ -983,6 +1050,8 @@ export default async (req) => {
     if (body.action === 'status') return await setStatus(body);
     if (body.action === 'verify-referrer') return await verifyReferrer(body);
     if (body.action === 'reject-referrer') return await rejectReferrer(body);
+    if (body.action === 'redeem-reward') return await redeemReward(body);
+    if (body.action === 'change-reward-type') return await changeRewardType(body);
     if (body.action === 'edit-referrer') return await editReferrer(body);
     if (body.action === 'change-referrer-code') return await changeReferrerCode(body);
     if (body.action === 'edit-referee') return await editReferee(body);

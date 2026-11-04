@@ -42,7 +42,7 @@
         <span data-content="login_hero_title_line1">Kongsi Peluang,</span><br><span class="text-gold" data-content="login_hero_title_line2">Nikmati Ganjaran</span>
       </h1>
       <p data-content="login_hero_benefits" class="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs sm:text-sm font-medium">
-        🎁 Ganjaran sehingga RM100 &middot; Satu sesi kelas percuma
+        🎁 Ganjaran RM50 — Rebat Yuran atau Voucher Buku
       </p>
     </div>
   </header>
@@ -106,7 +106,7 @@
 
         <div class="mt-4 rounded-lg bg-red-50 border border-red-200 p-3">
           <p class="text-xs text-red-700 leading-relaxed">
-            <strong>⚠️ Penting:</strong> <span data-content="reward_terms">Kawan anda mesti DAFTAR dan HADIR KELAS (bukan sekadar intro atau isi borang) untuk terima reward.</span>
+            <strong>⚠️ Penting:</strong> <span data-content="reward_terms">Kawan anda mesti DAFTAR, BAYAR YURAN dan anak HADIR SEKURANG-KURANGNYA 3 SESI KELAS (bukan sekadar intro) untuk anda layak ganjaran.</span>
           </p>
         </div>
 
@@ -132,13 +132,20 @@
         <input id="reg-centre" name="centre" type="text" maxlength="100" placeholder="cth. Minda Optima Shah Alam" required
                class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
 
-        <label for="reg-occupation" class="mt-4 block text-sm font-semibold text-slate-700" data-content="reg_occupation_label">Pekerjaan (Pilihan)</label>
-        <input id="reg-occupation" name="occupation" type="text" maxlength="50" placeholder="cth. Guru, Doktor, Entrepreneur"
-               class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+        <div class="mt-5 rounded-xl border border-slate-200">
+          <button type="button" id="tnc-toggle" class="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold text-brand">
+            <span>Baca Terma &amp; Syarat Penuh</span>
+            <span id="tnc-chevron" class="text-slate-400 transition-transform">▾</span>
+          </button>
+          <div id="tnc-body" class="hidden max-h-48 overflow-y-auto border-t border-slate-200 px-4 py-3 text-xs text-slate-600 space-y-2">
+            <ol id="tnc-items" class="list-decimal list-inside space-y-1.5"></ol>
+          </div>
+        </div>
 
-        <label for="reg-note" class="mt-4 block text-sm font-semibold text-slate-700">Nota Tambahan (Pilihan)</label>
-        <input id="reg-note" name="note" type="text" maxlength="200" placeholder="cth. Guna nombor suami/isteri saya"
-               class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+        <label class="mt-4 flex items-start gap-2.5 text-sm text-slate-700">
+          <input id="reg-tnc" name="tnc" type="checkbox" required class="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-brand focus:ring-brand">
+          <span>Saya telah membaca dan <b>bersetuju</b> dengan Terma &amp; Syarat program ini.</span>
+        </label>
 
         <p id="register-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
 
@@ -271,13 +278,13 @@
       const childName = document.getElementById('reg-child-name').value.trim();
       const enrollYear = document.getElementById('reg-enroll-year').value.trim();
       const centre = document.getElementById('reg-centre').value.trim();
-      const occupation = document.getElementById('reg-occupation').value.trim();
-      const note = document.getElementById('reg-note').value.trim();
+      const tncAgreed = document.getElementById('reg-tnc').checked;
 
       if (name.length < 2) return showError('register-error', 'Nama penuh diperlukan.');
       if (childName.length < 2) return showError('register-error', 'Nama anak diperlukan.');
       if (!/^\d{4}$/.test(enrollYear)) return showError('register-error', 'Tahun hantar anak tidak sah. Contoh: 2025');
       if (centre.length < 2) return showError('register-error', 'Pusat pembelajaran diperlukan.');
+      if (!tncAgreed) return showError('register-error', 'Sila bersetuju dengan Terma & Syarat untuk teruskan.');
 
       const btn = registerForm.querySelector('button[type=submit]');
       btn.disabled = true;
@@ -289,8 +296,7 @@
             childName,
             enrollYear,
             centre,
-            occupation: occupation || null,
-            note: note || null,
+            tncAgreed,
           },
         });
         window.location.href = regData.redirect;
@@ -315,6 +321,21 @@
       showError('otp-error');
       showForm(phoneForm);
       phoneInput.focus();
+    });
+
+    const tncToggle = document.getElementById('tnc-toggle');
+    const tncBody = document.getElementById('tnc-body');
+    const tncChevron = document.getElementById('tnc-chevron');
+    let tncLoaded = false;
+    tncToggle.addEventListener('click', async () => {
+      const show = tncBody.classList.toggle('hidden') === false;
+      tncChevron.style.transform = show ? 'rotate(180deg)' : '';
+      if (show && !tncLoaded) {
+        await MO.settingsReady;
+        const items = ((MO.settings || {}).syarat_items || '').split('\n').map((s) => s.trim()).filter(Boolean);
+        document.getElementById('tnc-items').innerHTML = items.map((i) => `<li>${MO.escapeHtml(i)}</li>`).join('');
+        tncLoaded = true;
+      }
     });
   </script>
 </body>
