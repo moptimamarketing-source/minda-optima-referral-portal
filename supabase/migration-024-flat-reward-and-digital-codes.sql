@@ -77,8 +77,8 @@ begin
   );
 end $$;
 
-revoke execute on function public.register_referrer(text, text, text, text, text, text, text) from public;
-grant execute on function public.register_referrer(text, text, text, text, text, text, text) to anon, authenticated;
+revoke execute on function public.register_referrer(text, text, text, text, text, text, boolean) from public;
+grant execute on function public.register_referrer(text, text, text, text, text, text, boolean) to anon, authenticated;
 
 -- 3. Ganjaran digital: satu kod seunik bagi setiap rujukan yang Approved, jenis
 --    rebat_yuran atau voucher_buku, ditebus secara manual oleh Admin Operation.
