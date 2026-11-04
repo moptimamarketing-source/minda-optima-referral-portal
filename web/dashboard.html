@@ -188,7 +188,8 @@
               <th class="px-5 py-3 font-semibold">Nama / Phone</th>
               <th class="px-3 py-3 font-semibold">Tarikh Daftar</th>
               <th class="px-3 py-3 font-semibold">Status</th>
-              <th class="px-5 py-3 font-semibold text-right">Reward</th>
+              <th class="px-3 py-3 font-semibold text-right">Reward</th>
+              <th class="px-5 py-3 font-semibold text-right">Jenis Ganjaran</th>
             </tr>
           </thead>
           <tbody id="referral-rows" class="divide-y divide-slate-100"></tbody>
@@ -415,11 +416,13 @@
       document.getElementById('empty-state').classList.toggle('hidden', referrals.length > 0);
       tbody.innerHTML = referrals.map((r) => {
         const s = STATUS[r.status] || STATUS.pending;
-        let rewardCell;
-        if (r.status === 'rejected') {
-          rewardCell = `<span class="text-slate-400 line-through">RM${r.reward}</span>`;
-        } else if (r.status === 'approved' && !r.rewardType) {
-          rewardCell = `<div class="flex flex-col items-end gap-1">
+        const rewardAmount = r.status === 'rejected'
+          ? `<span class="text-slate-400 line-through">RM${r.reward}</span>`
+          : `<span class="font-bold text-brand">RM${r.reward}</span>`;
+
+        let typeCell;
+        if (r.status === 'approved' && !r.rewardType) {
+          typeCell = `<div class="flex flex-col items-end gap-1">
             <span class="text-xs text-amber-700 font-semibold">Pilih ganjaran:</span>
             <div class="flex flex-wrap justify-end gap-1.5">
               <button data-choose-reward="${r.id}" data-reward-type="rebat_yuran" class="rounded-lg bg-brand px-2.5 py-1.5 text-xs font-bold text-white hover:bg-brand-light">Rebat Yuran</button>
@@ -430,12 +433,12 @@
         } else if (r.rewardType) {
           const typeLabel = REWARD_TYPE_LABEL[r.rewardType] || r.rewardType;
           const redeemed = r.rewardStatus === 'redeemed';
-          rewardCell = `<div class="text-right">
-            <div class="font-bold text-brand">${typeLabel} RM${r.reward}</div>
+          typeCell = `<div class="text-right">
+            <div class="font-bold text-brand">${typeLabel}</div>
             <div class="text-xs ${redeemed ? 'text-emerald-600' : 'text-slate-400'}">${redeemed ? '✓ Ditebus' : 'Kod: ' + MO.escapeHtml(r.rewardCode || '')}</div>
           </div>`;
         } else {
-          rewardCell = `<span class="font-bold text-brand">RM${r.reward}</span>`;
+          typeCell = '<span class="text-slate-400">—</span>';
         }
         return `<tr>
           <td class="px-5 py-3">
@@ -444,7 +447,8 @@
           </td>
           <td class="px-3 py-3 whitespace-nowrap text-slate-600">${dateFmt.format(new Date(r.registeredAt))}</td>
           <td class="px-3 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold ${s.cls}">${s.label}</span></td>
-          <td class="px-5 py-3 text-right">${rewardCell}</td>
+          <td class="px-3 py-3 text-right">${rewardAmount}</td>
+          <td class="px-5 py-3 text-right">${typeCell}</td>
         </tr>`;
       }).join('');
 
