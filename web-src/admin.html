@@ -500,7 +500,7 @@
       if (r.status === 'paid') {
         return `Salam ${name}, ganjaran RM${r.reward} untuk rujukan anda telah ditebus. Terima kasih! – Minda Optima`;
       }
-      return `Salam ${name}, rujukan anda telah disahkan layak. Sila pilih jenis ganjaran RM${r.reward} (Rebat Yuran/Voucher Buku) di dashboard anda. – Minda Optima`;
+      return `Salam ${name}, rujukan anda telah disahkan layak. Sila pilih jenis ganjaran RM${r.reward} (Rebat Yuran/Voucher Buku/Touch 'n Go) di dashboard anda. – Minda Optima`;
     }
 
     function notifyButtons(r) {
@@ -798,7 +798,8 @@
       }
     }
 
-    const REWARD_TYPE_LABEL = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku' };
+    const REWARD_TYPE_LABEL = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku', tng: "Touch 'n Go" };
+    const REWARD_TYPE_ORDER = ['rebat_yuran', 'voucher_buku', 'tng'];
 
     function filterRewards() {
       const q = $('reward-search').value.trim().toLowerCase();
@@ -840,7 +841,12 @@
     }
 
     async function changeRewardType(id, currentType, btn) {
-      const newType = currentType === 'rebat_yuran' ? 'voucher_buku' : 'rebat_yuran';
+      const options = REWARD_TYPE_ORDER.filter((t) => t !== currentType);
+      const picked = prompt(
+        `Tukar jenis ganjaran kepada:\n${options.map((t, i) => `${i + 1}. ${REWARD_TYPE_LABEL[t]}`).join('\n')}\n\nTaip nombor pilihan:`
+      );
+      const newType = options[Number(picked) - 1];
+      if (!newType) return;
       if (!confirm(`Tukar jenis ganjaran kepada "${REWARD_TYPE_LABEL[newType]}"? Kod baharu akan dijana.`)) return;
       btn.disabled = true;
       try {

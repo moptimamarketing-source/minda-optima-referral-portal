@@ -2,9 +2,10 @@ import { createHash, timingSafeEqual, randomBytes } from 'node:crypto';
 import { sendEmail, esc, SITE, fetchSettings, imagesBlock } from '../lib/email.mjs';
 import { otpEmail, confirmationEmail } from './auth.mjs';
 
-const REWARD_TYPES = ['rebat_yuran', 'voucher_buku'];
+const REWARD_TYPES = ['rebat_yuran', 'voucher_buku', 'tng'];
+const REWARD_CODE_PREFIX = { rebat_yuran: 'RB', voucher_buku: 'VB', tng: 'TNG' };
 function newRewardCode(type, phone) {
-  const prefix = type === 'rebat_yuran' ? 'RB' : 'VB';
+  const prefix = REWARD_CODE_PREFIX[type] || 'RW';
   const letters = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
   return `${prefix}-${String(phone ?? '0000').slice(-4)}-${letters}`;
 }
@@ -797,7 +798,7 @@ async function notifyEmail(body) {
   ]);
 
   const rewardCode = Array.isArray(row.reward_codes) ? row.reward_codes[0] : row.reward_codes;
-  const REWARD_TYPE_NAMES = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku' };
+  const REWARD_TYPE_NAMES = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku', tng: "Touch 'n Go" };
   const rewardTypeLabel = rewardCode ? (REWARD_TYPE_NAMES[rewardCode.type] || rewardCode.type) : null;
 
   let subject;
@@ -842,7 +843,7 @@ async function notifyEmail(body) {
           <!-- Timeline Info -->
           <div style="background:#f0fdf4;border-left:4px solid #10b981;padding:16px;border-radius:6px;margin:32px 0;font-size:13px;color:#065f46;line-height:1.6">
             <strong style="display:block;margin-bottom:8px">⏱️ Langkah Seterusnya:</strong>
-            Sila log masuk ke dashboard anda untuk pilih jenis ganjaran (Rebat Yuran atau Voucher Buku). Admin kami akan hubungi anda melalui WhatsApp untuk proses penebusan.
+            Sila log masuk ke dashboard anda untuk pilih jenis ganjaran (Rebat Yuran, Voucher Buku, atau Touch 'n Go). Admin kami akan hubungi anda melalui WhatsApp untuk proses penebusan.
           </div>
 
           <!-- CTA Button -->

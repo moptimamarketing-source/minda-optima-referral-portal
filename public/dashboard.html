@@ -250,7 +250,7 @@
             <span data-content="faq5_q">Bagaimana ganjaran RM50 diberikan?</span>
             <span class="text-slate-400 group-open:rotate-45 transition-transform shrink-0 ml-2">+</span>
           </summary>
-          <p class="mt-2 text-sm text-slate-600" data-content="faq5_a">Ganjaran diberikan dalam bentuk Rebat Yuran atau Voucher Buku, bukan tunai. Selepas anda pilih di dashboard, satu kod digital dijana — hubungi Admin Operation melalui WhatsApp untuk menebusnya.</p>
+          <p class="mt-2 text-sm text-slate-600" data-content="faq5_a">Ganjaran diberikan dalam bentuk Rebat Yuran, Voucher Buku, atau Touch 'n Go (untuk anak yang sudah tamat/tidak lagi berdaftar). Selepas anda pilih di dashboard, satu kod digital dijana — hubungi Admin Operation melalui WhatsApp untuk menebusnya.</p>
         </details>
         <details class="group py-3">
           <summary class="flex items-center justify-between cursor-pointer list-none font-semibold text-sm text-slate-800">
@@ -325,7 +325,7 @@
       paid: { label: 'Dibayar', cls: 'bg-emerald-100 text-emerald-800' },
       rejected: { label: 'Ditolak', cls: 'bg-slate-200 text-slate-600' },
     };
-    const REWARD_TYPE_LABEL = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku' };
+    const REWARD_TYPE_LABEL = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku', tng: "Touch 'n Go" };
     const VERIFICATION = {
       unverified: { label: '⏳ Belum Disahkan', cls: 'bg-amber-100 text-amber-800' },
       verified: { label: '✓ Disahkan', cls: 'bg-emerald-100 text-emerald-800' },
@@ -419,9 +419,10 @@
         } else if (r.status === 'approved' && !r.rewardType) {
           rewardCell = `<div class="flex flex-col items-end gap-1">
             <span class="text-xs text-amber-700 font-semibold">Pilih ganjaran:</span>
-            <div class="flex gap-1.5">
+            <div class="flex flex-wrap justify-end gap-1.5">
               <button data-choose-reward="${r.id}" data-reward-type="rebat_yuran" class="rounded-lg bg-brand px-2.5 py-1.5 text-xs font-bold text-white hover:bg-brand-light">Rebat Yuran</button>
               <button data-choose-reward="${r.id}" data-reward-type="voucher_buku" class="rounded-lg border border-brand px-2.5 py-1.5 text-xs font-bold text-brand hover:bg-brand/5">Voucher Buku</button>
+              <button data-choose-reward="${r.id}" data-reward-type="tng" class="rounded-lg border border-brand px-2.5 py-1.5 text-xs font-bold text-brand hover:bg-brand/5">Touch 'n Go</button>
             </div>
           </div>`;
         } else if (r.rewardType) {
@@ -532,7 +533,7 @@
         <li>Akaun Rakan Rujukan perlu disahkan oleh pihak kami sebelum kod dipaparkan.</li>
         <li>Rujukan tanpa kod rujukan yang sah tidak layak menerima ganjaran.</li>
         <li>Rakan yang dirujuk mesti berjaya mendaftar, membayar yuran, dan anak hadir sekurang-kurangnya 3 sesi kelas.</li>
-        <li>Ganjaran RM50 diberikan dalam bentuk Rebat Yuran atau Voucher Buku, bukan tunai.</li>
+        <li>Ganjaran RM50 diberikan dalam bentuk Rebat Yuran, Voucher Buku, atau Touch 'n Go (pilihan Rakan Rujukan).</li>
       </ol>
       <div class="bg-blue-50 rounded-lg p-3 mt-4 border-l-4 border-blue-400">
         <p class="font-semibold text-slate-800 mb-2">Catatan Penting:</p>

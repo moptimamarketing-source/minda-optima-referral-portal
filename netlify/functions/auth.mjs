@@ -306,10 +306,11 @@ async function register(body) {
   return json(200, { ok: true, code: r.data.code });
 }
 
-const REWARD_TYPES = ['rebat_yuran', 'voucher_buku'];
+const REWARD_TYPES = ['rebat_yuran', 'voucher_buku', 'tng'];
+const REWARD_CODE_PREFIX = { rebat_yuran: 'RB', voucher_buku: 'VB', tng: 'TNG' };
 
 function newRewardCode(type, phone) {
-  const prefix = type === 'rebat_yuran' ? 'RB' : 'VB';
+  const prefix = REWARD_CODE_PREFIX[type] || 'RW';
   const letters = Array.from({ length: 4 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
   return `${prefix}-${String(phone).slice(-4)}-${letters}`;
 }
