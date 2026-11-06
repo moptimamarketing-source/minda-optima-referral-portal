@@ -1,5 +1,3 @@
-import nodemailer from 'nodemailer';
-
 export const SITE = (process.env.PUBLIC_SITE_URL || 'https://referral.mindaoptima.com').replace(/\/+$/, '');
 export const TELEGRAM_LINK = process.env.TELEGRAM_LINK || 'https://t.me/mindaoptimaofficial';
 
@@ -40,8 +38,12 @@ export async function fetchSettings(keys) {
 }
 
 let transporter;
-function getTransporter() {
+async function getTransporter() {
   if (!transporter) {
+    // Dimuatkan lazy (bukan import statik) supaya persekitaran yang tiada raw TCP
+    // socket (cth. Cloudflare Workers) tak perlu load nodemailer langsung —
+    // laluan ni hanya tersentuh bila Gmail benar-benar digunakan sebagai fallback.
+    const { default: nodemailer } = await import('nodemailer');
     transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
@@ -68,7 +70,7 @@ async function sendViaResend(to, subject, html) {
 async function sendViaGmail(to, subject, html) {
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return false;
   try {
-    await getTransporter().sendMail({ from: `Minda Optima <${process.env.GMAIL_USER}>`, to, subject, html });
+    await (await getTransporter()).sendMail({ from: `Minda Optima <${process.env.GMAIL_USER}>`, to, subject, html });
     return true;
   } catch (e) {
     console.error('Gmail send failed:', e.code, e.message);
