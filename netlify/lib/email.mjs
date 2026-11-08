@@ -40,10 +40,14 @@ export async function fetchSettings(keys) {
 let transporter;
 async function getTransporter() {
   if (!transporter) {
-    // Dimuatkan lazy (bukan import statik) supaya persekitaran yang tiada raw TCP
-    // socket (cth. Cloudflare Workers) tak perlu load nodemailer langsung —
-    // laluan ni hanya tersentuh bila Gmail benar-benar digunakan sebagai fallback.
-    const { default: nodemailer } = await import('nodemailer');
+    // Specifier dalam pembolehubah (bukan string literal terus dalam import())
+    // supaya bundler Cloudflare (esbuild) TAK cuba resolve/bundle nodemailer masa
+    // build — ia perlukan raw TCP socket yang tiada di Cloudflare Workers.
+    // Laluan ni hanya tersentuh bila Gmail benar-benar digunakan sebagai fallback;
+    // di Cloudflare (tiada nodemailer dibundle) ia akan gagal dengan selamat,
+    // ditangkap oleh try/catch di sendViaGmail().
+    const moduleName = 'nodemailer';
+    const { default: nodemailer } = await import(moduleName);
     transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
