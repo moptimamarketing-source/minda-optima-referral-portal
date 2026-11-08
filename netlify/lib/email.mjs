@@ -56,8 +56,6 @@ async function getTransporter() {
   return transporter;
 }
 
-let lastDebugReason = '';
-
 async function sendViaResend(to, subject, html) {
   try {
     const res = await fetch('https://api.resend.com/emails', {
@@ -66,12 +64,9 @@ async function sendViaResend(to, subject, html) {
       body: JSON.stringify({ from: process.env.RESEND_FROM, to: [to], subject, html }),
     });
     if (res.ok) return true;
-    const body = await res.text().catch(() => '');
-    console.error('Resend rejected:', res.status, body);
-    lastDebugReason = `Resend ${res.status}: ${body}`.slice(0, 300);
+    console.error('Resend rejected:', res.status, await res.text().catch(() => ''));
   } catch (e) {
     console.error('Resend fetch failed:', e.message);
-    lastDebugReason = `Resend fetch failed: ${e.message}`.slice(0, 300);
   }
   return false;
 }
@@ -83,7 +78,6 @@ async function sendViaGmail(to, subject, html) {
     return true;
   } catch (e) {
     console.error('Gmail send failed:', e.code, e.message);
-    lastDebugReason += ` | Gmail: ${e.code} ${e.message}`.slice(0, 300);
     return false;
   }
 }
@@ -93,7 +87,5 @@ export async function sendEmail(to, subject, html) {
     return { ok: true };
   }
   if (await sendViaGmail(to, subject, html)) return { ok: true };
-  // DEBUG SEMENTARA: dedahkan sebab sebenar untuk diagnose migration Cloudflare.
-  // TODO: buang `lastDebugReason` ni lepas isu email settle, pulangkan balik mesej generik sahaja.
-  return { ok: false, error: `Gagal hantar email. Sila cuba lagi. [DEBUG: ${lastDebugReason}]` };
+  return { ok: false, error: 'Gagal hantar email. Sila cuba lagi.' };
 }
