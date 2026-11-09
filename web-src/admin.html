@@ -7,6 +7,56 @@
   <title>Referral Admin — Minda Optima</title>
   <link rel="stylesheet" href="/css/tailwind.css">
   <script src="/js/common.js"></script>
+  <style>
+    #app .admin-page[data-admin-view]:not(.is-active) { display: none !important; }
+    #app .admin-shell { display: grid; grid-template-columns: 224px minmax(0,1fr); width: 100%; min-width: 0; min-height: 78vh; background: #f0f5ff; }
+    #app .admin-sidebar { position: sticky; top: 0; align-self: start; min-width: 0; height: 100vh; overflow-y: auto; background: #fff; border-right: 1px solid #dce5f3; padding: 22px 14px; }
+    #app .admin-brand { display: flex; gap: 10px; align-items: center; padding: 2px 10px 20px; color: #0d2a5c; font-weight: 800; }
+    #app .admin-brand-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: #0d2a5c; color: #fff; }
+    #app .admin-sidebar-label { margin: 16px 10px 8px; color: #8a9ab4; text-transform: uppercase; letter-spacing: .1em; font-size: 10px; font-weight: 800; }
+    #app .admin-nav-button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 0; border-radius: 11px; color: #40536f; text-align: left; font-size: 13px; font-weight: 650; white-space: nowrap; }
+    #app .admin-nav-button:hover { background: #edf3ff; color: #0d2a5c; }
+    #app .admin-nav-button.is-active { background: #0d2a5c; color: #fff; box-shadow: 0 5px 12px rgba(13,42,92,.18); }
+    #app .admin-workspace { min-width: 0; padding: 22px clamp(16px,2.8vw,36px) 40px; }
+    #app .admin-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+    #app .admin-topbar h1 { font-size: 24px; line-height: 1.2; font-weight: 800; color: #0d2a5c; }
+    #app .admin-topbar-actions { display: flex; align-items: center; gap: 10px; }
+    #app .admin-search { width: min(260px,27vw); border: 1px solid #d5e0f1; border-radius: 999px; background: #fff; padding: 10px 15px; font-size: 13px; outline: 0; }
+    #app .admin-search:focus { border-color: #4478c2; box-shadow: 0 0 0 3px rgba(68,120,194,.13); }
+    #app .admin-hero { display: grid; grid-template-columns: minmax(0,1.6fr) minmax(230px,1fr); gap: 16px; margin-bottom: 20px; }
+    #app .admin-hero-main { background: linear-gradient(118deg,#102c61,#164487); color: #fff; border-radius: 19px; padding: 25px 28px; min-height: 175px; }
+    #app .admin-hero-main h2 { font-size: 22px; font-weight: 800; margin-top: 7px; }
+    #app .admin-hero-main p { color: #d5e7ff; font-size: 13px; }
+    #app .admin-hero-meter { height: 9px; border-radius: 99px; background: #385b91; overflow: hidden; margin-top: 23px; }
+    #app .admin-hero-meter > span { display: block; height: 100%; width: 0; background: #ffb800; border-radius: 99px; transition: width .3s; }
+    #app .admin-action-card { border-radius: 19px; border: 1px solid #dce5f3; background: #fff; padding: 21px; box-shadow: 0 5px 18px rgba(22,56,105,.05); }
+    #app .admin-action-card h2 { color: #0d2a5c; font-size: 15px; font-weight: 800; }
+    #app .admin-action-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 14px; color: #4d607e; font-size: 13px; }
+    #app .admin-action-row strong { font-size: 18px; color: #0d2a5c; }
+    #app .admin-section-title { font-size: 15px; font-weight: 800; color: #0d2a5c; margin: 22px 0 12px; }
+    #app .admin-module-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; }
+    #app .admin-module { min-height: 96px; padding: 18px 12px; border: 1px solid #dce5f3; border-radius: 15px; background: #fff; color: #0d2a5c; text-align: left; box-shadow: 0 5px 18px rgba(22,56,105,.04); }
+    #app .admin-module:hover { transform: translateY(-2px); border-color: #7da2d8; }
+    #app .admin-module b { display: block; font-size: 13px; margin-top: 8px; }
+    #app .admin-module span { font-size: 22px; }
+    @media (max-width: 900px) {
+      #app .admin-shell { grid-template-columns: minmax(0,1fr); }
+      #app .admin-sidebar { position: sticky; top: 0; z-index: 45; width: 100%; height: auto; padding: 8px 12px; overflow: hidden; }
+      #app .admin-brand, #app .admin-sidebar-label { display: none; }
+      #app .admin-sidebar nav { display: flex; width: 100%; max-width: 100%; overflow-x: auto; gap: 5px; }
+      #app .admin-nav-button { width: auto; flex: none; margin: 0; padding: 9px 12px; }
+      #app .admin-workspace { width: 100%; min-width: 0; padding: 18px 14px 30px; }
+      #app .admin-hero { grid-template-columns: 1fr; }
+      #app .admin-module-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      #app .admin-search { width: 170px; }
+    }
+    @media (max-width: 520px) {
+      #app .admin-topbar { align-items: flex-start; flex-direction: column; }
+      #app .admin-topbar-actions, #app .admin-search { width: 100%; }
+      #app .admin-topbar-actions > button { flex: none; }
+      #app .admin-module-grid { gap: 8px; }
+    }
+  </style>
 </head>
 <body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
 
@@ -30,20 +80,63 @@
       <button type="submit" class="mt-5 w-full rounded-xl bg-brand py-3 text-white font-bold hover:bg-brand-light disabled:opacity-60">Masuk</button>
     </form>
 
-    <div id="app" class="hidden space-y-8">
+    <div id="app" class="hidden">
+      <div class="admin-shell">
+        <aside class="admin-sidebar" aria-label="Menu admin">
+          <div class="admin-brand"><span class="admin-brand-icon">MO</span><span>Minda Optima<br><small style="font-size:10px;font-weight:600;color:#7890b2">Referral Admin</small></span></div>
+          <nav aria-label="Navigasi admin">
+            <p class="admin-sidebar-label">Utama</p>
+            <button type="button" class="admin-nav-button is-active" data-admin-target="overview">&#9723; <span>Ringkasan</span></button>
+            <button type="button" class="admin-nav-button" data-admin-target="referrals">&#9636; <span>Referral</span></button>
+            <button type="button" class="admin-nav-button" data-admin-target="referrers">&#9831; <span>Rakan Rujukan</span></button>
+            <button type="button" class="admin-nav-button" data-admin-target="rewards">&#9672; <span>Ganjaran</span></button>
+            <p class="admin-sidebar-label">Urusan</p>
+            <a href="content" class="admin-nav-button">&#9998; <span>Edit Kandungan</span></a>
+            <button type="button" class="admin-nav-button" data-admin-target="support">&#9825; <span>Sokongan</span></button>
+            <button type="button" class="admin-nav-button" data-admin-target="community">&#9638; <span>Komuniti</span></button>
+            <button type="button" class="admin-nav-button" data-admin-target="funnel">&#9637; <span>Analitik</span></button>
+            <button type="button" class="admin-nav-button" data-admin-target="tools">&#9881; <span>Alat Admin</span></button>
+          </nav>
+        </aside>
+        <div class="admin-workspace">
+          <div class="admin-topbar">
+            <div><p class="text-xs font-bold uppercase tracking-wider text-slate-400">Pusat Kawalan</p><h1 id="admin-view-title">Ringkasan</h1></div>
+            <div class="admin-topbar-actions">
+              <input id="admin-global-search" class="admin-search" type="search" placeholder="Cari referral&hellip;" aria-label="Cari referral">
+              <button type="button" onclick="document.getElementById('logout').click()" class="rounded-full border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold text-brand">Log Keluar</button>
+            </div>
+          </div>
+          <div id="admin-pages" class="space-y-5">
+      <section class="admin-page is-active" data-admin-view="overview">
+        <div class="admin-hero">
+          <div class="admin-hero-main"><p>REFERRAL MINDA OPTIMA</p><h2>Selamat datang, Admin &#128075;</h2><p>Pantau pendaftaran, kehadiran dan ganjaran dalam satu tempat.</p><div class="admin-hero-meter"><span id="admin-progress-bar"></span></div><p id="admin-progress-copy" class="mt-2">Kemajuan referral sedang dimuatkan&hellip;</p></div>
+          <div class="admin-action-card"><h2>Perlu Tindakan</h2><div class="admin-action-row"><span>Referral dalam proses sales</span><strong id="admin-pending-count">0</strong></div><div class="admin-action-row"><span>Akaun belum disahkan</span><strong id="admin-unverified-count">0</strong></div><div class="admin-action-row"><span>Permintaan sokongan</span><strong id="admin-support-count">0</strong></div></div>
+        </div>
+      </section>
       <p id="app-error" class="hidden rounded-xl bg-red-50 p-4 text-red-700" role="alert"></p>
 
-      <section id="cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></section>
+      <section id="cards" data-admin-view="overview" class="admin-page is-active grid grid-cols-2 gap-3 md:grid-cols-4"></section>
 
-      <a href="content" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 hover:border-brand transition">
+      <a href="content" data-admin-view="overview" class="admin-page is-active flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 hover:border-brand transition">
         <span>
           <span class="block text-lg font-bold text-brand">✏️ Edit Kandungan Page</span>
           <span class="block text-sm text-slate-500">Tukar teks hero, promo banner, kad komuniti, mesej share, tarikh tamat promo & reward — tanpa edit code.</span>
         </span>
         <span class="text-2xl text-slate-300">→</span>
       </a>
+      <section data-admin-view="overview" class="admin-page is-active"><h2 class="admin-section-title">Menu Utama</h2><div class="admin-module-grid">
+        <button type="button" class="admin-module" data-admin-target="referrals"><span>&#9636;</span><b>Referral</b></button>
+        <button type="button" class="admin-module" data-admin-target="referrers"><span>&#9831;</span><b>Rakan Rujukan</b></button>
+        <button type="button" class="admin-module" data-admin-target="rewards"><span>&#9672;</span><b>Ganjaran</b></button>
+        <a href="content" class="admin-module"><span>&#9998;</span><b>Edit Kandungan</b></a>
+        <button type="button" class="admin-module" data-admin-target="support"><span>&#9825;</span><b>Sokongan</b></button>
+        <button type="button" class="admin-module" data-admin-target="community"><span>&#9638;</span><b>Komuniti</b></button>
+        <button type="button" class="admin-module" data-admin-target="funnel"><span>&#9637;</span><b>Analitik</b></button>
+        <button type="button" class="admin-module" data-admin-target="tools"><span>&#9881;</span><b>Alat Admin</b></button>
+      </div></section>
+      <div id="admin-tools" data-admin-view="tools" class="admin-page grid items-start gap-4 lg:grid-cols-3">
 
-      <section class="rounded-2xl border border-slate-200 bg-white p-5">
+      <section class="h-full rounded-2xl border border-slate-200 bg-white p-5">
         <h2 class="text-lg font-bold text-brand">Tambah Referral</h2>
         <p class="text-sm text-slate-500">Masukkan referee yang dah register guna kod referral. Kod tu kena wujud dalam sistem.</p>
         <form id="add-form" class="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
@@ -62,7 +155,7 @@
         <p id="add-ok" class="mt-3 hidden rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700" role="status">Dah simpan!</p>
       </section>
 
-      <section class="rounded-2xl border border-slate-200 bg-white p-5">
+      <section class="h-full rounded-2xl border border-slate-200 bg-white p-5">
         <h2 class="text-lg font-bold text-brand">Sync Google Sheet</h2>
         <p class="text-sm text-slate-500">Tarik data rujukan terkini dari Google Sheet (CC2) terus masuk sistem — tak payah key in manual.</p>
         <form id="sheet-link-form" class="mt-4 flex flex-col sm:flex-row gap-3 sm:items-end">
@@ -77,7 +170,7 @@
         <p id="sync-sheet-result" class="mt-3 hidden rounded-lg px-3 py-2 text-sm" role="status"></p>
       </section>
 
-      <section class="rounded-2xl border border-slate-200 bg-white p-5">
+      <section class="h-full rounded-2xl border border-slate-200 bg-white p-5">
         <h2 class="text-lg font-bold text-brand">Push OTP Manual</h2>
         <p class="text-sm text-slate-500">Kalau parent risau emel automatik ada masalah (tak sampai, masuk spam, dll), hantar kod OTP baru terus kat emel dia dari sini.</p>
         <form id="otp-form" class="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
@@ -93,7 +186,8 @@
         <p id="otp-ok" class="mt-3 hidden rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700" role="status"></p>
       </section>
 
-      <section>
+      </div>
+      <section data-admin-view="referrals" class="admin-page rounded-2xl border border-slate-200 bg-white p-5">
         <div class="flex items-end justify-between gap-3">
           <div>
             <h2 class="text-lg font-bold text-brand">List Referral</h2>
@@ -134,7 +228,7 @@
         <div id="referral-pagination" class="mt-3 flex items-center justify-center gap-3"></div>
       </section>
 
-      <section>
+      <section data-admin-view="referrers" class="admin-page rounded-2xl border border-slate-200 bg-white p-5">
         <h2 class="text-lg font-bold text-brand">Referrers</h2>
         <p class="text-sm text-slate-500">Edit details referrer (nama, phone, email) kalau depa typo salah. Phone digunakan untuk pengesahan akaun.</p>
         <div class="mt-3">
@@ -153,7 +247,7 @@
         <div id="referrer-pagination" class="mt-3 flex items-center justify-center gap-3"></div>
       </section>
 
-      <section>
+      <section data-admin-view="rewards" class="admin-page rounded-2xl border border-slate-200 bg-white p-5">
         <h2 class="text-lg font-bold text-brand">Ganjaran Digital</h2>
         <p class="text-sm text-slate-500">Kod Rebat Yuran / Voucher Buku yang dipilih Parent. Tebus bila Parent sudah guna di pusat/kedai buku (urusan melalui WhatsApp).</p>
         <div class="mt-3">
@@ -173,7 +267,7 @@
         <div id="reward-pagination" class="mt-3 flex items-center justify-center gap-3"></div>
       </section>
 
-      <section>
+      <section data-admin-view="funnel" class="admin-page rounded-2xl border border-slate-200 bg-white p-5">
         <h2 class="text-lg font-bold text-brand">Referrer Funnel</h2>
         <p class="text-sm text-slate-500">Klik Link → Klik Button Register → Register Selesai. Kalau gap besar antara step, maknanya ramai drop off kat situ.</p>
         <div class="mt-3">
@@ -192,7 +286,7 @@
         <div id="funnel-pagination" class="mt-3 flex items-center justify-center gap-3"></div>
       </section>
 
-      <section>
+      <section data-admin-view="support" class="admin-page rounded-2xl border border-slate-200 bg-white p-5">
         <div class="flex items-end justify-between gap-3">
           <div>
             <h2 class="text-lg font-bold text-brand">Permintaan Sokongan</h2>
@@ -211,7 +305,7 @@
         <div id="support-pagination" class="mt-3 flex items-center justify-center gap-3"></div>
       </section>
 
-      <section>
+      <section data-admin-view="community" class="admin-page rounded-2xl border border-slate-200 bg-white p-5">
         <div class="flex items-end justify-between gap-3">
           <div>
             <h2 class="text-lg font-bold text-brand">Komuniti — Creative Content</h2>
@@ -254,7 +348,7 @@
         </div>
       </section>
 
-      <section>
+      <section data-admin-view="community" class="admin-page rounded-2xl border border-slate-200 bg-white p-5">
         <div class="flex items-end justify-between gap-3">
           <div>
             <h2 class="text-lg font-bold text-brand">Komuniti — Info / Pengumuman</h2>
@@ -284,11 +378,14 @@
         </div>
       </section>
 
-      <section>
+      <section data-admin-view="tools" class="admin-page rounded-2xl border border-slate-200 bg-white p-5">
         <h2 class="text-lg font-bold text-brand">Kod Tak Dikenali (20 Terbaru)</h2>
         <p class="text-sm text-slate-500">Ada orang klik link dengan kod yang takde dalam sistem. Biasanya sebab kod tertaip salah atau link terputus.</p>
         <ul id="unknown-rows" class="mt-3 rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 text-sm"></ul>
       </section>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -398,6 +495,38 @@
           <p class="mt-1 text-xs text-slate-500">${esc(sub)}</p>
         </div>`).join('');
     }
+
+    function renderAdminOverview() {
+      const count = (status) => referrals.filter((r) => r.status === status).length;
+      const completed = count('eligible') + count('paid');
+      $('admin-progress-bar').style.width = `${referrals.length ? Math.round((completed / referrals.length) * 100) : 0}%`;
+      $('admin-progress-copy').textContent = `${completed} daripada ${referrals.length} referral sudah lengkap syarat atau dibayar`;
+      $('admin-pending-count').textContent = count('pending');
+      $('admin-unverified-count').textContent = referrers.filter((r) => r.verification_status === 'unverified').length;
+      $('admin-support-count').textContent = supportRequests.filter((r) => !['closed', 'resolved'].includes(r.status)).length;
+    }
+
+    let currentAdminView = 'overview';
+    const adminViewTitles = { overview: 'Ringkasan', referrals: 'Referral', referrers: 'Rakan Rujukan', rewards: 'Ganjaran', support: 'Sokongan', community: 'Komuniti', funnel: 'Analitik', tools: 'Alat Admin' };
+    function setAdminView(view) {
+      currentAdminView = adminViewTitles[view] ? view : 'overview';
+      document.querySelectorAll('#app [data-admin-view]').forEach((el) => el.classList.toggle('is-active', el.dataset.adminView === currentAdminView));
+      document.querySelectorAll('#app .admin-nav-button[data-admin-target]').forEach((el) => el.classList.toggle('is-active', el.dataset.adminTarget === currentAdminView));
+      $('admin-view-title').textContent = adminViewTitles[currentAdminView];
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    $('app').addEventListener('click', (e) => {
+      const button = e.target.closest('[data-admin-target]');
+      if (!button) return;
+      setAdminView(button.dataset.adminTarget);
+      if (button.dataset.adminFocus) setTimeout(() => $(button.dataset.adminFocus)?.focus(), 80);
+    });
+    $('admin-global-search').addEventListener('input', (e) => {
+      $('referral-search').value = e.target.value;
+      page.referral = 1;
+      setAdminView('referrals');
+      renderReferrals();
+    });
 
     const PAGE_SIZE = 7;
     const page = { referral: 1, referrer: 1, funnel: 1, support: 1, reward: 1 };
@@ -894,6 +1023,7 @@
           $('sheet-link-input').value = data.googleSheetUrl || '';
         }
         renderCards(data.funnel);
+        renderAdminOverview();
         renderFunnel();
         renderReferrals();
         renderReferrers();
