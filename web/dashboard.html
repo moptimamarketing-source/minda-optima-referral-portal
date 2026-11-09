@@ -376,6 +376,7 @@
       document.getElementById('profile-child-name').textContent = referrer.childName || '—';
       document.getElementById('profile-centre').textContent = [referrer.enrollYear, referrer.centre].filter(Boolean).join(' · ') || '—';
 
+      const komunitiLink = document.querySelector('#menu-dropdown a[href="/komuniti"]');
       if (referrer.verificationStatus !== 'verified') {
         const rejected = referrer.verificationStatus === 'rejected';
         document.getElementById('pending-icon').textContent = rejected ? '✕' : '⏳';
@@ -386,8 +387,10 @@
         document.getElementById('pending-gate').classList.remove('hidden');
         document.getElementById('app').classList.add('hidden');
         document.getElementById('app').setAttribute('aria-busy', 'false');
+        if (komunitiLink) komunitiLink.classList.add('hidden');
         return;
       }
+      if (komunitiLink) komunitiLink.classList.remove('hidden');
       document.getElementById('pending-gate').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
 

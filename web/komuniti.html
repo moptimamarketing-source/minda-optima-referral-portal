@@ -231,6 +231,10 @@
     }
 
     MO.api('/api/dashboard').then(async (data) => {
+      if (data.referrer.verificationStatus !== 'verified') {
+        window.location.replace('/dashboard');
+        return;
+      }
       await Promise.all([loadReferral(data), loadCommunity()]);
       document.getElementById('loading').classList.add('hidden');
       let initialTab = 'referral';
