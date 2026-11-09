@@ -158,6 +158,18 @@
     }
 
     function infoCard(p) {
+      const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(p.fileUrl || '');
+      const attachment = !p.fileUrl ? '' : isVideo
+        ? `<video src="${p.fileUrl}" class="rounded-lg w-full bg-slate-900 mt-2" controls preload="metadata"></video>
+           <div class="flex gap-2 mt-3">
+             <a href="${p.fileUrl}" download class="flex-1 text-center rounded-lg bg-brand text-white text-sm font-semibold py-2 hover:bg-brand-light">Muat Turun</a>
+             <button data-share-file="${p.fileUrl}" data-share-title="${MO.escapeHtml(p.title)}" class="flex-1 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2 hover:bg-slate-200">Kongsi</button>
+           </div>`
+        : `<img src="${p.fileUrl}" alt="${MO.escapeHtml(p.title)}" class="rounded-lg w-full max-h-72 object-cover bg-slate-100 mt-2">
+           <div class="flex gap-2 mt-3">
+             <a href="${p.fileUrl}" download class="flex-1 text-center rounded-lg bg-brand text-white text-sm font-semibold py-2 hover:bg-brand-light">Muat Turun</a>
+             <button data-share-file="${p.fileUrl}" data-share-title="${MO.escapeHtml(p.title)}" class="flex-1 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2 hover:bg-slate-200">Kongsi</button>
+           </div>`;
       return feedCard(`
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-semibold text-brand">📢 Pengumuman</span>
@@ -165,6 +177,7 @@
         </div>
         <p class="font-semibold text-slate-800">${MO.escapeHtml(p.title)}</p>
         <p class="whitespace-pre-wrap text-sm text-slate-600 mt-1">${MO.escapeHtml(p.body)}</p>
+        ${attachment}
       `);
     }
 
@@ -213,6 +226,17 @@
       document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(shareUrl)}`;
     }
 
+    function latestCommunityTimestamp(data) {
+      return [...(data.materials || []), ...(data.info || [])]
+        .reduce((max, item) => Math.max(max, new Date(item.createdAt).getTime() || 0), 0);
+    }
+
+    function markCommunitySeen(data) {
+      const latest = latestCommunityTimestamp(data);
+      if (!latest) return;
+      try { localStorage.setItem('mo_komuniti_last_seen', String(latest)); } catch { /* ignore */ }
+    }
+
     async function loadCommunity() {
       let data = { materials: [], info: [] };
       try {
@@ -228,6 +252,9 @@
       const feedInfo = document.getElementById('feed-info');
       feedInfo.innerHTML = data.info.map(infoCard).join('');
       document.getElementById('empty-info').classList.toggle('hidden', data.info.length > 0);
+      wireActions(feedInfo);
+
+      markCommunitySeen(data);
     }
 
     MO.api('/api/dashboard').then(async (data) => {

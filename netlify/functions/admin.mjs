@@ -741,7 +741,39 @@ async function addInfo(body) {
   if (title.length < 2) return json(422, { error: 'Tajuk diperlukan.' });
   if (infoBody.length < 2) return json(422, { error: 'Kandungan diperlukan.' });
 
-  const ins = await sb('community_info', { method: 'POST', prefer: 'return=representation', body: { title, body: infoBody } });
+  let filePath = null;
+  if (body.fileUrl) {
+    const fileUrl = String(body.fileUrl).trim();
+    if (!/^https:\/\//.test(fileUrl)) return json(422, { error: 'Link kena mula dengan https://' });
+    filePath = fileUrl;
+  } else if (body.fileType) {
+    const ext = MATERIAL_FILE_TYPES[body.fileType];
+    if (!ext) return json(422, { error: 'Jenis fail tak disokong.' });
+    let buf;
+    try {
+      buf = Buffer.from(String(body.fileBase64 ?? ''), 'base64');
+    } catch {
+      return json(422, { error: 'Fail tak sah.' });
+    }
+    if (!buf.length) return json(422, { error: 'Fail tak sah.' });
+    if (buf.length > MAX_MATERIAL_BYTES) return json(422, { error: 'Saiz fail terlalu besar (maks 40MB).' });
+
+    const path = `info/${Date.now()}-${randomBytes(6).toString('hex')}.${ext}`;
+    const url = process.env.SUPABASE_URL.replace(/\/+$/, '');
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const up = await fetch(`${url}/storage/v1/object/creative-materials/${path}`, {
+      method: 'POST',
+      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': body.fileType },
+      body: buf,
+    });
+    if (!up.ok) {
+      console.error('info upload failed:', up.status, await up.text().catch(() => ''));
+      return json(502, { error: 'Gagal muat naik fail.' });
+    }
+    filePath = path;
+  }
+
+  const ins = await sb('community_info', { method: 'POST', prefer: 'return=representation', body: { title, body: infoBody, file_path: filePath } });
   if (!ins.ok) {
     console.error('addInfo insert error:', ins.data);
     return json(502, { error: 'Gagal simpan pengumuman.' });
@@ -754,10 +786,23 @@ async function deleteInfo(body) {
   if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
   if (!confirmsDelete(body)) return json(422, { error: 'Taip "delete" untuk sahkan.' });
 
+  const found = await sb(`community_info?id=eq.${id}&select=file_path`);
+  if (!found.ok || !found.data?.length) return json(404, { error: 'Pengumuman tak dijumpai.' });
+  const filePath = found.data[0].file_path;
+
   const del = await sb(`community_info?id=eq.${id}`, { method: 'DELETE' });
   if (!del.ok) {
     console.error('deleteInfo error:', del.data);
     return json(502, { error: 'Gagal padam pengumuman.' });
+  }
+
+  if (filePath && !/^https?:\/\//.test(filePath)) {
+    const url = process.env.SUPABASE_URL.replace(/\/+$/, '');
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    await fetch(`${url}/storage/v1/object/creative-materials/${filePath}`, {
+      method: 'DELETE',
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    }).catch(() => {});
   }
   return json(200, { ok: true });
 }

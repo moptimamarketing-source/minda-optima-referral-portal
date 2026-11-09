@@ -68,13 +68,17 @@
       </div>
       <div class="flex items-center gap-4 shrink-0 relative">
         <!-- Hamburger menu (desktop + mobile) -->
-        <button id="menu-toggle" type="button" class="text-white hover:text-white/80 transition" title="Menu">
+        <button id="menu-toggle" type="button" class="relative text-white hover:text-white/80 transition" title="Menu">
           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
+          <span id="menu-notify-dot" class="hidden absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-brand"></span>
         </button>
         <div id="menu-dropdown" class="hidden absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg py-2 min-w-48 z-50">
-          <a href="/komuniti" class="block w-full text-left px-4 py-2 text-slate-800 hover:bg-slate-100">👥 Komuniti</a>
+          <a href="/komuniti" class="flex items-center justify-between gap-2 w-full text-left px-4 py-2 text-slate-800 hover:bg-slate-100">
+            <span>👥 Komuniti</span>
+            <span id="komuniti-notify-dot" class="hidden h-2 w-2 rounded-full bg-red-500"></span>
+          </a>
           <button id="profile-btn" class="w-full text-left px-4 py-2 text-slate-800 hover:bg-slate-100">👤 Profil</button>
           <button id="logout" class="w-full text-left px-4 py-2 text-slate-800 hover:bg-slate-100">Log Keluar</button>
         </div>
@@ -391,6 +395,7 @@
       if (komunitiLink) komunitiLink.classList.remove('hidden');
       document.getElementById('pending-gate').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
+      checkCommunityUpdates();
 
       const codeEl = document.getElementById('ref-code');
       codeEl.textContent = referrer.code;
@@ -482,6 +487,22 @@
       });
 
       document.getElementById('app').setAttribute('aria-busy', 'false');
+    }
+
+    async function checkCommunityUpdates() {
+      try {
+        const res = await fetch('/.netlify/functions/community');
+        if (!res.ok) return;
+        const data = await res.json();
+        const latest = [...(data.materials || []), ...(data.info || [])]
+          .reduce((max, item) => Math.max(max, new Date(item.createdAt).getTime() || 0), 0);
+        if (!latest) return;
+        let seen = 0;
+        try { seen = Number(localStorage.getItem('mo_komuniti_last_seen')) || 0; } catch { /* ignore */ }
+        const hasNew = latest > seen;
+        document.getElementById('menu-notify-dot')?.classList.toggle('hidden', !hasNew);
+        document.getElementById('komuniti-notify-dot')?.classList.toggle('hidden', !hasNew);
+      } catch { /* senyap: bukan ciri kritikal */ }
     }
 
     function openProfileModal() {

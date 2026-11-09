@@ -23,11 +23,15 @@ export default async (req) => {
 
     const [materialsRes, infoRes] = await Promise.all([
       fetch(`${base}/rest/v1/creative_materials?select=id,category,title,description,text_content,file_path,created_at&order=created_at.desc`, { headers }),
-      fetch(`${base}/rest/v1/community_info?select=id,title,body,created_at&order=created_at.desc`, { headers }),
+      fetch(`${base}/rest/v1/community_info?select=id,title,body,file_path,created_at&order=created_at.desc`, { headers }),
     ]);
 
     const materialsRows = materialsRes.ok ? await materialsRes.json().catch(() => []) : [];
     const infoRows = infoRes.ok ? await infoRes.json().catch(() => []) : [];
+
+    const resolveFileUrl = (filePath) => (filePath
+      ? (/^https?:\/\//.test(filePath) ? filePath : `${base}/storage/v1/object/public/creative-materials/${filePath}`)
+      : null);
 
     // Satu feed campur (bukan diasingkan ikut kategori) — admin susun ikut tarikh
     // dicipta, parent nampak macam feed/ruangan chat.
@@ -37,9 +41,7 @@ export default async (req) => {
       title: row.title,
       description: row.description,
       textContent: row.text_content,
-      fileUrl: row.file_path
-        ? (/^https?:\/\//.test(row.file_path) ? row.file_path : `${base}/storage/v1/object/public/creative-materials/${row.file_path}`)
-        : null,
+      fileUrl: resolveFileUrl(row.file_path),
       createdAt: row.created_at,
     }));
 
@@ -47,6 +49,7 @@ export default async (req) => {
       id: row.id,
       title: row.title,
       body: row.body,
+      fileUrl: resolveFileUrl(row.file_path),
       createdAt: row.created_at,
     }));
 
