@@ -37,7 +37,9 @@ export default async (req) => {
       title: row.title,
       description: row.description,
       textContent: row.text_content,
-      fileUrl: row.file_path ? `${base}/storage/v1/object/public/creative-materials/${row.file_path}` : null,
+      fileUrl: row.file_path
+        ? (/^https?:\/\//.test(row.file_path) ? row.file_path : `${base}/storage/v1/object/public/creative-materials/${row.file_path}`)
+        : null,
       createdAt: row.created_at,
     }));
 

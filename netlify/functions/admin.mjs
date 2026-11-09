@@ -666,6 +666,10 @@ async function addMaterial(body) {
   if (category === 'text') {
     textContent = String(body.textContent ?? '').trim().slice(0, 2000);
     if (textContent.length < 2) return json(422, { error: 'Teks copywriting diperlukan.' });
+  } else if (body.fileUrl) {
+    const fileUrl = String(body.fileUrl).trim();
+    if (!/^https:\/\//.test(fileUrl)) return json(422, { error: 'Link kena mula dengan https://' });
+    filePath = fileUrl;
   } else {
     const ext = MATERIAL_FILE_TYPES[body.fileType];
     if (!ext) return json(422, { error: 'Jenis fail tak disokong.' });
