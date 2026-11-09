@@ -30,7 +30,7 @@ begin
   return jsonb_build_object(
     'ok', true,
     'referrer', jsonb_build_object(
-      'name', public.mask_name(v_ref.name),
+      'name', v_ref.name,
       'code', v_ref.code,
       'phone', v_ref.phone,
       'email', v_ref.email,
