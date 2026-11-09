@@ -10,7 +10,7 @@ function newRewardCode(type, phone) {
   return `${prefix}-${String(phone ?? '0000').slice(-4)}-${letters}`;
 }
 
-const STATUSES = ['pending', 'approved', 'paid', 'rejected'];
+const STATUSES = ['pending', 'approved', 'eligible', 'paid', 'rejected'];
 const REFERRER_VERIFICATION_STATUSES = ['unverified', 'verified', 'rejected'];
 const SETTINGS_KEYS = [
   'promo_enabled', 'promo_deadline', 'reward_before', 'reward_after', 'support_phone',
@@ -143,7 +143,7 @@ function detectClashes(referrerRows) {
 async function list() {
   const [funnel, referrals, unknown, referrers, supportRequests, materials, infoPosts, googleSheetSetting, rewardCodes] = await Promise.all([
     sb('referral_funnel?select=*&order=registrations.desc,landings.desc'),
-    sb('referrals?select=id,code,referee_name,referee_phone,status,reward,registered_at,referrers(name,phone,email)&order=registered_at.desc&limit=500'),
+    sb('referrals?select=id,code,referee_name,referee_phone,status,sessions_attended,rejected_reason,reward,registered_at,referrers(name,phone,email)&order=registered_at.desc&limit=500'),
     sb('referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
     sb('referrers?select=*&order=created_at.desc&limit=500'),
     sb('support_requests?select=*&order=created_at.desc&limit=200'),
@@ -335,21 +335,69 @@ async function setStatus(body) {
   const id = Number(body.id);
   if (!Number.isInteger(id) || !STATUSES.includes(body.status)) return json(422, { error: 'Data status tak sah.' });
 
-  if (body.status === 'approved' || body.status === 'paid') {
-    const check = await sb(`referrals?select=referrers(name,verification_status)&id=eq.${id}`);
-    if (!check.ok) return json(502, { error: 'Gagal semak status referrer.' });
-    const ref = check.data?.[0]?.referrers;
+  const current = await sb(`referrals?select=status,sessions_attended,referrers(name,verification_status)&id=eq.${id}`);
+  if (!current.ok) return json(502, { error: 'Gagal semak rujukan.' });
+  const row = current.data?.[0];
+  if (!row) return json(404, { error: 'Rujukan tak dijumpai.' });
+
+  if (['approved', 'eligible', 'paid'].includes(body.status)) {
+    const ref = row.referrers;
     if (ref && ref.verification_status !== 'verified') {
-      return json(422, { error: `Referrer "${ref.name}" belum disahkan. Sahkan referrer tu dulu (bahagian Referrers) sebelum approve/bayar rujukan ni.` });
+      return json(422, { error: `Referrer "${ref.name}" belum disahkan. Sahkan referrer tu dulu (bahagian Referrers) sebelum proses rujukan ni.` });
     }
   }
+
+  if (body.status === 'eligible' && Number(row.sessions_attended || 0) < 3) {
+    return json(422, { error: 'Rujukan perlu lengkap 3 sesi kehadiran sebelum layak menerima ganjaran.' });
+  }
+
+  if (body.status === 'paid' && row.status !== 'eligible' && row.status !== 'paid') {
+    return json(422, { error: 'Tandakan syarat lengkap dan keluarkan ganjaran sebelum status Paid.' });
+  }
+
+  if (body.status === 'paid') {
+    const rc = await sb(`reward_codes?select=id&referral_id=eq.${id}`);
+    if (!rc.ok || !rc.data?.length) {
+      return json(422, { error: 'Pilih dan keluarkan jenis ganjaran sebelum menandakan Paid.' });
+    }
+  }
+
+  const patch = { status: body.status };
+  patch.rejected_reason = body.status === 'rejected' ? (clean(body.reason, 300) || null) : null;
 
   const up = await sb(`referrals?id=eq.${id}`, {
     method: 'PATCH',
     prefer: 'return=representation',
-    body: { status: body.status },
+    body: patch,
   });
   if (!up.ok) return json(502, { error: 'Gagal kemas kini status.' });
+  if (!up.data?.length) return json(404, { error: 'Rujukan tak dijumpai.' });
+  return json(200, { ok: true });
+}
+
+async function setSessions(body) {
+  const id = Number(body.id);
+  const sessions = Number(body.sessions);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  if (!Number.isInteger(sessions) || sessions < 0 || sessions > 3) {
+    return json(422, { error: 'Kehadiran mesti antara 0 hingga 3 sesi.' });
+  }
+
+  const current = await sb(`referrals?select=status&id=eq.${id}`);
+  if (!current.ok) return json(502, { error: 'Gagal semak rujukan.' });
+  const row = current.data?.[0];
+  if (!row) return json(404, { error: 'Rujukan tak dijumpai.' });
+
+  const patch = { sessions_attended: sessions };
+  if (sessions === 3 && row.status === 'approved') patch.status = 'eligible';
+  if (sessions < 3 && row.status === 'eligible') patch.status = 'approved';
+
+  const up = await sb(`referrals?id=eq.${id}`, {
+    method: 'PATCH',
+    prefer: 'return=representation',
+    body: patch,
+  });
+  if (!up.ok) return json(502, { error: 'Gagal kemas kini kehadiran.' });
   if (!up.data?.length) return json(404, { error: 'Rujukan tak dijumpai.' });
   return json(200, { ok: true });
 }
@@ -784,8 +832,8 @@ async function notifyEmail(body) {
   if (!r.ok) return json(502, { error: 'Gagal baca rekod.' });
   const row = r.data?.[0];
   if (!row) return json(404, { error: 'Rujukan tak dijumpai.' });
-  if (!['approved', 'paid'].includes(row.status)) {
-    return json(422, { error: 'Notification can only be sent for Approved or Paid.' });
+  if (!['eligible', 'paid'].includes(row.status)) {
+    return json(422, { error: 'Notification can only be sent for Eligible or Paid.' });
   }
   const ref = row.referrers;
   if (!ref?.email) return json(422, { error: 'This referrer has no email on file.' });
@@ -803,7 +851,7 @@ async function notifyEmail(body) {
 
   let subject;
   let html;
-  if (row.status === 'approved') {
+  if (row.status === 'eligible') {
     const headerImage = emailSettings.approved_email_header_image || 'https://drive.google.com/uc?id=1QUvgbM8Cf6RNh0qn6K_e9GRTFzHFu4-F';
     const heading = emailSettings.approved_email_heading || '✓ Rujukan Anda Layak!';
     const subtitle = emailSettings.approved_email_subtitle || 'Tahniah! Rujukan anda telah disahkan memenuhi kriteria program kami.';
@@ -1058,6 +1106,7 @@ export default async (req) => {
     if (body.action === 'add') return await add(body);
     if (body.action === 'sync-google-sheet') return await syncGoogleSheet();
     if (body.action === 'status') return await setStatus(body);
+    if (body.action === 'sessions') return await setSessions(body);
     if (body.action === 'verify-referrer') return await verifyReferrer(body);
     if (body.action === 'reject-referrer') return await rejectReferrer(body);
     if (body.action === 'redeem-reward') return await redeemReward(body);

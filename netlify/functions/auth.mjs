@@ -66,7 +66,7 @@ export function pendingEmail({ name, phone, email, s = {} }) {
 }
 
 export function confirmationEmail({ name, code, phone, email, s = {} }) {
-  const share = `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila kawan saya daftar — saya layak ganjaran RM50 (Rebat Yuran/Voucher Buku) 🎉 👉 ${SITE}/daftar?ref=${code}`;
+  const share = `Anak saya dah pandai baca dengan Minda Optima! Guna kod *${code}* bila kawan saya daftar — saya layak ganjaran RM50 TnG, Rebat Yuran atau Voucher Buku 🎉 👉 ${SITE}/daftar?ref=${code}`;
   const waLink = `https://wa.me/?text=${encodeURIComponent(share)}`;
   const waGroupLink = s.community_link || 'https://chat.whatsapp.com/Ech6q73TWPH9qFC5en8gDm';
   const headerImage = s.welcome_email_header_image || 'https://drive.google.com/uc?id=15gWaMZTfS9d8-z1yN7dKLmvDgjPYGbud';
@@ -333,8 +333,8 @@ async function chooseReward(body) {
   if (!referralRes.ok || !referral || referral.referrer_id !== referrer.id) {
     return json(404, { error: 'Rujukan tak dijumpai.' });
   }
-  if (referral.status !== 'approved') {
-    return json(422, { error: 'Rujukan ni belum diluluskan lagi.' });
+  if (referral.status !== 'eligible') {
+    return json(422, { error: 'Rujukan ni belum lengkap syarat lagi.' });
   }
 
   let code;
