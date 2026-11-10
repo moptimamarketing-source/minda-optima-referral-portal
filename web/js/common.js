@@ -115,6 +115,34 @@ const MO = (() => {
     }[c]));
   }
 
+  /** Teks ringkas (bukan HTML) -> HTML, untuk kandungan panjang yang admin edit sendiri
+   * (cth: Terma & Syarat). Format: "# Tajuk" = heading, "- item" = senarai bullet,
+   * "**teks**" = bold, baris kosong = pemisah perenggan. */
+  function markdownLiteToHtml(text) {
+    // Nota: kandungan ni biasanya dipaparkan dalam wrapper "space-y-*", jadi
+    // jarak antara elemen diuruskan oleh wrapper tu — tak perlu margin di sini.
+    const lines = String(text ?? '').replace(/\r\n/g, '\n').split('\n');
+    const inline = (s) => escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    let html = '';
+    let listOpen = false;
+    const closeList = () => { if (listOpen) { html += '</ul>'; listOpen = false; } };
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line) { closeList(); continue; }
+      if (line.startsWith('# ')) {
+        closeList();
+        html += `<h3 class="font-bold text-brand">${inline(line.slice(2))}</h3>`;
+      } else if (line.startsWith('- ')) {
+        if (!listOpen) { html += '<ul class="ml-5 list-disc space-y-1">'; listOpen = true; }
+        html += `<li>${inline(line.slice(2))}</li>`;
+      } else {
+        html += `<p>${inline(line)}</p>`;
+      }
+    }
+    closeList();
+    return html;
+  }
+
   function initSupportLinks() {
     document.querySelectorAll('[data-support-link]').forEach((a) => {
       a.href = '/sokongan';
@@ -169,6 +197,10 @@ const MO = (() => {
         el.appendChild(li);
       }
     });
+    document.querySelectorAll('[data-content-markdown]').forEach((el) => {
+      const v = s[el.dataset.contentMarkdown];
+      if (v) el.innerHTML = markdownLiteToHtml(v);
+    });
 
     if (s.promo_enabled === 'false') {
       document.querySelectorAll('[data-promo-only]').forEach((el) => { el.classList.add('hidden'); });
@@ -204,7 +236,7 @@ const MO = (() => {
   });
 
   return {
-    countdownParts, startCountdowns, api, copyText, escapeHtml, initSupportLinks, toEmbedUrl,
+    countdownParts, startCountdowns, api, copyText, escapeHtml, initSupportLinks, toEmbedUrl, markdownLiteToHtml,
     settingsReady,
     get PROMO_DEADLINE() { return PROMO_DEADLINE; },
     get settings() { return lastSettings; },

@@ -143,14 +143,17 @@
         </section>
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5">
-          <h2 class="text-lg font-bold text-brand">Pop-up "Syarat Kelayakan Penuh"</h2>
-          <p class="text-sm text-slate-500">Satu baris = satu item dalam senarai. Guna sama dekat landing page &amp; dashboard.</p>
+          <h2 class="text-lg font-bold text-brand">Pop-up "Terma &amp; Syarat Penuh"</h2>
+          <p class="text-sm text-slate-500">Guna sama dekat landing page &amp; dashboard. Format ringkas:</p>
+          <ul class="mt-1 text-xs text-slate-500 list-disc ml-5 space-y-0.5">
+            <li><code># Tajuk Seksyen</code> untuk tajuk (cth: <code># 1. Kelayakan Menyertai</code>)</li>
+            <li><code>- item</code> untuk senarai bullet</li>
+            <li><code>**teks**</code> untuk teks bold</li>
+            <li>Baris kosong untuk perenggan baharu</li>
+          </ul>
           <div class="mt-4 grid gap-3">
-            <label class="block text-sm font-semibold">Syarat (bernombor)
-              <textarea id="set-syarat-items" required rows="4" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
-            </label>
-            <label class="block text-sm font-semibold">Catatan Penting (bullet)
-              <textarea id="set-syarat-notes" required rows="2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+            <label class="block text-sm font-semibold">Kandungan Penuh
+              <textarea id="set-syarat-items" required rows="16" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal font-mono text-xs outline-none focus:border-brand"></textarea>
             </label>
           </div>
         </section>
@@ -567,7 +570,6 @@
       'set-step3-title': 'step3_title',
       'set-step3-desc': 'step3_desc',
       'set-syarat-items': 'syarat_items',
-      'set-syarat-notes': 'syarat_notes',
       'set-cta-heading': 'cta_heading',
       'set-cta-sub': 'cta_sub',
 
@@ -708,6 +710,10 @@
           li.textContent = item;
           el.appendChild(li);
         }
+      });
+      doc.querySelectorAll('[data-content-markdown]').forEach((el) => {
+        const v = s[el.dataset.contentMarkdown];
+        if (v) el.innerHTML = MO.markdownLiteToHtml(v);
       });
       doc.querySelectorAll('[data-promo-only]').forEach((el) => {
         el.classList.toggle('hidden', s.promo_enabled === 'false');

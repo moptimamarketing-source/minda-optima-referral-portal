@@ -54,7 +54,7 @@ const TEXT_SETTINGS_MAX = {
   how_it_works_title: 60, how_it_works_subtitle: 100,
   step1_title: 40, step1_desc: 200, step2_title: 40, step2_desc: 200, step3_title: 40, step3_desc: 200,
   cta_heading: 100, cta_sub: 150, cta_button_label: 60,
-  syarat_items: 1500, syarat_notes: 800, reward_terms: 300,
+  syarat_items: 6000, syarat_notes: 800, reward_terms: 300,
   login_hero_title_line1: 60, login_hero_title_line2: 60, login_hero_benefits: 150,
   reg_heading: 80, reg_subtitle: 150, reg_name_label: 40, reg_submit_label: 40,
   dashboard_code_label: 60, dashboard_share_heading: 60,
