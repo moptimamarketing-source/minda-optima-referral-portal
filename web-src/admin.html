@@ -784,18 +784,21 @@
         </td>
         <td class="px-3 py-3 text-right whitespace-nowrap">
           ${supportWaLink(r) ? `<a href="${esc(supportWaLink(r))}" target="_blank" rel="noopener" class="text-sm font-semibold text-emerald-700 hover:underline">WhatsApp</a>` : ''}
-          ${r.screenshot_path ? `<button data-view-screenshot="${esc(r.id)}" class="ml-3 text-sm font-semibold text-brand hover:underline">Gambar</button>` : ''}
+          ${(r.screenshot_paths?.length ? r.screenshot_paths : (r.screenshot_path ? [r.screenshot_path] : []))
+            .map((p, i) => `<button data-view-screenshot="${esc(r.id)}" data-screenshot-index="${i}" class="ml-2 text-sm font-semibold text-brand hover:underline">📷${i + 1}</button>`).join('')}
           <button data-toggle-handled="${esc(r.id)}" data-next="${r.handled ? 'false' : 'true'}" class="ml-3 text-sm font-semibold text-brand hover:underline">${r.handled ? 'Tandai Baharu' : 'Tandai Selesai'}</button>
         </td>
       </tr>`).join('');
     }
 
-    async function viewScreenshot(id, btn) {
+    async function viewScreenshot(id, index, btn) {
       const r = supportRequests.find((x) => String(x.id) === String(id));
-      if (!r?.screenshot_path) return;
+      const paths = r?.screenshot_paths?.length ? r.screenshot_paths : (r?.screenshot_path ? [r.screenshot_path] : []);
+      const path = paths[index];
+      if (!path) return;
       btn.disabled = true;
       try {
-        const d = await call({ action: 'get-screenshot-url', path: r.screenshot_path });
+        const d = await call({ action: 'get-screenshot-url', path });
         window.open(d.url, '_blank', 'noopener');
       } catch (err) {
         if (err.status === 401) return showLogin('Kata laluan salah.');
@@ -1332,7 +1335,7 @@
       if (c) openCodeDialog(c.dataset.changeCode);
       if (vr) verifyReferrer(vr.dataset.verifyReferrer, vr);
       if (rr) rejectReferrer(rr.dataset.rejectReferrer, rr);
-      if (vs) viewScreenshot(vs.dataset.viewScreenshot, vs);
+      if (vs) viewScreenshot(vs.dataset.viewScreenshot, Number(vs.dataset.screenshotIndex), vs);
       if (th) toggleSupportHandled(th.dataset.toggleHandled, th.dataset.next === 'true', th);
       if (a) openEdit('referrer', a.dataset.editReferrer);
       if (b) openEdit('referee', b.dataset.editReferee);

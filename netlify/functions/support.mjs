@@ -11,6 +11,7 @@ const json = (status, body) => new Response(JSON.stringify(body), {
 const clean = (v, max) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
 
 const MAX_SCREENSHOT_BYTES = 4 * 1024 * 1024;
+const MAX_SCREENSHOTS = 5;
 const ALLOWED_TYPES = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
 
 async function sb(path, { method = 'GET', body } = {}) {
@@ -81,20 +82,31 @@ export default async (req) => {
     if (phone.length < 9) return json(422, { error: 'Nombor telefon diperlukan.' });
     if (problem.length < 5) return json(422, { error: 'Sila terangkan masalah anda.' });
 
-    let screenshotPath = null;
-    if (body.screenshotBase64 && body.screenshotType) {
-      const up = await uploadScreenshot(body.screenshotBase64, body.screenshotType);
+    let screenshots = Array.isArray(body.screenshots) ? body.screenshots : [];
+    if (!screenshots.length && body.screenshotBase64 && body.screenshotType) {
+      screenshots = [{ base64: body.screenshotBase64, type: body.screenshotType }];
+    }
+    if (screenshots.length > MAX_SCREENSHOTS) return json(422, { error: `Maksimum ${MAX_SCREENSHOTS} gambar sahaja.` });
+
+    const screenshotPaths = [];
+    for (const shot of screenshots) {
+      const up = await uploadScreenshot(shot.base64, shot.type);
       if (up.error) return json(422, { error: up.error });
-      screenshotPath = up.path;
+      screenshotPaths.push(up.path);
     }
 
     const ins = await sb('support_requests', {
       method: 'POST',
-      body: { name, code: code || null, phone: phone || null, problem, screenshot_path: screenshotPath },
+      body: {
+        name, code: code || null, phone: phone || null, problem,
+        screenshot_path: screenshotPaths[0] || null,
+        screenshot_paths: screenshotPaths.length ? screenshotPaths : null,
+      },
     });
     if (!ins.ok) {
       console.error('support_requests insert error:', ins.data);
-      return json(502, { error: 'Gagal hantar. Sila cuba lagi.' });
+      const debug = ins.data?.message || ins.data?.hint || ins.data?.code || '';
+      return json(502, { error: `Gagal hantar. Sila cuba lagi.${debug ? ` [DEBUG: ${debug}]` : ''}` });
     }
 
     const notifyHtml = `
@@ -105,7 +117,7 @@ export default async (req) => {
           <tr><td style="padding:6px 0;color:#64748b">Kod Rujukan</td><td style="padding:6px 0;font-weight:600">${esc(code || '—')}</td></tr>
           <tr><td style="padding:6px 0;color:#64748b">Telefon</td><td style="padding:6px 0;font-weight:600">${esc(phone || '—')}</td></tr>
           <tr><td style="padding:6px 0;color:#64748b;vertical-align:top">Masalah</td><td style="padding:6px 0;font-weight:600">${esc(problem)}</td></tr>
-          ${screenshotPath ? '<tr><td style="padding:6px 0;color:#64748b">Screenshot</td><td style="padding:6px 0;font-weight:600">Ada (lihat di admin panel)</td></tr>' : ''}
+          ${screenshotPaths.length ? `<tr><td style="padding:6px 0;color:#64748b">Screenshot</td><td style="padding:6px 0;font-weight:600">${screenshotPaths.length} gambar (lihat di admin panel)</td></tr>` : ''}
         </table>
         <p style="margin-top:20px"><a href="${SITE}/admin" style="display:inline-block;background:#0D2A5C;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold">Buka Admin Panel</a></p>
       </div>`;

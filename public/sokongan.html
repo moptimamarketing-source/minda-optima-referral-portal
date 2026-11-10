@@ -52,10 +52,10 @@
                     class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" placeholder="Terangkan masalah anda di sini..."></textarea>
         </label>
 
-        <label class="block text-sm font-semibold text-slate-700">Screenshot (pilihan)
-          <input id="s-screenshot" name="screenshot" type="file" accept="image/png,image/jpeg,image/webp"
+        <label class="block text-sm font-semibold text-slate-700">Screenshot (pilihan, maksimum 5 gambar)
+          <input id="s-screenshot" name="screenshot" type="file" accept="image/png,image/jpeg,image/webp" multiple
                  class="mt-2 w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-light">
-          <span class="mt-1 block text-xs text-slate-400">PNG, JPG atau WEBP, maksimum 4MB.</span>
+          <span class="mt-1 block text-xs text-slate-400">PNG, JPG atau WEBP, maksimum 4MB setiap satu.</span>
         </label>
 
         <p id="s-error" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
@@ -112,8 +112,10 @@
       if (phone.length < 9) return showError('Nombor telefon diperlukan.');
       if (problem.length < 5) return showError('Sila terangkan masalah anda.');
 
-      const file = $('s-screenshot').files[0];
-      if (file && file.size > MAX_BYTES) return showError('Saiz gambar terlalu besar (maks 4MB).');
+      const files = [...$('s-screenshot').files];
+      if (files.length > 5) return showError('Maksimum 5 gambar sahaja.');
+      const tooBig = files.find((f) => f.size > MAX_BYTES);
+      if (tooBig) return showError(`Saiz gambar "${tooBig.name}" terlalu besar (maks 4MB).`);
 
       const btn = e.target.querySelector('button[type=submit]');
       btn.disabled = true;
@@ -126,9 +128,11 @@
           phone: $('s-phone').value.trim(),
           problem,
         };
-        if (file) {
-          payload.screenshotBase64 = await fileToBase64(file);
-          payload.screenshotType = file.type;
+        if (files.length) {
+          payload.screenshots = await Promise.all(files.map(async (f) => ({
+            base64: await fileToBase64(f),
+            type: f.type,
+          })));
         }
 
         const res = await fetch('/.netlify/functions/support', {
