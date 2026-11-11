@@ -445,6 +445,24 @@
     </form>
   </dialog>
 
+  <dialog id="poster-dialog" class="w-[min(44rem,92vw)] rounded-2xl p-0 backdrop:bg-black/40">
+    <div class="p-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-extrabold text-brand">Poster Ganjaran</h2>
+        <button type="button" id="poster-close" class="text-2xl text-slate-400 hover:text-slate-600">×</button>
+      </div>
+      <p class="mt-1 text-sm text-slate-500">Screenshot atau muat turun, lepas tu hantar sendiri melalui emel/WhatsApp kepada Rakan Rujukan.</p>
+      <div class="mt-4 overflow-auto rounded-xl border border-slate-200 bg-slate-50">
+        <canvas id="poster-canvas" class="block w-full"></canvas>
+      </div>
+      <div class="mt-4 flex justify-end gap-2">
+        <button type="button" id="poster-cancel" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50">Tutup</button>
+        <button type="button" id="poster-download" class="rounded-xl bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-light">Muat Turun</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="js/poster.js"></script>
   <script>
     const API = '/.netlify/functions/admin';
     const PW_KEY = 'mo_admin_pw';
@@ -982,7 +1000,8 @@
         </td>
         <td class="px-3 py-3 max-w-xs truncate text-slate-500" title="${esc(r.redeemed_note || '')}">${esc(r.redeemed_note || '—')}</td>
         <td class="px-3 py-3 text-right whitespace-nowrap">
-          ${r.status !== 'redeemed' ? `<button data-redeem-reward="${esc(r.id)}" class="text-sm font-semibold text-emerald-700 hover:underline">Tebus</button>
+          <button data-view-poster="${esc(r.id)}" class="text-sm font-semibold text-brand hover:underline">${r.published_at ? 'Lihat Poster' : 'Jana Poster'}</button>
+          ${r.status !== 'redeemed' ? `<button data-redeem-reward="${esc(r.id)}" class="ml-3 text-sm font-semibold text-emerald-700 hover:underline">Tebus</button>
           <button data-change-reward="${esc(r.id)}" data-current-type="${esc(r.type)}" class="ml-3 text-sm font-semibold text-brand hover:underline">Tukar Jenis</button>` : ''}
         </td>
       </tr>`).join('') || '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Takde ganjaran dipilih Parent lagi.</td></tr>';
@@ -1021,12 +1040,48 @@
       }
     }
 
+    const posterDialog = $('poster-dialog');
+    let currentPosterCanvas = null;
+    async function viewPoster(id, btn) {
+      const r = rewardCodes.find((x) => String(x.id) === String(id));
+      if (!r) return;
+      btn.disabled = true;
+      try {
+        if (!r.published_at) {
+          const d = await call({ action: 'publish-reward', id: Number(id) });
+          r.published_at = d.publishedAt;
+        }
+        const expiresAt = r.type === 'voucher_buku'
+          ? new Date(new Date(r.created_at).getTime() + 365 * 86400000).toISOString()
+          : null;
+        currentPosterCanvas = await RewardPoster.render({ type: r.type, code: r.code, expiresAt });
+        const ctx2d = $('poster-canvas').getContext('2d');
+        $('poster-canvas').width = currentPosterCanvas.width;
+        $('poster-canvas').height = currentPosterCanvas.height;
+        ctx2d.drawImage(currentPosterCanvas, 0, 0);
+        posterDialog.showModal();
+        renderRewards();
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        alert(err.message || 'Gagal jana poster.');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+    $('poster-close').addEventListener('click', () => posterDialog.close());
+    $('poster-cancel').addEventListener('click', () => posterDialog.close());
+    $('poster-download').addEventListener('click', () => {
+      if (currentPosterCanvas) RewardPoster.download(currentPosterCanvas, 'poster-ganjaran.png');
+    });
+
     $('reward-search').addEventListener('input', () => { page.reward = 1; renderRewards(); });
     document.addEventListener('click', (e) => {
       const rd = e.target.closest('[data-redeem-reward]');
       const ct = e.target.closest('[data-change-reward]');
+      const vp = e.target.closest('[data-view-poster]');
       if (rd) redeemReward(rd.dataset.redeemReward, rd);
       if (ct) changeRewardType(ct.dataset.changeReward, ct.dataset.currentType, ct);
+      if (vp) viewPoster(vp.dataset.viewPoster, vp);
     });
 
     function showAppError(message) {

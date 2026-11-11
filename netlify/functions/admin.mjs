@@ -510,6 +510,29 @@ async function changeRewardType(body) {
   return json(200, { ok: true, code: newCode });
 }
 
+async function publishReward(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+
+  const cur = await sb(`reward_codes?id=eq.${id}&select=published_at`);
+  if (!cur.ok) return json(502, { error: 'Gagal baca rekod.' });
+  const row = cur.data?.[0];
+  if (!row) return json(404, { error: 'Kod tak dijumpai.' });
+  if (row.published_at) return json(200, { ok: true, publishedAt: row.published_at });
+
+  const now = new Date().toISOString();
+  const up = await sb(`reward_codes?id=eq.${id}`, {
+    method: 'PATCH',
+    prefer: 'return=representation',
+    body: { published_at: now },
+  });
+  if (!up.ok) {
+    console.error('publishReward error:', up.data);
+    return json(502, { error: `Gagal terbitkan poster: ${up.data?.message || 'Unknown error'}` });
+  }
+  return json(200, { ok: true, publishedAt: now });
+}
+
 async function rejectReferrer(body) {
   const id = Number(body.id);
   if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
@@ -1160,6 +1183,7 @@ export default async (req) => {
     if (body.action === 'reject-referrer') return await rejectReferrer(body);
     if (body.action === 'redeem-reward') return await redeemReward(body);
     if (body.action === 'change-reward-type') return await changeRewardType(body);
+    if (body.action === 'publish-reward') return await publishReward(body);
     if (body.action === 'edit-referrer') return await editReferrer(body);
     if (body.action === 'change-referrer-code') return await changeReferrerCode(body);
     if (body.action === 'edit-referee') return await editReferee(body);

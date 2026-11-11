@@ -73,6 +73,7 @@ fs.mkdirSync(path.join(out, 'js'), { recursive: true });
 fs.mkdirSync(path.join(out, 'css'), { recursive: true });
 fs.copyFileSync(path.join(pub, 'css', 'tailwind.css'), path.join(out, 'css', 'tailwind.css'));
 fs.copyFileSync(path.join(pub, 'js', 'common.js'), path.join(out, 'js', 'common.js'));
+fs.copyFileSync(path.join(pub, 'js', 'poster.js'), path.join(out, 'js', 'poster.js'));
 for (const f of ['config.js', 'supabase-api.js']) {
   fs.copyFileSync(path.join(extra, 'js', f), path.join(out, 'js', f));
 }

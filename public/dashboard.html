@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#0D2A5C">
   <link rel="stylesheet" href="/css/tailwind.css">
   <script src="/js/common.js"></script>
+  <script src="/js/poster.js"></script>
   <style>
     .dash-grid {
       display: grid;
@@ -329,6 +330,21 @@
     <p class="mt-4 text-sm text-slate-500">Minta kawan scan kod ini untuk terus ke pautan pendaftaran anda.</p>
   </dialog>
 
+  <dialog id="poster-modal" class="fixed inset-0 z-50 w-[min(40rem,92vw)] rounded-2xl shadow-xl backdrop:bg-black/40 p-6">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-bold text-brand">Poster Ganjaran</h2>
+      <button id="poster-modal-close" type="button" class="text-2xl text-slate-400 hover:text-slate-600">×</button>
+    </div>
+    <p class="text-sm text-slate-500">Screenshot atau muat turun poster ini untuk rekod anda.</p>
+    <div class="mt-3 overflow-auto rounded-xl border border-slate-200 bg-slate-50">
+      <canvas id="poster-modal-canvas" class="block w-full"></canvas>
+    </div>
+    <div class="mt-4 flex justify-end gap-2">
+      <button id="poster-modal-cancel" type="button" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50">Tutup</button>
+      <button id="poster-modal-download" type="button" class="rounded-xl bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-light">Muat Turun</button>
+    </div>
+  </dialog>
+
   <script>
     const STATUS = {
       pending: { label: 'Menunggu', cls: 'bg-amber-100 text-amber-800' },
@@ -431,7 +447,9 @@
         const s = STATUS[r.status] || STATUS.pending;
         const rewardAmount = r.status === 'rejected'
           ? `<span class="text-slate-400 line-through">RM${r.reward}</span>`
-          : `<span class="font-bold text-brand">RM${r.reward}</span>`;
+          : r.rewardType
+            ? `<span class="font-bold text-brand">${REWARD_TYPE_LABEL[r.rewardType] || r.rewardType}</span>`
+            : `<span class="font-bold text-brand">RM${r.reward}</span>`;
 
         const progressLine = r.status === 'rejected'
           ? MO.escapeHtml(r.rejectedReason || 'Pendaftaran gagal / ada masalah')
@@ -450,12 +468,18 @@
             </div>
           </div>`;
         } else if (r.rewardType) {
-          const typeLabel = REWARD_TYPE_LABEL[r.rewardType] || r.rewardType;
           const redeemed = r.rewardStatus === 'redeemed';
-          typeCell = `<div class="text-right">
-            <div class="font-bold text-brand">${typeLabel}</div>
-            <div class="text-xs ${redeemed ? 'text-emerald-600' : 'text-slate-400'}">${redeemed ? '✓ Ditebus' : 'Kod: ' + MO.escapeHtml(r.rewardCode || '')}</div>
-          </div>`;
+          if (r.rewardPublishedAt) {
+            typeCell = `<div class="text-right">
+              <button data-view-reward-poster="${r.id}" data-reward-type="${MO.escapeHtml(r.rewardType)}" data-reward-code="${MO.escapeHtml(r.rewardCode || '')}" data-reward-expires="${MO.escapeHtml(r.rewardExpiresAt || '')}" class="text-xs font-semibold text-brand hover:underline">🎁 Lihat Poster Ganjaran</button>
+              <div class="text-xs ${redeemed ? 'text-emerald-600' : 'text-slate-400'} mt-0.5">${redeemed ? '✓ Ditebus' : 'Menunggu penebusan'}</div>
+            </div>`;
+          } else {
+            typeCell = `<div class="text-right text-xs text-slate-400 leading-snug">
+              Sedang diproses admin
+              <div class="text-[11px]">Nak tukar? Hubungi Sokongan dalam 24 jam.</div>
+            </div>`;
+          }
         } else {
           typeCell = '<span class="text-slate-400">—</span>';
         }
@@ -486,8 +510,38 @@
         });
       });
 
+      tbody.querySelectorAll('[data-view-reward-poster]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          try {
+            const canvas = await RewardPoster.render({
+              type: btn.dataset.rewardType,
+              code: btn.dataset.rewardCode,
+              expiresAt: btn.dataset.rewardExpires || null,
+            });
+            currentPosterCanvas = canvas;
+            const modalCanvas = document.getElementById('poster-modal-canvas');
+            modalCanvas.width = canvas.width;
+            modalCanvas.height = canvas.height;
+            modalCanvas.getContext('2d').drawImage(canvas, 0, 0);
+            document.getElementById('poster-modal').showModal();
+          } catch (err) {
+            toast(err.message || 'Gagal muat poster.');
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      });
+
       document.getElementById('app').setAttribute('aria-busy', 'false');
     }
+
+    let currentPosterCanvas = null;
+    document.getElementById('poster-modal-close').addEventListener('click', () => document.getElementById('poster-modal').close());
+    document.getElementById('poster-modal-cancel').addEventListener('click', () => document.getElementById('poster-modal').close());
+    document.getElementById('poster-modal-download').addEventListener('click', () => {
+      if (currentPosterCanvas) RewardPoster.download(currentPosterCanvas, 'poster-ganjaran.png');
+    });
 
     async function checkCommunityUpdates() {
       try {
@@ -548,7 +602,7 @@
         stats: { totalReferrals: 3, rewardPending: 50, totalEarned: 100 },
         referrals: [
           { id: 1, name: 'Demo 24', phone: '0171234567', registeredAt: new Date().toISOString(), status: 'approved', reward: 50, rewardType: null },
-          { id: 2, name: 'demo3', phone: '0121112222', registeredAt: new Date().toISOString(), status: 'paid', reward: 50, rewardType: 'voucher_buku', rewardCode: 'VB-2222-ABCD', rewardStatus: 'redeemed' },
+          { id: 2, name: 'demo3', phone: '0121112222', registeredAt: new Date().toISOString(), status: 'paid', reward: 50, rewardType: 'voucher_buku', rewardCode: 'VB-2222-ABCD', rewardStatus: 'redeemed', rewardPublishedAt: new Date().toISOString(), rewardExpiresAt: new Date(Date.now() + 365 * 86400000).toISOString() },
           { id: 3, name: 'demo2', phone: '0179990000', registeredAt: new Date().toISOString(), status: 'pending', reward: 50 },
         ],
       });
