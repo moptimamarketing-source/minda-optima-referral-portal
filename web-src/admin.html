@@ -445,6 +445,20 @@
     </form>
   </dialog>
 
+  <dialog id="referrer-detail-dialog" class="w-[min(40rem,92vw)] rounded-2xl p-0 backdrop:bg-black/40">
+    <div class="p-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-extrabold text-brand">Maklumat Referrer</h2>
+        <button type="button" id="referrer-detail-close" class="text-2xl text-slate-400 hover:text-slate-600">×</button>
+      </div>
+      <p class="mt-1 text-sm text-slate-500">Lihat sahaja — untuk edit, tutup ni dan guna butang "Edit" kat jadual.</p>
+      <div id="referrer-detail-body" class="mt-4"></div>
+      <div class="mt-5 flex justify-end">
+        <button type="button" id="referrer-detail-ok" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50">Tutup</button>
+      </div>
+    </div>
+  </dialog>
+
   <dialog id="poster-dialog" class="w-[min(44rem,92vw)] rounded-2xl p-0 backdrop:bg-black/40">
     <div class="p-6">
       <div class="flex items-center justify-between">
@@ -725,7 +739,7 @@
       $('referrer-rows').innerHTML = rows.map((r) => {
         const v = VERIFICATION_LABEL[r.verification_status] || VERIFICATION_LABEL.unverified;
         return `<tr class="${r.clash ? 'bg-red-50' : ''}">
-        <td class="px-4 py-3"><div class="font-medium">${esc(r.name)}</div><div class="text-xs text-slate-500 tabular-nums">${esc(fmtPhone(r.phone))}</div></td>
+        <td class="px-4 py-3"><button type="button" data-view-referrer-detail="${esc(r.id)}" class="font-medium text-brand hover:underline text-left">${esc(r.name)}</button><div class="text-xs text-slate-500 tabular-nums">${esc(fmtPhone(r.phone))}</div></td>
         <td class="px-3 py-3 font-mono text-xs">${esc(r.code)}</td>
         <td class="px-3 py-3">${esc(r.email || '—')}</td>
         <td class="px-3 py-3">
@@ -748,6 +762,43 @@
       </tr>`;
       }).join('') || '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Takde referrer lagi.</td></tr>';
     }
+
+    function viewReferrerDetail(id) {
+      const r = referrers.find((x) => String(x.id) === String(id));
+      if (!r) return;
+      const v = VERIFICATION_LABEL[r.verification_status] || VERIFICATION_LABEL.unverified;
+      const theirReferrals = referrals.filter((x) => x.code === r.code);
+      $('referrer-detail-body').innerHTML = `
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div><span class="text-slate-500">Nama</span><div class="font-semibold">${esc(r.name)}</div></div>
+          <div><span class="text-slate-500">Kod Rujukan</span><div class="font-mono">${esc(r.code)}</div></div>
+          <div><span class="text-slate-500">Phone</span><div>${esc(fmtPhone(r.phone))}</div></div>
+          <div><span class="text-slate-500">Email</span><div>${esc(r.email || '—')}</div></div>
+          <div><span class="text-slate-500">Anak</span><div>${esc(r.child_name || '—')}</div></div>
+          <div><span class="text-slate-500">Centre / Tahun</span><div>${esc(r.centre || '—')} · ${esc(r.enroll_year || '—')}</div></div>
+          <div><span class="text-slate-500">Status Pengesahan</span><div><span class="rounded-full px-2 py-0.5 text-xs font-semibold ${v.cls}">${v.label}</span></div></div>
+          <div><span class="text-slate-500">Jumlah Rujukan</span><div class="font-bold">${theirReferrals.length}</div></div>
+        </div>
+        <div class="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500"><tr><th class="px-3 py-2">Referee</th><th class="px-3 py-2">Tarikh</th><th class="px-3 py-2">Sesi</th><th class="px-3 py-2">Status</th><th class="px-3 py-2">Ganjaran</th></tr></thead>
+            <tbody>${theirReferrals.map((x) => {
+              const rc = rewardCodes.find((rw) => rw.referral_id === x.id);
+              return `<tr class="border-t border-slate-100">
+                <td class="px-3 py-2">${esc(x.referee_name || '—')}<div class="text-xs text-slate-500">${esc(fmtPhone(x.referee_phone))}</div></td>
+                <td class="px-3 py-2 whitespace-nowrap">${esc(dt.format(new Date(x.registered_at)))}</td>
+                <td class="px-3 py-2">${esc(x.sessions_attended ?? 0)}/3</td>
+                <td class="px-3 py-2">${esc(STATUS[x.status] || x.status)}</td>
+                <td class="px-3 py-2">${rc ? esc(REWARD_TYPE_LABEL[rc.type] || rc.type) : '—'}</td>
+              </tr>`;
+            }).join('') || '<tr><td colspan="5" class="px-3 py-4 text-center text-slate-400">Takde rujukan lagi.</td></tr>'}</tbody>
+          </table>
+        </div>
+      `;
+      $('referrer-detail-dialog').showModal();
+    }
+    $('referrer-detail-close').addEventListener('click', () => $('referrer-detail-dialog').close());
+    $('referrer-detail-ok').addEventListener('click', () => $('referrer-detail-dialog').close());
 
     async function verifyReferrer(id, btn) {
       const r = referrers.find((x) => String(x.id) === String(id));
@@ -1079,9 +1130,11 @@
       const rd = e.target.closest('[data-redeem-reward]');
       const ct = e.target.closest('[data-change-reward]');
       const vp = e.target.closest('[data-view-poster]');
+      const vrd = e.target.closest('[data-view-referrer-detail]');
       if (rd) redeemReward(rd.dataset.redeemReward, rd);
       if (ct) changeRewardType(ct.dataset.changeReward, ct.dataset.currentType, ct);
       if (vp) viewPoster(vp.dataset.viewPoster, vp);
+      if (vrd) viewReferrerDetail(vrd.dataset.viewReferrerDetail);
     });
 
     function showAppError(message) {

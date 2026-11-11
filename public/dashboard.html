@@ -330,6 +330,17 @@
     <p class="mt-4 text-sm text-slate-500">Minta kawan scan kod ini untuk terus ke pautan pendaftaran anda.</p>
   </dialog>
 
+  <dialog id="reward-terms-modal" class="fixed inset-0 z-50 w-[min(30rem,92vw)] rounded-2xl shadow-xl backdrop:bg-black/40 p-6">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-bold text-brand">Terma & Syarat Ganjaran</h2>
+      <button id="reward-terms-close" type="button" class="text-2xl text-slate-400 hover:text-slate-600">×</button>
+    </div>
+    <div id="reward-terms-body" class="space-y-2 text-sm leading-relaxed text-slate-700"></div>
+    <div class="mt-4 flex justify-end">
+      <button id="reward-terms-ok" type="button" class="rounded-xl bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-light">Faham</button>
+    </div>
+  </dialog>
+
   <dialog id="poster-modal" class="fixed inset-0 z-50 w-[min(40rem,92vw)] rounded-2xl shadow-xl backdrop:bg-black/40 p-6">
     <div class="flex items-center justify-between mb-3">
       <h2 class="text-lg font-bold text-brand">Poster Ganjaran</h2>
@@ -354,6 +365,23 @@
       rejected: { label: 'Rejected', cls: 'bg-slate-200 text-slate-600' },
     };
     const REWARD_TYPE_LABEL = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku', tng: "Touch 'n Go" };
+    const REWARD_TERMS_FALLBACK = {
+      rebat_yuran: `# Terma & Syarat — Rebat Yuran
+- Rebat Yuran bernilai **RM50**, dipotong terus pada **yuran kelas bulan berikutnya** anak Rakan Rujukan.
+- Rebat hanya boleh digunakan **sekali** dan tidak boleh digabung dengan sebarang promosi/diskaun lain.
+- Proses automatik — Rakan Rujukan **tidak perlu buat apa-apa untuk menebus**. Sebaik admin menekan "Tebus" di sistem, potongan akan direkodkan secara automatik pada bil yuran.
+- Rebat **tidak boleh ditukar kepada tunai**.`,
+      voucher_buku: `# Terma & Syarat — Voucher Buku
+- Voucher Buku ialah **potongan RM50** daripada harga buku Bahasa Melayu atau Bahasa Inggeris (harga buku sebenar biasanya melebihi RM100 — baki harga ditanggung oleh Rakan Rujukan).
+- Kod voucher sah digunakan dalam tempoh **365 hari** dari tarikh dijana.
+- Untuk menebus, hubungi **Admin Operation melalui WhatsApp** dengan kod voucher anda.
+- Voucher **tidak boleh ditukar kepada tunai**.`,
+      tng: `# Terma & Syarat — Touch 'n Go eWallet
+- Ganjaran TnG bernilai **RM50**, dipindahkan terus ke akaun Touch 'n Go eWallet Rakan Rujukan.
+- Rakan Rujukan **mesti mempunyai akaun Touch 'n Go eWallet aktif** (guna nombor telefon yang sama dengan pendaftaran rujukan).
+- Pindahan diproses **secara berkumpulan pada 1hb–5hb setiap bulan**. Jika ganjaran disahkan dalam bulan semasa, pindahan akan dibuat pada tempoh 1hb–5hb bulan berikutnya.
+- Ganjaran tidak dikenakan sebarang caj kepada Rakan Rujukan.`,
+    };
     const VERIFICATION = {
       unverified: { label: '⏳ Belum Disahkan', cls: 'bg-amber-100 text-amber-800' },
       verified: { label: '✓ Disahkan', cls: 'bg-emerald-100 text-emerald-800' },
@@ -448,7 +476,7 @@
         const rewardAmount = r.status === 'rejected'
           ? `<span class="text-slate-400 line-through">RM${r.reward}</span>`
           : r.rewardType
-            ? `<span class="font-bold text-brand">${REWARD_TYPE_LABEL[r.rewardType] || r.rewardType}</span>`
+            ? `<span class="inline-flex items-center gap-1 font-bold text-brand">${REWARD_TYPE_LABEL[r.rewardType] || r.rewardType}<button type="button" data-reward-info="${r.rewardType}" title="Terma & syarat" class="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-bold text-slate-600 hover:bg-slate-300">i</button></span>`
             : `<span class="font-bold text-brand">RM${r.reward}</span>`;
 
         const progressLine = r.status === 'rejected'
@@ -510,6 +538,15 @@
         });
       });
 
+      tbody.querySelectorAll('[data-reward-info]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const type = btn.dataset.rewardInfo;
+          const md = (MO.settings && MO.settings[`reward_terms_${type}`]) || REWARD_TERMS_FALLBACK[type] || '';
+          document.getElementById('reward-terms-body').innerHTML = MO.markdownLiteToHtml(md);
+          document.getElementById('reward-terms-modal').showModal();
+        });
+      });
+
       tbody.querySelectorAll('[data-view-reward-poster]').forEach((btn) => {
         btn.addEventListener('click', async () => {
           btn.disabled = true;
@@ -535,6 +572,9 @@
 
       document.getElementById('app').setAttribute('aria-busy', 'false');
     }
+
+    document.getElementById('reward-terms-close').addEventListener('click', () => document.getElementById('reward-terms-modal').close());
+    document.getElementById('reward-terms-ok').addEventListener('click', () => document.getElementById('reward-terms-modal').close());
 
     let currentPosterCanvas = null;
     document.getElementById('poster-modal-close').addEventListener('click', () => document.getElementById('poster-modal').close());

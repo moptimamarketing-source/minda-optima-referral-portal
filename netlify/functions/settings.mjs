@@ -8,6 +8,7 @@ const PUBLIC_KEYS = [
   'step1_title', 'step1_desc', 'step2_title', 'step2_desc', 'step3_title', 'step3_desc',
   'cta_heading', 'cta_sub', 'cta_button_label',
   'syarat_items', 'syarat_notes', 'reward_terms',
+  'reward_terms_rebat_yuran', 'reward_terms_voucher_buku', 'reward_terms_tng',
   'login_hero_title_line1', 'login_hero_title_line2', 'login_hero_benefits',
   'reg_heading', 'reg_subtitle', 'reg_name_label', 'reg_submit_label',
   'dashboard_code_label', 'dashboard_share_heading',

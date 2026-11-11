@@ -19,6 +19,7 @@ const SETTINGS_KEYS = [
   'step1_title', 'step1_desc', 'step2_title', 'step2_desc', 'step3_title', 'step3_desc',
   'cta_heading', 'cta_sub', 'cta_button_label',
   'syarat_items', 'syarat_notes', 'reward_terms',
+  'reward_terms_rebat_yuran', 'reward_terms_voucher_buku', 'reward_terms_tng',
   'login_hero_title_line1', 'login_hero_title_line2', 'login_hero_benefits',
   'reg_heading', 'reg_subtitle', 'reg_name_label', 'reg_submit_label',
   'dashboard_code_label', 'dashboard_share_heading',
@@ -48,13 +49,14 @@ const OPTIONAL_IMAGE_SETTINGS = [
   'paid_email_image1', 'paid_email_image2',
 ];
 const OPTIONAL_URL_SETTINGS = ['video_url', 'video2_url'];
-const OPTIONAL_TEXT_SETTINGS = ['video_title', 'video_desc'];
+const OPTIONAL_TEXT_SETTINGS = ['video_title', 'video_desc', 'reward_terms_rebat_yuran', 'reward_terms_voucher_buku', 'reward_terms_tng'];
 const TEXT_SETTINGS_MAX = {
   hero_badge_label: 60, hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300,
   how_it_works_title: 60, how_it_works_subtitle: 100,
   step1_title: 40, step1_desc: 200, step2_title: 40, step2_desc: 200, step3_title: 40, step3_desc: 200,
   cta_heading: 100, cta_sub: 150, cta_button_label: 60,
   syarat_items: 6000, syarat_notes: 800, reward_terms: 300,
+  reward_terms_rebat_yuran: 2000, reward_terms_voucher_buku: 2000, reward_terms_tng: 2000,
   login_hero_title_line1: 60, login_hero_title_line2: 60, login_hero_benefits: 150,
   reg_heading: 80, reg_subtitle: 150, reg_name_label: 40, reg_submit_label: 40,
   dashboard_code_label: 60, dashboard_share_heading: 60,
