@@ -15,6 +15,7 @@ const PUBLIC_KEYS = [
   'promo_banner_text',
   'community_title', 'community_desc', 'community_button_label', 'community_link', 'community_color',
   'share_message_template', 'reward_whatsapp_template',
+  'wa_approved_message', 'wa_paid_message', 'wa_support_reply_message',
   'faq1_q', 'faq1_a', 'faq2_q', 'faq2_a', 'faq3_q', 'faq3_a',
   'faq4_q', 'faq4_a', 'faq5_q', 'faq5_a', 'faq6_q', 'faq6_a',
   'video_title', 'video_desc', 'video_url', 'video2_url',

@@ -698,10 +698,11 @@
 
     function waMessage(r) {
       const name = r.referrers?.name || '';
-      if (r.status === 'paid') {
-        return `Salam ${name}, ganjaran RM${r.reward} untuk rujukan anda telah ditebus. Terima kasih! – Minda Optima`;
-      }
-      return `Salam ${name}, rujukan anda telah disahkan layak. Sila pilih jenis ganjaran RM${r.reward} (Rebat Yuran/Voucher Buku/Touch 'n Go) di dashboard anda. – Minda Optima`;
+      const s = MO.settings || {};
+      const tpl = r.status === 'paid'
+        ? (s.wa_paid_message || "Salam {name}, ganjaran RM{reward} untuk rujukan anda telah ditebus. Terima kasih! – Minda Optima")
+        : (s.wa_approved_message || "Salam {name}, rujukan anda telah disahkan layak. Sila pilih jenis ganjaran RM{reward} (Rebat Yuran/Voucher Buku/Touch 'n Go) di dashboard anda. – Minda Optima");
+      return tpl.replace(/\{name\}/g, name).replace(/\{reward\}/g, r.reward);
     }
 
     function notifyButtons(r) {
@@ -865,7 +866,12 @@
     function supportWaLink(r) {
       const phone = (r.phone || '').replace(/\D/g, '');
       if (!phone) return '';
-      const msg = `Salam ${r.name}, terima kasih kerana menghubungi sokongan Minda Optima.${r.code ? ` Kod rujukan: ${r.code}.` : ''} Mengenai masalah anda: "${r.problem}" — `;
+      const tpl = (MO.settings || {}).wa_support_reply_message
+        || 'Salam {name}, terima kasih kerana menghubungi sokongan Minda Optima. {code}Mengenai masalah anda: "{problem}" — ';
+      const msg = tpl
+        .replace(/\{name\}/g, r.name)
+        .replace(/\{code\}/g, r.code ? `Kod rujukan: ${r.code}. ` : '')
+        .replace(/\{problem\}/g, r.problem);
       return `https://wa.me/60${phone.replace(/^0/, '')}?text=${encodeURIComponent(msg)}`;
     }
 

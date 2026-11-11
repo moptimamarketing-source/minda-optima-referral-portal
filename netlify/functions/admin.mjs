@@ -37,6 +37,7 @@ const SETTINGS_KEYS = [
   'paid_email_image1', 'paid_email_image2',
   'reward_email_header_image', 'reward_email_heading', 'reward_email_subtitle',
   'reward_email_image1', 'reward_email_image2', 'reward_whatsapp_template',
+  'wa_approved_message', 'wa_paid_message', 'wa_support_reply_message',
   'video_title', 'video_desc', 'video_url', 'video2_url',
   'google_sheet_url',
 ];
@@ -81,7 +82,7 @@ const TEXT_SETTINGS_MAX = {
   paid_email_image1: 500, paid_email_image2: 500,
   reward_email_heading: 80, reward_email_subtitle: 200,
   reward_email_image1: 500, reward_email_image2: 500,
-  reward_whatsapp_template: 400,
+  reward_whatsapp_template: 400, wa_approved_message: 400, wa_paid_message: 400, wa_support_reply_message: 500,
   video_title: 80, video_desc: 200, video_url: 500, video2_url: 500,
 };
 
@@ -1180,12 +1181,17 @@ function validateSetting(key, raw) {
     }
     return { value: v };
   }
-  if (key === 'reward_whatsapp_template') {
+  const WA_REQUIRED_TOKENS = {
+    reward_whatsapp_template: ['{name}', '{type}'],
+    wa_approved_message: ['{name}', '{reward}'],
+    wa_paid_message: ['{name}', '{reward}'],
+    wa_support_reply_message: ['{name}', '{problem}'],
+  };
+  if (key in WA_REQUIRED_TOKENS) {
     if (!v) return { value: v };
     if (v.length > TEXT_SETTINGS_MAX[key]) return { error: `Mesej WhatsApp terlalu panjang (maks ${TEXT_SETTINGS_MAX[key]} aksara).` };
-    if (!v.includes('{name}') || !v.includes('{type}')) {
-      return { error: 'Mesej WhatsApp kena ada token {name} dan {type} — jangan buang.' };
-    }
+    const missing = WA_REQUIRED_TOKENS[key].filter((t) => !v.includes(t));
+    if (missing.length) return { error: `Mesej WhatsApp kena ada token ${missing.join(', ')} — jangan buang.` };
     return { value: v };
   }
   if (key in TEXT_SETTINGS_MAX) {
