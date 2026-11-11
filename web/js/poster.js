@@ -6,13 +6,13 @@ window.RewardPoster = (() => {
     rebat_yuran: {
       src: '/rebat-yuran-poster.webp',
       width: 1983, height: 793,
-      code: { x: 215, y: 615, font: 'bold 34px Arial', color: '#0D2A5C' },
+      code: { x: 215, y: 615, font: 'bold 34px Arial', color: '#DC2626' },
     },
     voucher_buku: {
       src: '/voucher-buku-poster.webp',
       width: 2000, height: 667,
-      code: { x: 215, y: 575, font: 'bold 28px Arial', color: '#6B4A14' },
-      expiry: { x: 1215, y: 579, font: 'italic 17px Georgia', color: '#FBEFD8' },
+      code: { x: 215, y: 575, font: 'bold 28px Arial', color: '#DC2626' },
+      expiry: { x: 1235, y: 582, font: 'bold 20px Arial', color: '#FFFFFF' },
     },
     tng: {
       src: '/tng-poster.webp',
@@ -37,11 +37,13 @@ window.RewardPoster = (() => {
     return `${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()}`;
   }
 
-  /** { type, code, expiresAt } -> Promise<HTMLCanvasElement> */
-  async function render({ type, code, expiresAt }) {
+  /** { type, code, expiresAt, posterUrl } -> Promise<HTMLCanvasElement>.
+   * posterUrl (pilihan): ganti gambar asas poster (admin boleh tetapkan sendiri
+   * di Content Editor) — kedudukan kod/tarikh kekal sama supaya overlay masih betul. */
+  async function render({ type, code, expiresAt, posterUrl }) {
     const cfg = POSTERS[type];
     if (!cfg) throw new Error('Jenis ganjaran tak dikenali untuk poster.');
-    const img = await loadImage(cfg.src);
+    const img = await loadImage(posterUrl || cfg.src);
     const canvas = document.createElement('canvas');
     canvas.width = cfg.width;
     canvas.height = cfg.height;

@@ -35,8 +35,12 @@ const SETTINGS_KEYS = [
   'approved_email_image1', 'approved_email_image2',
   'paid_email_header_image', 'paid_email_heading', 'paid_email_subtitle',
   'paid_email_image1', 'paid_email_image2',
-  'reward_email_header_image', 'reward_email_heading', 'reward_email_subtitle',
-  'reward_email_image1', 'reward_email_image2', 'reward_whatsapp_template',
+  'reward_email_header_image', 'reward_email_image1', 'reward_email_image2',
+  'reward_email_heading_rebat_yuran', 'reward_email_subtitle_rebat_yuran',
+  'reward_email_heading_voucher_buku', 'reward_email_subtitle_voucher_buku',
+  'reward_email_heading_tng', 'reward_email_subtitle_tng',
+  'reward_whatsapp_template_rebat_yuran', 'reward_whatsapp_template_voucher_buku', 'reward_whatsapp_template_tng',
+  'reward_poster_rebat_yuran', 'reward_poster_voucher_buku', 'reward_poster_tng',
   'wa_approved_message', 'wa_paid_message', 'wa_support_reply_message',
   'video_title', 'video_desc', 'video_url', 'video2_url',
   'google_sheet_url',
@@ -51,11 +55,14 @@ const OPTIONAL_IMAGE_SETTINGS = [
   'approved_email_image1', 'approved_email_image2',
   'paid_email_image1', 'paid_email_image2',
   'reward_email_header_image', 'reward_email_image1', 'reward_email_image2',
+  'reward_poster_rebat_yuran', 'reward_poster_voucher_buku', 'reward_poster_tng',
 ];
 const OPTIONAL_URL_SETTINGS = ['video_url', 'video2_url'];
 const OPTIONAL_TEXT_SETTINGS = [
   'video_title', 'video_desc', 'reward_terms_rebat_yuran', 'reward_terms_voucher_buku', 'reward_terms_tng',
-  'reward_email_heading', 'reward_email_subtitle', 'reward_whatsapp_template',
+  'reward_email_heading_rebat_yuran', 'reward_email_subtitle_rebat_yuran',
+  'reward_email_heading_voucher_buku', 'reward_email_subtitle_voucher_buku',
+  'reward_email_heading_tng', 'reward_email_subtitle_tng',
 ];
 const TEXT_SETTINGS_MAX = {
   hero_badge_label: 60, hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300,
@@ -80,9 +87,12 @@ const TEXT_SETTINGS_MAX = {
   approved_email_image1: 500, approved_email_image2: 500,
   paid_email_header_image: 500, paid_email_heading: 80, paid_email_subtitle: 200,
   paid_email_image1: 500, paid_email_image2: 500,
-  reward_email_heading: 80, reward_email_subtitle: 200,
+  reward_email_heading_rebat_yuran: 80, reward_email_subtitle_rebat_yuran: 300,
+  reward_email_heading_voucher_buku: 80, reward_email_subtitle_voucher_buku: 300,
+  reward_email_heading_tng: 80, reward_email_subtitle_tng: 300,
   reward_email_image1: 500, reward_email_image2: 500,
-  reward_whatsapp_template: 400, wa_approved_message: 400, wa_paid_message: 400, wa_support_reply_message: 500,
+  reward_whatsapp_template_rebat_yuran: 500, reward_whatsapp_template_voucher_buku: 500, reward_whatsapp_template_tng: 500,
+  wa_approved_message: 400, wa_paid_message: 400, wa_support_reply_message: 500,
   video_title: 80, video_desc: 200, video_url: 500, video2_url: 500,
 };
 
@@ -561,14 +571,28 @@ async function sendRewardEmail(body) {
   const REWARD_TYPE_NAMES = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku', tng: "Touch 'n Go" };
   const typeLabel = REWARD_TYPE_NAMES[row.type] || row.type;
   const fill = (tpl) => String(tpl ?? '').replace(/\{type\}/g, typeLabel).replace(/\{name\}/g, referrer.name || '');
-
+  const REWARD_EMAIL_DEFAULTS = {
+    rebat_yuran: {
+      heading: '🎁 Ganjaran Rebat Yuran Anda',
+      subtitle: 'Tahniah! Poster (lengkap dengan kod) disertakan. Rebat akan direkodkan automatik pada bil yuran bulan berikutnya — anda tak perlu buat apa-apa untuk menebus.',
+    },
+    voucher_buku: {
+      heading: '🎁 Ganjaran Voucher Buku Anda',
+      subtitle: 'Tahniah! Poster (lengkap dengan kod & tarikh luput) disertakan. Untuk menebus, hubungi Admin Operation melalui WhatsApp dengan kod voucher anda.',
+    },
+    tng: {
+      heading: "🎁 Ganjaran Touch 'n Go Anda",
+      subtitle: 'Tahniah! Poster disertakan. Pindahan ke akaun Touch \'n Go eWallet anda diproses secara berkumpulan pada 1hb-5hb bulan berikutnya.',
+    },
+  };
   const emailSettings = await fetchSettings([
-    'reward_email_header_image', 'reward_email_heading', 'reward_email_subtitle',
-    'reward_email_image1', 'reward_email_image2',
+    'reward_email_header_image', 'reward_email_image1', 'reward_email_image2',
+    `reward_email_heading_${row.type}`, `reward_email_subtitle_${row.type}`,
   ]);
   const headerImage = emailSettings.reward_email_header_image || `${SITE}/logo-mindaoptima.webp`;
-  const heading = fill(emailSettings.reward_email_heading || '🎁 Ganjaran {type} Anda');
-  const subtitle = fill(emailSettings.reward_email_subtitle || 'Tahniah! Ganjaran anda telah disahkan — poster (lengkap dengan kod) disertakan dalam emel ini.');
+  const typeDefaults = REWARD_EMAIL_DEFAULTS[row.type] || {};
+  const heading = fill(emailSettings[`reward_email_heading_${row.type}`] || typeDefaults.heading || '🎁 Ganjaran {type} Anda');
+  const subtitle = fill(emailSettings[`reward_email_subtitle_${row.type}`] || typeDefaults.subtitle || 'Tahniah! Ganjaran anda telah disahkan — poster (lengkap dengan kod) disertakan dalam emel ini.');
   const images = imagesBlock(emailSettings.reward_email_image1, emailSettings.reward_email_image2);
 
   const html = `
@@ -1182,7 +1206,9 @@ function validateSetting(key, raw) {
     return { value: v };
   }
   const WA_REQUIRED_TOKENS = {
-    reward_whatsapp_template: ['{name}', '{type}'],
+    reward_whatsapp_template_rebat_yuran: ['{name}'],
+    reward_whatsapp_template_voucher_buku: ['{name}'],
+    reward_whatsapp_template_tng: ['{name}'],
     wa_approved_message: ['{name}', '{reward}'],
     wa_paid_message: ['{name}', '{reward}'],
     wa_support_reply_message: ['{name}', '{problem}'],

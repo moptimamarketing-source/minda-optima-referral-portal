@@ -557,6 +557,7 @@
               type: btn.dataset.rewardType,
               code: btn.dataset.rewardCode,
               expiresAt: btn.dataset.rewardExpires || null,
+              posterUrl: (MO.settings || {})[`reward_poster_${btn.dataset.rewardType}`] || undefined,
             });
             currentPosterCanvas = canvas;
             const modalCanvas = document.getElementById('poster-modal-canvas');
