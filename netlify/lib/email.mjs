@@ -56,12 +56,16 @@ async function getTransporter() {
   return transporter;
 }
 
-async function sendViaResend(to, subject, html) {
+async function sendViaResend(to, subject, html, attachments) {
   try {
+    const body = { from: process.env.RESEND_FROM, to: [to], subject, html };
+    if (attachments?.length) {
+      body.attachments = attachments.map((a) => ({ filename: a.filename, content: a.contentBase64 }));
+    }
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: process.env.RESEND_FROM, to: [to], subject, html }),
+      body: JSON.stringify(body),
     });
     if (res.ok) return true;
     console.error('Resend rejected:', res.status, await res.text().catch(() => ''));
@@ -71,10 +75,14 @@ async function sendViaResend(to, subject, html) {
   return false;
 }
 
-async function sendViaGmail(to, subject, html) {
+async function sendViaGmail(to, subject, html, attachments) {
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return false;
   try {
-    await (await getTransporter()).sendMail({ from: `Minda Optima <${process.env.GMAIL_USER}>`, to, subject, html });
+    const mail = { from: `Minda Optima <${process.env.GMAIL_USER}>`, to, subject, html };
+    if (attachments?.length) {
+      mail.attachments = attachments.map((a) => ({ filename: a.filename, content: Buffer.from(a.contentBase64, 'base64') }));
+    }
+    await (await getTransporter()).sendMail(mail);
     return true;
   } catch (e) {
     console.error('Gmail send failed:', e.code, e.message);
@@ -82,10 +90,12 @@ async function sendViaGmail(to, subject, html) {
   }
 }
 
-export async function sendEmail(to, subject, html) {
-  if (process.env.RESEND_API_KEY && process.env.RESEND_FROM && await sendViaResend(to, subject, html)) {
+/** attachments (pilihan): [{ filename, contentBase64 }] — guna untuk sertakan
+ * poster ganjaran (PNG) terus dalam emel, bukan link berasingan. */
+export async function sendEmail(to, subject, html, attachments) {
+  if (process.env.RESEND_API_KEY && process.env.RESEND_FROM && await sendViaResend(to, subject, html, attachments)) {
     return { ok: true };
   }
-  if (await sendViaGmail(to, subject, html)) return { ok: true };
+  if (await sendViaGmail(to, subject, html, attachments)) return { ok: true };
   return { ok: false, error: 'Gagal hantar email. Sila cuba lagi.' };
 }

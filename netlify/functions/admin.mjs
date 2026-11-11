@@ -152,7 +152,7 @@ async function list() {
     sb('creative_materials?select=*&order=category.asc,sort_order.asc,created_at.desc&limit=500'),
     sb('community_info?select=*&order=created_at.desc&limit=200'),
     sb('settings?select=value&key=eq.google_sheet_url'),
-    sb('reward_codes?select=*,referrers(name,phone),referrals(referee_name,referee_phone)&order=created_at.desc&limit=500'),
+    sb('reward_codes?select=*,referrers(name,phone,email),referrals(referee_name,referee_phone)&order=created_at.desc&limit=500'),
   ]);
 
   if (!funnel.ok) {
@@ -533,6 +533,37 @@ async function publishReward(body) {
     return json(502, { error: `Gagal terbitkan poster: ${up.data?.message || 'Unknown error'}` });
   }
   return json(200, { ok: true, publishedAt: now });
+}
+
+async function sendRewardEmail(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  const posterBase64 = String(body.posterBase64 ?? '');
+  if (!posterBase64) return json(422, { error: 'Poster tak sah.' });
+
+  const cur = await sb(`reward_codes?id=eq.${id}&select=type,code,referrers(name,email)`);
+  if (!cur.ok) return json(502, { error: 'Gagal baca rekod.' });
+  const row = cur.data?.[0];
+  if (!row) return json(404, { error: 'Kod tak dijumpai.' });
+  const referrer = row.referrers;
+  if (!referrer?.email) return json(422, { error: 'Referrer ni takde emel didaftarkan.' });
+
+  const REWARD_TYPE_NAMES = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku', tng: "Touch 'n Go" };
+  const typeLabel = REWARD_TYPE_NAMES[row.type] || row.type;
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1e293b">
+      <h2 style="color:#0D2A5C">🎁 Ganjaran ${esc(typeLabel)} Anda</h2>
+      <p>Salam ${esc(referrer.name)},</p>
+      <p>Tahniah! Ganjaran <strong>${esc(typeLabel)}</strong> anda telah disahkan. Poster ganjaran (lengkap dengan kod anda) disertakan dalam emel ini.</p>
+      <p>Jika ada sebarang pertanyaan atau nak menebus, sila hubungi Admin Operation melalui WhatsApp.</p>
+      <p style="color:#64748b;font-size:13px;margin-top:24px">— Pasukan Minda Optima</p>
+    </div>`;
+
+  const sent = await sendEmail(referrer.email, `🎁 Ganjaran ${typeLabel} Anda — Minda Optima`, html, [
+    { filename: 'poster-ganjaran.png', contentBase64: posterBase64 },
+  ]);
+  if (!sent.ok) return json(502, { error: sent.error || 'Gagal hantar emel.' });
+  return json(200, { ok: true, to: referrer.email });
 }
 
 async function rejectReferrer(body) {
@@ -1186,6 +1217,7 @@ export default async (req) => {
     if (body.action === 'redeem-reward') return await redeemReward(body);
     if (body.action === 'change-reward-type') return await changeRewardType(body);
     if (body.action === 'publish-reward') return await publishReward(body);
+    if (body.action === 'send-reward-email') return await sendRewardEmail(body);
     if (body.action === 'edit-referrer') return await editReferrer(body);
     if (body.action === 'change-referrer-code') return await changeReferrerCode(body);
     if (body.action === 'edit-referee') return await editReferee(body);
