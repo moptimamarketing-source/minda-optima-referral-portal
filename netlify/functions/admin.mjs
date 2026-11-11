@@ -35,6 +35,8 @@ const SETTINGS_KEYS = [
   'approved_email_image1', 'approved_email_image2',
   'paid_email_header_image', 'paid_email_heading', 'paid_email_subtitle',
   'paid_email_image1', 'paid_email_image2',
+  'reward_email_header_image', 'reward_email_heading', 'reward_email_subtitle',
+  'reward_email_image1', 'reward_email_image2', 'reward_whatsapp_template',
   'video_title', 'video_desc', 'video_url', 'video2_url',
   'google_sheet_url',
 ];
@@ -47,9 +49,13 @@ const OPTIONAL_IMAGE_SETTINGS = [
   'welcome_email_image1', 'welcome_email_image2',
   'approved_email_image1', 'approved_email_image2',
   'paid_email_image1', 'paid_email_image2',
+  'reward_email_header_image', 'reward_email_image1', 'reward_email_image2',
 ];
 const OPTIONAL_URL_SETTINGS = ['video_url', 'video2_url'];
-const OPTIONAL_TEXT_SETTINGS = ['video_title', 'video_desc', 'reward_terms_rebat_yuran', 'reward_terms_voucher_buku', 'reward_terms_tng'];
+const OPTIONAL_TEXT_SETTINGS = [
+  'video_title', 'video_desc', 'reward_terms_rebat_yuran', 'reward_terms_voucher_buku', 'reward_terms_tng',
+  'reward_email_heading', 'reward_email_subtitle', 'reward_whatsapp_template',
+];
 const TEXT_SETTINGS_MAX = {
   hero_badge_label: 60, hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300,
   how_it_works_title: 60, how_it_works_subtitle: 100,
@@ -73,6 +79,9 @@ const TEXT_SETTINGS_MAX = {
   approved_email_image1: 500, approved_email_image2: 500,
   paid_email_header_image: 500, paid_email_heading: 80, paid_email_subtitle: 200,
   paid_email_image1: 500, paid_email_image2: 500,
+  reward_email_heading: 80, reward_email_subtitle: 200,
+  reward_email_image1: 500, reward_email_image2: 500,
+  reward_whatsapp_template: 400,
   video_title: 80, video_desc: 200, video_url: 500, video2_url: 500,
 };
 
@@ -550,16 +559,33 @@ async function sendRewardEmail(body) {
 
   const REWARD_TYPE_NAMES = { rebat_yuran: 'Rebat Yuran', voucher_buku: 'Voucher Buku', tng: "Touch 'n Go" };
   const typeLabel = REWARD_TYPE_NAMES[row.type] || row.type;
+  const fill = (tpl) => String(tpl ?? '').replace(/\{type\}/g, typeLabel).replace(/\{name\}/g, referrer.name || '');
+
+  const emailSettings = await fetchSettings([
+    'reward_email_header_image', 'reward_email_heading', 'reward_email_subtitle',
+    'reward_email_image1', 'reward_email_image2',
+  ]);
+  const headerImage = emailSettings.reward_email_header_image || `${SITE}/logo-mindaoptima.webp`;
+  const heading = fill(emailSettings.reward_email_heading || '🎁 Ganjaran {type} Anda');
+  const subtitle = fill(emailSettings.reward_email_subtitle || 'Tahniah! Ganjaran anda telah disahkan — poster (lengkap dengan kod) disertakan dalam emel ini.');
+  const images = imagesBlock(emailSettings.reward_email_image1, emailSettings.reward_email_image2);
+
   const html = `
-    <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1e293b">
-      <h2 style="color:#0D2A5C">🎁 Ganjaran ${esc(typeLabel)} Anda</h2>
-      <p>Salam ${esc(referrer.name)},</p>
-      <p>Tahniah! Ganjaran <strong>${esc(typeLabel)}</strong> anda telah disahkan. Poster ganjaran (lengkap dengan kod anda) disertakan dalam emel ini.</p>
-      <p>Jika ada sebarang pertanyaan atau nak menebus, sila hubungi Admin Operation melalui WhatsApp.</p>
-      <p style="color:#64748b;font-size:13px;margin-top:24px">— Pasukan Minda Optima</p>
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;background:#ffffff;padding:0;color:#1e293b">
+      <div style="text-align:center">
+        <img src="${esc(headerImage)}" alt="Minda Optima" style="width:100%;max-width:560px;display:block">
+      </div>
+      <div style="padding:40px 24px">
+        <h1 style="font-size:24px;font-weight:700;color:#1e293b;margin:0 0 8px 0;text-align:center">${esc(heading)}</h1>
+        <p style="font-size:14px;color:#64748b;margin:0 0 24px 0;text-align:center;line-height:1.6">${esc(subtitle)}</p>
+        <p style="font-size:13px;color:#64748b;text-align:center">Jika ada sebarang pertanyaan atau nak menebus, sila hubungi Admin Operation melalui WhatsApp.</p>${images}
+      </div>
+      <div style="background:#1a1a1a;color:white;padding:24px;text-align:center;font-size:12px">
+        <p style="color:#999;font-size:11px;margin:0">© 2026 Minda Optima</p>
+      </div>
     </div>`;
 
-  const sent = await sendEmail(referrer.email, `🎁 Ganjaran ${typeLabel} Anda — Minda Optima`, html, [
+  const sent = await sendEmail(referrer.email, fill('🎁 Ganjaran {type} Anda — Minda Optima'), html, [
     { filename: 'poster-ganjaran.png', contentBase64: posterBase64 },
   ]);
   if (!sent.ok) return json(502, { error: sent.error || 'Gagal hantar emel.' });
@@ -1151,6 +1177,14 @@ function validateSetting(key, raw) {
     if (v.length > TEXT_SETTINGS_MAX[key]) return { error: `Mesej share terlalu panjang (maks ${TEXT_SETTINGS_MAX[key]} aksara).` };
     if (!v.includes('{code}') || !v.includes('{url}')) {
       return { error: 'Mesej share kena ada token {code} dan {url} — jangan buang.' };
+    }
+    return { value: v };
+  }
+  if (key === 'reward_whatsapp_template') {
+    if (!v) return { value: v };
+    if (v.length > TEXT_SETTINGS_MAX[key]) return { error: `Mesej WhatsApp terlalu panjang (maks ${TEXT_SETTINGS_MAX[key]} aksara).` };
+    if (!v.includes('{name}') || !v.includes('{type}')) {
+      return { error: 'Mesej WhatsApp kena ada token {name} dan {type} — jangan buang.' };
     }
     return { value: v };
   }

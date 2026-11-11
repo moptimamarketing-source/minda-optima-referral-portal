@@ -441,6 +441,31 @@
             </label>
           </div>
         </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Emel &amp; WhatsApp — Hantar Poster Ganjaran</h2>
+          <p class="text-sm text-slate-500">Dihantar dari butang "Hantar Emel"/"Hantar WhatsApp" dalam popup poster di tab Ganjaran. Guna token <code>{type}</code> untuk jenis ganjaran dan <code>{name}</code> untuk nama Rakan Rujukan (pilihan — boleh buang kalau tak nak).</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold sm:col-span-2">Link Gambar Header (pilihan)
+              <input id="set-reward-email-header-image" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://... (kosongkan guna logo)">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Tajuk Emel
+              <input id="set-reward-email-heading" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="🎁 Ganjaran {type} Anda">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Deskripsi Emel
+              <input id="set-reward-email-subtitle" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Link Gambar Tambahan 1 (pilihan)
+              <input id="set-reward-email-image1" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://... (kosongkan kalau tak nak)">
+            </label>
+            <label class="block text-sm font-semibold">Link Gambar Tambahan 2 (pilihan)
+              <input id="set-reward-email-image2" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://... (kosongkan kalau tak nak)">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Mesej WhatsApp (token {name} dan {type} wajib ada)
+              <textarea id="set-reward-whatsapp-template" rows="3" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
+            </label>
+          </div>
+        </section>
       </div>
 
       <div class="sticky bottom-4 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg">
@@ -645,6 +670,13 @@
       'set-paid-email-subtitle': 'paid_email_subtitle',
       'set-paid-email-image1': 'paid_email_image1',
       'set-paid-email-image2': 'paid_email_image2',
+
+      'set-reward-email-header-image': 'reward_email_header_image',
+      'set-reward-email-heading': 'reward_email_heading',
+      'set-reward-email-subtitle': 'reward_email_subtitle',
+      'set-reward-email-image1': 'reward_email_image1',
+      'set-reward-email-image2': 'reward_email_image2',
+      'set-reward-whatsapp-template': 'reward_whatsapp_template',
     };
 
     function renderSettings(s) {

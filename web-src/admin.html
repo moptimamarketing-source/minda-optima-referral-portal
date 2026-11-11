@@ -1165,7 +1165,9 @@
       if (!currentPosterCanvas || !phone) return;
       RewardPoster.download(currentPosterCanvas, 'poster-ganjaran.png');
       const typeLabel = REWARD_TYPE_LABEL[currentPosterReward.type] || currentPosterReward.type;
-      const msg = `Salam ${currentPosterReward.referrers?.name || ''}! Ganjaran ${typeLabel} anda dah sedia 🎉 Poster (dengan kod) baru je dimuat turun — sila lampirkan di sini.`;
+      const tpl = (MO.settings || {}).reward_whatsapp_template
+        || 'Salam {name}! Ganjaran {type} anda dah sedia 🎉 Poster (dengan kod) baru je dimuat turun — sila lampirkan di sini.';
+      const msg = tpl.replace(/\{name\}/g, currentPosterReward.referrers?.name || '').replace(/\{type\}/g, typeLabel);
       window.open(`https://wa.me/60${phone.replace(/^0/, '')}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
       $('poster-send-note').textContent = 'Poster dah dimuat turun — lampirkan terus dalam chat WhatsApp yang baru dibuka.';
       $('poster-send-note').classList.remove('hidden');
