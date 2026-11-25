@@ -44,6 +44,8 @@ const SETTINGS_KEYS = [
   'wa_approved_message', 'wa_paid_message', 'wa_support_reply_message',
   'video_title', 'video_desc', 'video_url', 'video2_url',
   'privacy_policy_link',
+  'footer_company_name', 'footer_registration_no', 'footer_address',
+  'community_enabled',
   'google_sheet_url',
 ];
 const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
@@ -66,6 +68,7 @@ const OPTIONAL_TEXT_SETTINGS = [
   'reward_email_heading_tng', 'reward_email_subtitle_tng',
 ];
 const TEXT_SETTINGS_MAX = {
+  footer_company_name: 100, footer_registration_no: 60, footer_address: 200,
   hero_badge_label: 60, hero_title_line1: 60, hero_title_line2: 60, hero_subtitle: 300,
   how_it_works_title: 60, how_it_works_subtitle: 100,
   step1_title: 40, step1_desc: 200, step2_title: 40, step2_desc: 200, step3_title: 40, step3_desc: 200,
@@ -1218,7 +1221,7 @@ function validateSetting(key, raw) {
     if (v && !/^https:\/\/\S+$/.test(v)) return { error: 'Link tak sah. Kena mula dengan https://' };
     return { value: v };
   }
-  if (key === 'promo_enabled') {
+  if (key === 'promo_enabled' || key === 'community_enabled') {
     return { value: v === 'true' || v === 'on' || v === '1' ? 'true' : 'false' };
   }
   if (key === 'promo_deadline') {

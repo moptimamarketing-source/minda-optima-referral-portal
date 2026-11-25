@@ -84,6 +84,22 @@
         </section>
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Footer — Maklumat Syarikat</h2>
+          <p class="text-sm text-slate-500">Papar di footer semua page. Pastikan maklumat ni tepat ikut pendaftaran rasmi syarikat sebelum ubah.</p>
+          <div class="mt-4 grid gap-3">
+            <label class="block text-sm font-semibold">Nama Syarikat
+              <input id="set-footer-company-name" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">No. Pendaftaran
+              <input id="set-footer-registration-no" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold">Alamat
+              <input id="set-footer-address" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
           <h2 class="text-lg font-bold text-brand">Syarat Ganjaran (Warning Box)</h2>
           <p class="text-sm text-slate-500">Ayat dalam kotak "Syarat Kelayakan Ganjaran" di dashboard &amp; pendaftaran.</p>
           <label class="mt-4 block text-sm font-semibold">Ayat Syarat
@@ -251,7 +267,11 @@
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5">
           <h2 class="text-lg font-bold text-brand">Kad Komuniti</h2>
-          <p class="text-sm text-slate-500">Boleh tukar jadi WhatsApp Community, Telegram, atau apa-apa link lain. Kosongkan link untuk sembunyikan kad ni terus.</p>
+          <p class="text-sm text-slate-500">Boleh tukar jadi WhatsApp Community, Telegram, atau apa-apa link lain. Kosongkan link ATAU matikan toggle di bawah untuk sembunyikan kad ni terus.</p>
+          <label class="mt-3 flex items-center gap-2 text-sm font-semibold">
+            <input id="set-community-enabled" type="checkbox" class="h-5 w-5 rounded border-slate-300 text-brand focus:ring-brand">
+            Kad Komuniti aktif (tunjuk di dashboard)
+          </label>
           <div class="mt-4 grid gap-3 sm:grid-cols-2">
             <label class="block text-sm font-semibold">Tajuk
               <input id="set-community-title" required class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
@@ -676,6 +696,9 @@
       'set-reward-after': 'reward_after',
       'set-support-phone': 'support_phone',
       'set-privacy-policy-link': 'privacy_policy_link',
+      'set-footer-company-name': 'footer_company_name',
+      'set-footer-registration-no': 'footer_registration_no',
+      'set-footer-address': 'footer_address',
       'set-reward-terms': 'reward_terms',
 
       'set-hero-badge-label': 'hero_badge_label',
@@ -774,6 +797,7 @@
 
     function renderSettings(s) {
       $('set-promo-enabled').checked = s.promo_enabled !== 'false';
+      $('set-community-enabled').checked = s.community_enabled !== 'false';
       for (const [id, key] of Object.entries(FIELD_MAP)) {
         $(id).value = key === 'promo_deadline' ? toLocalDatetimeInput(s[key] || new Date()) : (s[key] ?? '');
       }
@@ -819,7 +843,10 @@
     }
 
     function currentDraftSettings() {
-      const s = { promo_enabled: $('set-promo-enabled').checked ? 'true' : 'false' };
+      const s = {
+        promo_enabled: $('set-promo-enabled').checked ? 'true' : 'false',
+        community_enabled: $('set-community-enabled').checked ? 'true' : 'false',
+      };
       for (const [id, key] of Object.entries(FIELD_MAP)) s[key] = $(id).value;
       return s;
     }
@@ -863,7 +890,7 @@
         el.classList.toggle('hidden', s.promo_enabled === 'false');
       });
       const communityCard = doc.getElementById('community-card');
-      if (communityCard) communityCard.classList.toggle('hidden', !s.community_link);
+      if (communityCard) communityCard.classList.toggle('hidden', !s.community_link || s.community_enabled === 'false');
       const videoSection = doc.getElementById('video-section');
       if (videoSection) {
         let anyVideo = false;
@@ -931,7 +958,10 @@
       $('save-ok').classList.add('hidden');
       try {
         const deadlineLocal = $('set-promo-deadline').value;
-        const fields = { promo_enabled: $('set-promo-enabled').checked ? 'true' : 'false' };
+        const fields = {
+          promo_enabled: $('set-promo-enabled').checked ? 'true' : 'false',
+          community_enabled: $('set-community-enabled').checked ? 'true' : 'false',
+        };
         for (const [id, key] of Object.entries(FIELD_MAP)) {
           fields[key] = key === 'promo_deadline' ? (deadlineLocal ? new Date(deadlineLocal).toISOString() : '') : $(id).value;
         }

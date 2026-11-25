@@ -22,6 +22,8 @@ const PUBLIC_KEYS = [
   'faq4_q', 'faq4_a', 'faq5_q', 'faq5_a', 'faq6_q', 'faq6_a',
   'video_title', 'video_desc', 'video_url', 'video2_url',
   'privacy_policy_link',
+  'footer_company_name', 'footer_registration_no', 'footer_address',
+  'community_enabled',
 ];
 
 const json = (status, body, cacheControl) => new Response(JSON.stringify(body), {
