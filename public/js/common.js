@@ -201,6 +201,11 @@ const MO = (() => {
       const v = s[el.dataset.contentMarkdown];
       if (v) el.innerHTML = markdownLiteToHtml(v);
     });
+    document.querySelectorAll('[data-privacy-link]').forEach((a) => {
+      if (!s.privacy_policy_link) return;
+      a.href = s.privacy_policy_link;
+      a.closest('[data-privacy-wrap]')?.classList.remove('hidden');
+    });
 
     if (s.promo_enabled === 'false') {
       document.querySelectorAll('[data-promo-only]').forEach((el) => { el.classList.add('hidden'); });

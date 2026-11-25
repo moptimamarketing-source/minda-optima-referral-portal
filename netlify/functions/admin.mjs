@@ -43,6 +43,7 @@ const SETTINGS_KEYS = [
   'reward_poster_rebat_yuran', 'reward_poster_voucher_buku', 'reward_poster_tng',
   'wa_approved_message', 'wa_paid_message', 'wa_support_reply_message',
   'video_title', 'video_desc', 'video_url', 'video2_url',
+  'privacy_policy_link',
   'google_sheet_url',
 ];
 const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
@@ -57,7 +58,7 @@ const OPTIONAL_IMAGE_SETTINGS = [
   'reward_email_header_image', 'reward_email_image1', 'reward_email_image2',
   'reward_poster_rebat_yuran', 'reward_poster_voucher_buku', 'reward_poster_tng',
 ];
-const OPTIONAL_URL_SETTINGS = ['video_url', 'video2_url'];
+const OPTIONAL_URL_SETTINGS = ['video_url', 'video2_url', 'privacy_policy_link'];
 const OPTIONAL_TEXT_SETTINGS = [
   'video_title', 'video_desc', 'reward_terms_rebat_yuran', 'reward_terms_voucher_buku', 'reward_terms_tng',
   'reward_email_heading_rebat_yuran', 'reward_email_subtitle_rebat_yuran',

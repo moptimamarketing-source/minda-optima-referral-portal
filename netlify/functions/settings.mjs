@@ -21,6 +21,7 @@ const PUBLIC_KEYS = [
   'faq1_q', 'faq1_a', 'faq2_q', 'faq2_a', 'faq3_q', 'faq3_a',
   'faq4_q', 'faq4_a', 'faq5_q', 'faq5_a', 'faq6_q', 'faq6_a',
   'video_title', 'video_desc', 'video_url', 'video2_url',
+  'privacy_policy_link',
 ];
 
 const json = (status, body, cacheControl) => new Response(JSON.stringify(body), {
