@@ -1021,7 +1021,8 @@
         <td class="px-3 py-3 max-w-xs truncate text-slate-500" title="${esc(p.body)}">${esc(p.body)}</td>
         <td class="px-3 py-3 whitespace-nowrap text-slate-600">${esc(dt.format(new Date(p.created_at)))}</td>
         <td class="px-3 py-3 text-right">
-          <button data-delete-info="${esc(p.id)}" class="text-sm font-semibold text-red-600 hover:underline">Padam</button>
+          <button data-edit-info="${esc(p.id)}" class="text-sm font-semibold text-brand hover:underline">Edit</button>
+          <button data-delete-info="${esc(p.id)}" class="ml-3 text-sm font-semibold text-red-600 hover:underline">Padam</button>
         </td>
       </tr>`).join('');
     }
@@ -1456,22 +1457,29 @@
         ['child_name', 'Nama Anak'], ['enroll_year', 'Tahun Hantar Anak'], ['centre', 'Pusat Pembelajaran'],
       ],
       referee: [['name', 'Nama'], ['phone', 'Phone'], ['reward', 'Reward (RM)']],
+      info: [['title', 'Tajuk'], ['body', 'Kandungan', 'textarea']],
     };
+    const EDIT_TITLES = { referrer: 'Edit Referrer', referee: 'Edit Referee', info: 'Edit Pengumuman' };
+    const EDIT_ACTIONS = { referrer: 'edit-referrer', referee: 'edit-referee', info: 'edit-info' };
     let editing = null;
 
     function openEdit(kind, id) {
       const row = kind === 'referrer'
         ? referrers.find((r) => String(r.id) === id)
-        : referrals.find((r) => String(r.id) === id);
+        : kind === 'info'
+          ? infoPosts.find((r) => String(r.id) === id)
+          : referrals.find((r) => String(r.id) === id);
       if (!row) return;
-      const values = kind === 'referrer'
+      const values = kind === 'referrer' || kind === 'info'
         ? row
         : { name: row.referee_name, phone: row.referee_phone, reward: row.reward };
       editing = { kind, id: row.id };
-      $('edit-title').textContent = kind === 'referrer' ? 'Edit Referrer' : 'Edit Referee';
-      $('edit-fields').innerHTML = EDIT_FIELDS[kind].map(([k, label]) => `
+      $('edit-title').textContent = EDIT_TITLES[kind];
+      $('edit-fields').innerHTML = EDIT_FIELDS[kind].map(([k, label, type]) => `
         <label class="block text-sm font-semibold">${label}
-          <input name="${k}" type="${k === 'reward' ? 'number' : 'text'}" min="${k === 'reward' ? '0' : ''}" value="${esc(values[k] ?? '')}" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+          ${type === 'textarea'
+            ? `<textarea name="${k}" rows="4" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">${esc(values[k] ?? '')}</textarea>`
+            : `<input name="${k}" type="${k === 'reward' ? 'number' : 'text'}" min="${k === 'reward' ? '0' : ''}" value="${esc(values[k] ?? '')}" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">`}
         </label>`).join('');
       $('edit-error').classList.add('hidden');
       $('edit-dialog').showModal();
@@ -1530,8 +1538,10 @@
       const th = e.target.closest('[data-toggle-handled]');
       const dm = e.target.closest('[data-delete-material]');
       const di = e.target.closest('[data-delete-info]');
+      const ei = e.target.closest('[data-edit-info]');
       if (dm) deleteMaterial(dm.dataset.deleteMaterial, dm);
       if (di) deleteInfo(di.dataset.deleteInfo, di);
+      if (ei) openEdit('info', ei.dataset.editInfo);
       if (n) sendNotify(n.dataset.notifyEmail, n);
       if (w) sendResendWelcome(w.dataset.resendWelcome, w);
       if (c) openCodeDialog(c.dataset.changeCode);
@@ -1604,7 +1614,7 @@
       btn.disabled = true;
       const fields = Object.fromEntries(new FormData(e.target).entries());
       try {
-        await call({ action: editing.kind === 'referrer' ? 'edit-referrer' : 'edit-referee', id: editing.id, fields });
+        await call({ action: EDIT_ACTIONS[editing.kind], id: editing.id, fields });
         $('edit-dialog').close();
         await load();
       } catch (err) {

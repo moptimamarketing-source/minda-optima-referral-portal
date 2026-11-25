@@ -888,6 +888,31 @@ async function addInfo(body) {
   return json(200, { ok: true, post: ins.data?.[0] });
 }
 
+async function editInfo(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  const f = body.fields ?? {};
+  const patch = {};
+
+  if ('title' in f) {
+    patch.title = String(f.title ?? '').trim().slice(0, 120);
+    if (patch.title.length < 2) return json(422, { error: 'Tajuk diperlukan.' });
+  }
+  if ('body' in f) {
+    patch.body = String(f.body ?? '').trim().slice(0, 2000);
+    if (patch.body.length < 2) return json(422, { error: 'Kandungan diperlukan.' });
+  }
+  if (!Object.keys(patch).length) return json(422, { error: 'Tiada perubahan.' });
+
+  const up = await sb(`community_info?id=eq.${id}`, { method: 'PATCH', prefer: 'return=representation', body: patch });
+  if (!up.ok) {
+    console.error('editInfo error:', up.data);
+    return json(502, { error: `Gagal kemas kini pengumuman: ${up.data?.message || 'Unknown error'}` });
+  }
+  if (!up.data?.length) return json(404, { error: 'Pengumuman tak dijumpai.' });
+  return json(200, { ok: true });
+}
+
 async function deleteInfo(body) {
   const id = Number(body.id);
   if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
@@ -1297,6 +1322,7 @@ export default async (req) => {
     if (body.action === 'add-material') return await addMaterial(body);
     if (body.action === 'delete-material') return await deleteMaterial(body);
     if (body.action === 'add-info') return await addInfo(body);
+    if (body.action === 'edit-info') return await editInfo(body);
     if (body.action === 'delete-info') return await deleteInfo(body);
     if (body.action === 'get-settings') return await getSettings();
     if (body.action === 'save-settings') return await saveSettings(body);
