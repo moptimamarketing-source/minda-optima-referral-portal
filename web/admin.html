@@ -339,8 +339,8 @@
           <label class="block text-sm font-semibold">Tajuk
             <input id="material-title" required class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand" placeholder="Contoh: Poster Promosi Raya">
           </label>
-          <label class="block text-sm font-semibold sm:col-span-2">Deskripsi ringkas (pilihan)
-            <input id="material-desc" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand" placeholder="Nota ringkas untuk parent">
+          <label class="block text-sm font-semibold sm:col-span-2">Deskripsi (pilihan)
+            <textarea id="material-desc" rows="6" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand" placeholder="Nota untuk parent"></textarea>
           </label>
           <label id="material-text-field" class="block text-sm font-semibold sm:col-span-2">Teks Copywriting
             <textarea id="material-text" rows="3" class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand" placeholder="Teks untuk parent salin & share..."></textarea>
@@ -1459,7 +1459,7 @@
       ],
       referee: [['name', 'Nama'], ['phone', 'Phone'], ['reward', 'Reward (RM)']],
       info: [['title', 'Tajuk'], ['body', 'Kandungan', 'textarea', 8]],
-      material: [['title', 'Tajuk'], ['description', 'Deskripsi ringkas', 'textarea', 4]],
+      material: [['title', 'Tajuk'], ['description', 'Deskripsi', 'textarea', 10]],
       materialText: [['title', 'Tajuk'], ['textContent', 'Teks Copywriting', 'textarea', 12]],
     };
     const EDIT_TITLES = { referrer: 'Edit Referrer', referee: 'Edit Referee', info: 'Edit Pengumuman', material: 'Edit Bahan Kreatif' };

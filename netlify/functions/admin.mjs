@@ -765,7 +765,7 @@ async function addMaterial(body) {
   if (!MATERIAL_CATEGORIES.includes(category)) return json(422, { error: 'Kategori tak sah.' });
   const title = String(body.title ?? '').trim().slice(0, 120);
   if (title.length < 2) return json(422, { error: 'Tajuk diperlukan.' });
-  const description = String(body.description ?? '').trim().slice(0, 300) || null;
+  const description = String(body.description ?? '').trim().slice(0, 2000) || null;
 
   let textContent = null;
   let filePath = null;
@@ -826,7 +826,7 @@ async function editMaterial(body) {
     patch.title = String(f.title ?? '').trim().slice(0, 120);
     if (patch.title.length < 2) return json(422, { error: 'Tajuk diperlukan.' });
   }
-  if ('description' in f) patch.description = String(f.description ?? '').trim().slice(0, 300) || null;
+  if ('description' in f) patch.description = String(f.description ?? '').trim().slice(0, 2000) || null;
   if ('textContent' in f) {
     patch.text_content = String(f.textContent ?? '').trim().slice(0, 2000);
     if (patch.text_content.length < 2) return json(422, { error: 'Teks copywriting diperlukan.' });
