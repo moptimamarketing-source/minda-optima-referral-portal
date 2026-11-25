@@ -143,16 +143,16 @@
           <video src="${m.fileUrl}" class="rounded-lg w-full bg-slate-900 mt-2" controls preload="metadata"></video>
           <div class="flex gap-2 mt-3">
             <a href="${m.fileUrl}" download class="flex-1 text-center rounded-lg bg-brand text-white text-sm font-semibold py-2 hover:bg-brand-light">Muat Turun</a>
-            <button data-share-file="${m.fileUrl}" data-share-title="${MO.escapeHtml(m.title)}" class="flex-1 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2 hover:bg-slate-200">Kongsi</button>
+            <button data-share-file="${m.fileUrl}" data-share-title="${MO.escapeHtml(m.title)}" data-share-desc="${encodeURIComponent(m.description || '')}" class="flex-1 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2 hover:bg-slate-200">Kongsi</button>
           </div>
         `);
       }
       return feedCard(`
         ${head}
-        <img src="${m.fileUrl}" alt="${MO.escapeHtml(m.title)}" class="rounded-lg w-full max-h-72 object-cover bg-slate-100 mt-2">
+        <img src="${m.fileUrl}" alt="${MO.escapeHtml(m.title)}" class="rounded-lg w-full object-contain bg-slate-100 mt-2">
         <div class="flex gap-2 mt-3">
           <a href="${m.fileUrl}" download class="flex-1 text-center rounded-lg bg-brand text-white text-sm font-semibold py-2 hover:bg-brand-light">Muat Turun</a>
-          <button data-share-file="${m.fileUrl}" data-share-title="${MO.escapeHtml(m.title)}" class="flex-1 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2 hover:bg-slate-200">Kongsi</button>
+          <button data-share-file="${m.fileUrl}" data-share-title="${MO.escapeHtml(m.title)}" data-share-desc="${encodeURIComponent(m.description || '')}" class="flex-1 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold py-2 hover:bg-slate-200">Kongsi</button>
         </div>
       `);
     }
@@ -184,26 +184,40 @@
         btn.addEventListener('click', async () => {
           const url = btn.dataset.shareFile;
           const title = btn.dataset.shareTitle || 'Minda Optima';
+          const desc = decodeURIComponent(btn.dataset.shareDesc || '');
+          // Wajib sertakan link rujukan sendiri — bukan sekadar gambar/video kosong,
+          // supaya setiap share terus boleh dikesan balik kepada Rakan Rujukan ini.
+          const linkMsg = shareMessage(currentReferrerCode, currentShareUrl);
+          const text = desc ? `${desc}\n\n${linkMsg}` : linkMsg;
           if (navigator.share) {
             try {
               const res = await fetch(url);
               const blob = await res.blob();
               const file = new File([blob], url.split('/').pop(), { type: blob.type });
               if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title });
+                await navigator.share({ files: [file], title, text });
                 return;
               }
-              await navigator.share({ title, url });
+              await navigator.share({ title, text, url: currentShareUrl });
             } catch { /* user cancelled or share failed, fall through */ }
           } else {
-            toast((await MO.copyText(url)) ? 'Link disalin!' : 'Gagal salin');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = url.split('/').pop();
+            a.click();
+            toast((await MO.copyText(text)) ? 'Teks + link disalin, gambar/video dimuat turun!' : 'Gagal salin');
           }
         });
       });
     }
 
+    let currentReferrerCode = '';
+    let currentShareUrl = '';
+
     async function loadReferral(data) {
       const { referrer, shareUrl } = data;
+      currentReferrerCode = referrer.code;
+      currentShareUrl = shareUrl;
       const codeEl = document.getElementById('ref-code');
       codeEl.textContent = referrer.code;
       codeEl.onclick = async () => {

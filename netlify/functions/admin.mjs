@@ -816,6 +816,32 @@ async function addMaterial(body) {
   return json(200, { ok: true, material: ins.data?.[0] });
 }
 
+async function editMaterial(body) {
+  const id = Number(body.id);
+  if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
+  const f = body.fields ?? {};
+  const patch = {};
+
+  if ('title' in f) {
+    patch.title = String(f.title ?? '').trim().slice(0, 120);
+    if (patch.title.length < 2) return json(422, { error: 'Tajuk diperlukan.' });
+  }
+  if ('description' in f) patch.description = String(f.description ?? '').trim().slice(0, 300) || null;
+  if ('textContent' in f) {
+    patch.text_content = String(f.textContent ?? '').trim().slice(0, 2000);
+    if (patch.text_content.length < 2) return json(422, { error: 'Teks copywriting diperlukan.' });
+  }
+  if (!Object.keys(patch).length) return json(422, { error: 'Tiada perubahan.' });
+
+  const up = await sb(`creative_materials?id=eq.${id}`, { method: 'PATCH', prefer: 'return=representation', body: patch });
+  if (!up.ok) {
+    console.error('editMaterial error:', up.data);
+    return json(502, { error: `Gagal kemas kini bahan: ${up.data?.message || 'Unknown error'}` });
+  }
+  if (!up.data?.length) return json(404, { error: 'Bahan tak dijumpai.' });
+  return json(200, { ok: true });
+}
+
 async function deleteMaterial(body) {
   const id = Number(body.id);
   if (!Number.isInteger(id)) return json(422, { error: 'ID tak sah.' });
@@ -1323,6 +1349,7 @@ export default async (req) => {
     if (body.action === 'delete-material') return await deleteMaterial(body);
     if (body.action === 'add-info') return await addInfo(body);
     if (body.action === 'edit-info') return await editInfo(body);
+    if (body.action === 'edit-material') return await editMaterial(body);
     if (body.action === 'delete-info') return await deleteInfo(body);
     if (body.action === 'get-settings') return await getSettings();
     if (body.action === 'save-settings') return await saveSettings(body);
