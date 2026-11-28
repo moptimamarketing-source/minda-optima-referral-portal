@@ -24,6 +24,8 @@ const PUBLIC_KEYS = [
   'privacy_policy_link',
   'footer_company_name', 'footer_registration_no', 'footer_address',
   'community_enabled',
+  'user_manual_link',
+  'welcome_audio_enabled', 'welcome_audio_url', 'welcome_audio_label',
 ];
 
 const json = (status, body, cacheControl) => new Response(JSON.stringify(body), {

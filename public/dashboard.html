@@ -217,6 +217,12 @@
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
       </div>
+      <div id="manual-link-wrap" class="hidden mt-4">
+        <a id="manual-link-btn" href="#" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-2 rounded-xl border-2 border-brand px-4 py-2.5 font-semibold text-brand hover:bg-brand/5 transition">
+          📘 <span>Muat Turun Manual Pengguna</span>
+        </a>
+      </div>
     </section>
 
     <!-- FAQ -->
@@ -356,6 +362,19 @@
       <button id="poster-modal-download" type="button" class="rounded-xl bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-light">Muat Turun</button>
     </div>
   </dialog>
+
+  <!-- Audio Mesej Selamat Datang (auto-play, admin boleh on/off di Content Editor) -->
+  <div id="welcome-audio-widget" class="hidden fixed bottom-4 right-4 z-40 flex items-center gap-3 rounded-2xl bg-white shadow-lg border border-slate-200 px-3 py-2 max-w-[280px]">
+    <button id="welcome-audio-toggle" type="button" class="relative shrink-0 flex h-11 w-11 items-center justify-center rounded-full bg-brand text-white ring-2 ring-gold">
+      <span id="welcome-audio-icon">▶</span>
+    </button>
+    <div class="min-w-0 flex-1">
+      <p id="welcome-audio-label" class="truncate text-sm font-bold text-brand">Mesej dari Minda Optima</p>
+      <p id="welcome-audio-time" class="text-xs text-slate-400 tabular-nums">0:00 / 0:00</p>
+    </div>
+    <button id="welcome-audio-close" type="button" class="shrink-0 text-slate-400 hover:text-slate-600 text-lg leading-none">×</button>
+    <audio id="welcome-audio-el" src="/welcome-vo.mp3" preload="auto"></audio>
+  </div>
 
   <script>
     const STATUS = {
@@ -769,6 +788,44 @@
       o.addEventListener('click', function () { d.showModal(); });
       document.getElementById('qr-close').addEventListener('click', function () { d.close(); });
       d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
+    })();
+    (function () {
+      var widget = document.getElementById('welcome-audio-widget');
+      var audio = document.getElementById('welcome-audio-el');
+      var toggleBtn = document.getElementById('welcome-audio-toggle');
+      var icon = document.getElementById('welcome-audio-icon');
+      var timeEl = document.getElementById('welcome-audio-time');
+      var closeBtn = document.getElementById('welcome-audio-close');
+      if (!widget || !audio) return;
+
+      function fmt(sec) {
+        sec = Math.floor(sec || 0);
+        var m = Math.floor(sec / 60), s = sec % 60;
+        return m + ':' + String(s).padStart(2, '0');
+      }
+      function updateTime() {
+        timeEl.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+      }
+      audio.addEventListener('timeupdate', updateTime);
+      audio.addEventListener('loadedmetadata', updateTime);
+      audio.addEventListener('play', function () { icon.textContent = '⏸'; });
+      audio.addEventListener('pause', function () { icon.textContent = '▶'; });
+      audio.addEventListener('ended', function () { icon.textContent = '▶'; });
+
+      toggleBtn.addEventListener('click', function () {
+        if (audio.paused) audio.play().catch(function () {}); else audio.pause();
+      });
+      closeBtn.addEventListener('click', function () {
+        audio.pause();
+        widget.classList.add('hidden');
+      });
+
+      widget.addEventListener('mo-audio-ready', function () {
+        widget.classList.remove('hidden');
+        audio.play().catch(function () {
+          // Autoplay disekat browser — widget tetap papar, parent boleh tekan play sendiri.
+        });
+      }, { once: true });
     })();
   </script>
 </body>

@@ -78,7 +78,7 @@ for (const f of ['config.js', 'supabase-api.js']) {
   fs.copyFileSync(path.join(extra, 'js', f), path.join(out, 'js', f));
 }
 for (const f of fs.readdirSync(pub)) {
-  if (/\.(webp|png|jpg|jpeg|svg|ico)$/i.test(f)) {
+  if (/\.(webp|png|jpg|jpeg|svg|ico|mp3)$/i.test(f)) {
     fs.copyFileSync(path.join(pub, f), path.join(out, f));
   }
 }

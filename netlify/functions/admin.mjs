@@ -47,6 +47,8 @@ const SETTINGS_KEYS = [
   'footer_company_name', 'footer_registration_no', 'footer_address',
   'community_enabled',
   'google_sheet_url',
+  'user_manual_link',
+  'welcome_audio_enabled', 'welcome_audio_url', 'welcome_audio_label',
 ];
 const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
 const REQUIRED_IMAGE_SETTINGS = [
@@ -60,12 +62,13 @@ const OPTIONAL_IMAGE_SETTINGS = [
   'reward_email_header_image', 'reward_email_image1', 'reward_email_image2',
   'reward_poster_rebat_yuran', 'reward_poster_voucher_buku', 'reward_poster_tng',
 ];
-const OPTIONAL_URL_SETTINGS = ['video_url', 'video2_url', 'privacy_policy_link'];
+const OPTIONAL_URL_SETTINGS = ['video_url', 'video2_url', 'privacy_policy_link', 'user_manual_link', 'welcome_audio_url'];
 const OPTIONAL_TEXT_SETTINGS = [
   'video_title', 'video_desc', 'reward_terms_rebat_yuran', 'reward_terms_voucher_buku', 'reward_terms_tng',
   'reward_email_heading_rebat_yuran', 'reward_email_subtitle_rebat_yuran',
   'reward_email_heading_voucher_buku', 'reward_email_subtitle_voucher_buku',
   'reward_email_heading_tng', 'reward_email_subtitle_tng',
+  'welcome_audio_label',
 ];
 const TEXT_SETTINGS_MAX = {
   footer_company_name: 100, footer_registration_no: 60, footer_address: 200,
@@ -98,6 +101,7 @@ const TEXT_SETTINGS_MAX = {
   reward_whatsapp_template_rebat_yuran: 500, reward_whatsapp_template_voucher_buku: 500, reward_whatsapp_template_tng: 500,
   wa_approved_message: 400, wa_paid_message: 400, wa_support_reply_message: 500,
   video_title: 80, video_desc: 200, video_url: 500, video2_url: 500,
+  user_manual_link: 500, welcome_audio_url: 500, welcome_audio_label: 80,
 };
 
 const json = (status, body) => new Response(JSON.stringify(body), {
@@ -1221,7 +1225,7 @@ function validateSetting(key, raw) {
     if (v && !/^https:\/\/\S+$/.test(v)) return { error: 'Link tak sah. Kena mula dengan https://' };
     return { value: v };
   }
-  if (key === 'promo_enabled' || key === 'community_enabled') {
+  if (key === 'promo_enabled' || key === 'community_enabled' || key === 'welcome_audio_enabled') {
     return { value: v === 'true' || v === 'on' || v === '1' ? 'true' : 'false' };
   }
   if (key === 'promo_deadline') {

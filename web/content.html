@@ -207,6 +207,9 @@
             <label class="block text-sm font-semibold">Link Video 2 (kosongkan untuk sembunyi)
               <input id="set-video2-url" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://www.youtube.com/watch?v=VIDEO_ID">
             </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Link Manual Pengguna — Google Drive (kosongkan untuk sembunyi butang)
+              <input id="set-user-manual-link" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand" placeholder="https://drive.google.com/file/d/...">
+            </label>
           </div>
         </section>
       </div>
@@ -301,6 +304,23 @@
           <label class="mt-4 block text-sm font-semibold">Template Mesej
             <textarea id="set-share-message-template" required rows="3" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand"></textarea>
           </label>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 class="text-lg font-bold text-brand">Audio Mesej Selamat Datang</h2>
+          <p class="text-sm text-slate-500">Widget audio terapung di dashboard yang main sendiri (auto-play) bila parent masuk. Kosongkan link audio untuk guna fail lalai sistem.</p>
+          <label class="mt-3 flex items-center gap-2 text-sm font-semibold">
+            <input id="set-welcome-audio-enabled" type="checkbox" class="h-5 w-5 rounded border-slate-300 text-brand focus:ring-brand">
+            Audio aktif (main di dashboard)
+          </label>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm font-semibold sm:col-span-2">Label (papar pada widget)
+              <input id="set-welcome-audio-label" class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+            <label class="block text-sm font-semibold sm:col-span-2">Link Audio (kosongkan untuk guna fail lalai)
+              <input id="set-welcome-audio-url" placeholder="https://..." class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 font-normal outline-none focus:border-brand">
+            </label>
+          </div>
         </section>
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5">
@@ -728,6 +748,7 @@
       'set-video-desc': 'video_desc',
       'set-video-url': 'video_url',
       'set-video2-url': 'video2_url',
+      'set-user-manual-link': 'user_manual_link',
 
       'set-login-hero-title-line1': 'login_hero_title_line1',
       'set-login-hero-title-line2': 'login_hero_title_line2',
@@ -747,6 +768,8 @@
       'set-community-button-label': 'community_button_label',
       'set-community-link': 'community_link',
       'set-share-message-template': 'share_message_template',
+      'set-welcome-audio-label': 'welcome_audio_label',
+      'set-welcome-audio-url': 'welcome_audio_url',
       'set-faq1-q': 'faq1_q', 'set-faq1-a': 'faq1_a',
       'set-faq2-q': 'faq2_q', 'set-faq2-a': 'faq2_a',
       'set-faq3-q': 'faq3_q', 'set-faq3-a': 'faq3_a',
@@ -798,6 +821,7 @@
     function renderSettings(s) {
       $('set-promo-enabled').checked = s.promo_enabled !== 'false';
       $('set-community-enabled').checked = s.community_enabled !== 'false';
+      $('set-welcome-audio-enabled').checked = s.welcome_audio_enabled !== 'false';
       for (const [id, key] of Object.entries(FIELD_MAP)) {
         $(id).value = key === 'promo_deadline' ? toLocalDatetimeInput(s[key] || new Date()) : (s[key] ?? '');
       }
@@ -846,6 +870,7 @@
       const s = {
         promo_enabled: $('set-promo-enabled').checked ? 'true' : 'false',
         community_enabled: $('set-community-enabled').checked ? 'true' : 'false',
+        welcome_audio_enabled: $('set-welcome-audio-enabled').checked ? 'true' : 'false',
       };
       for (const [id, key] of Object.entries(FIELD_MAP)) s[key] = $(id).value;
       return s;
@@ -906,7 +931,25 @@
             slot.classList.add('hidden');
           }
         });
-        videoSection.classList.toggle('hidden', !anyVideo);
+        const manualBtn = doc.getElementById('manual-link-btn');
+        const manualWrap = doc.getElementById('manual-link-wrap');
+        let hasManual = false;
+        if (manualBtn && manualWrap) {
+          if (s.user_manual_link) {
+            manualBtn.href = s.user_manual_link;
+            manualWrap.classList.remove('hidden');
+            hasManual = true;
+          } else {
+            manualWrap.classList.add('hidden');
+          }
+        }
+        videoSection.classList.toggle('hidden', !anyVideo && !hasManual);
+      }
+      const audioWidget = doc.getElementById('welcome-audio-widget');
+      if (audioWidget) {
+        audioWidget.classList.toggle('hidden', s.welcome_audio_enabled === 'false');
+        const label = doc.getElementById('welcome-audio-label');
+        if (label) label.textContent = s.welcome_audio_label || 'Mesej dari Minda Optima';
       }
     }
 
@@ -961,6 +1004,7 @@
         const fields = {
           promo_enabled: $('set-promo-enabled').checked ? 'true' : 'false',
           community_enabled: $('set-community-enabled').checked ? 'true' : 'false',
+          welcome_audio_enabled: $('set-welcome-audio-enabled').checked ? 'true' : 'false',
         };
         for (const [id, key] of Object.entries(FIELD_MAP)) {
           fields[key] = key === 'promo_deadline' ? (deadlineLocal ? new Date(deadlineLocal).toISOString() : '') : $(id).value;

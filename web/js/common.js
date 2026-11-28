@@ -226,7 +226,32 @@ const MO = (() => {
           slot.classList.add('hidden');
         }
       });
-      section.classList.toggle('hidden', !anyVideo);
+      const manualBtn = document.getElementById('manual-link-btn');
+      const manualWrap = document.getElementById('manual-link-wrap');
+      let hasManual = false;
+      if (manualBtn && manualWrap) {
+        if (s.user_manual_link) {
+          manualBtn.href = s.user_manual_link;
+          manualWrap.classList.remove('hidden');
+          hasManual = true;
+        } else {
+          manualWrap.classList.add('hidden');
+        }
+      }
+      section.classList.toggle('hidden', !anyVideo && !hasManual);
+    }
+
+    const audioWidget = document.getElementById('welcome-audio-widget');
+    if (audioWidget) {
+      const label = document.getElementById('welcome-audio-label');
+      if (label) label.textContent = s.welcome_audio_label || 'Mesej dari Minda Optima';
+      if (s.welcome_audio_enabled === 'false') {
+        audioWidget.classList.add('hidden');
+      } else {
+        const audioEl = document.getElementById('welcome-audio-el');
+        if (audioEl && s.welcome_audio_url) audioEl.src = s.welcome_audio_url;
+        audioWidget.dispatchEvent(new CustomEvent('mo-audio-ready'));
+      }
     }
 
     lastSettings = s;
