@@ -243,8 +243,11 @@ const MO = (() => {
 
     const audioWidget = document.getElementById('welcome-audio-widget');
     if (audioWidget) {
-      const label = document.getElementById('welcome-audio-label');
-      if (label) label.textContent = s.welcome_audio_label || 'Mesej dari Minda Optima';
+      const label = s.welcome_audio_label || 'Mesej dari Minda Optima';
+      const toggleBtn = document.getElementById('welcome-audio-toggle');
+      if (toggleBtn) toggleBtn.title = label;
+      const img = toggleBtn?.querySelector('img');
+      if (img) img.alt = label;
       if (s.welcome_audio_enabled === 'false') {
         audioWidget.classList.add('hidden');
       } else {

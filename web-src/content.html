@@ -948,8 +948,8 @@
       const audioWidget = doc.getElementById('welcome-audio-widget');
       if (audioWidget) {
         audioWidget.classList.toggle('hidden', s.welcome_audio_enabled === 'false');
-        const label = doc.getElementById('welcome-audio-label');
-        if (label) label.textContent = s.welcome_audio_label || 'Mesej dari Minda Optima';
+        const toggleBtn = doc.getElementById('welcome-audio-toggle');
+        if (toggleBtn) toggleBtn.title = s.welcome_audio_label || 'Mesej dari Minda Optima';
       }
     }
 

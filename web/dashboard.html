@@ -365,16 +365,14 @@
     </div>
   </dialog>
 
-  <!-- Audio Mesej Selamat Datang (auto-play, boleh drag pindah kedudukan, admin boleh on/off di Content Editor) -->
-  <div id="welcome-audio-widget" class="hidden fixed z-40 flex items-center gap-3 rounded-2xl bg-white shadow-lg border border-slate-200 px-3 py-2 max-w-[280px] select-none" style="touch-action:none;">
-    <button id="welcome-audio-toggle" type="button" class="relative shrink-0 flex h-11 w-11 items-center justify-center rounded-full bg-brand text-white ring-2 ring-gold">
-      <span id="welcome-audio-icon">▶</span>
+  <!-- Audio Mesej Selamat Datang (auto-play, bulatan kecil boleh drag, admin boleh on/off di Content Editor) -->
+  <div id="welcome-audio-widget" class="hidden fixed z-40 select-none" style="touch-action:none; width:3.5rem; height:3.5rem;">
+    <button id="welcome-audio-toggle" type="button" title="Mesej dari Minda Optima"
+            class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-white shadow-lg ring-2 ring-brand">
+      <img src="/logo-mindaoptima.webp" alt="Mesej dari Minda Optima" class="h-full w-full object-cover">
     </button>
-    <div class="min-w-0 flex-1">
-      <p id="welcome-audio-label" class="truncate text-sm font-bold text-brand">Mesej dari Minda Optima</p>
-      <p id="welcome-audio-time" class="text-xs text-slate-400 tabular-nums">0:00 / 0:00</p>
-    </div>
-    <button id="welcome-audio-close" type="button" class="shrink-0 text-slate-400 hover:text-slate-600 text-lg leading-none">×</button>
+    <span id="welcome-audio-icon" class="pointer-events-none absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] text-white ring-2 ring-white">▶</span>
+    <button id="welcome-audio-close" type="button" aria-label="Tutup" class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-700 text-xs leading-none text-white shadow">×</button>
     <audio id="welcome-audio-el" src="/welcome-vo.mp3" preload="auto"></audio>
   </div>
 
@@ -794,35 +792,22 @@
     (function () {
       var widget = document.getElementById('welcome-audio-widget');
       var audio = document.getElementById('welcome-audio-el');
-      var toggleBtn = document.getElementById('welcome-audio-toggle');
       var icon = document.getElementById('welcome-audio-icon');
-      var timeEl = document.getElementById('welcome-audio-time');
       var closeBtn = document.getElementById('welcome-audio-close');
       if (!widget || !audio) return;
 
-      function fmt(sec) {
-        sec = Math.floor(sec || 0);
-        var m = Math.floor(sec / 60), s = sec % 60;
-        return m + ':' + String(s).padStart(2, '0');
-      }
-      function updateTime() {
-        timeEl.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
-      }
-      audio.addEventListener('timeupdate', updateTime);
-      audio.addEventListener('loadedmetadata', updateTime);
       audio.addEventListener('play', function () { icon.textContent = '⏸'; });
       audio.addEventListener('pause', function () { icon.textContent = '▶'; });
       audio.addEventListener('ended', function () { icon.textContent = '▶'; });
 
-      toggleBtn.addEventListener('click', function () {
-        if (audio.paused) audio.play().catch(function () {}); else audio.pause();
-      });
-      closeBtn.addEventListener('click', function () {
+      closeBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
         audio.pause();
         widget.classList.add('hidden');
       });
 
-      // --- Boleh drag pindah kedudukan (supaya tak ganggu paparan di phone) ---
+      // --- Bulatan kecil, boleh drag pindah kedudukan (tak ganggu paparan di phone).
+      // Tekan tanpa gerak = toggle play/pause; tekan + tarik = pindah kedudukan.
       var POS_KEY = 'mo_audio_widget_pos';
       function clampPos(x, y) {
         var r = widget.getBoundingClientRect();
@@ -856,11 +841,12 @@
         try { localStorage.setItem(POS_KEY, JSON.stringify({ x: x, y: y })); } catch { /* ignore */ }
       }
 
-      var dragging = false, startX = 0, startY = 0, origX = 0, origY = 0;
+      var dragging = false, moved = false, startX = 0, startY = 0, origX = 0, origY = 0;
       widget.style.cursor = 'grab';
       widget.addEventListener('pointerdown', function (e) {
-        if (e.target.closest('button')) return;
+        if (e.target.closest('#welcome-audio-close')) return;
         dragging = true;
+        moved = false;
         startX = e.clientX; startY = e.clientY;
         var r = widget.getBoundingClientRect();
         origX = r.left; origY = r.top;
@@ -869,7 +855,9 @@
       });
       widget.addEventListener('pointermove', function (e) {
         if (!dragging) return;
-        var p = clampPos(origX + (e.clientX - startX), origY + (e.clientY - startY));
+        var dx = e.clientX - startX, dy = e.clientY - startY;
+        if (Math.abs(dx) > 6 || Math.abs(dy) > 6) moved = true;
+        var p = clampPos(origX + dx, origY + dy);
         applyPos(p.x, p.y);
       });
       function endDrag() {
@@ -878,6 +866,9 @@
         widget.style.cursor = 'grab';
         var r = widget.getBoundingClientRect();
         savePos(r.left, r.top);
+        if (!moved) {
+          if (audio.paused) audio.play().catch(function () {}); else audio.pause();
+        }
       }
       widget.addEventListener('pointerup', endDrag);
       widget.addEventListener('pointercancel', endDrag);
