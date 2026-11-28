@@ -88,6 +88,7 @@
             <p class="admin-sidebar-label">Utama</p>
             <button type="button" class="admin-nav-button is-active" data-admin-target="overview">&#9723; <span>Ringkasan</span></button>
             <button type="button" class="admin-nav-button" data-admin-target="referrals">&#9636; <span>Referral</span></button>
+            <button type="button" class="admin-nav-button" data-admin-target="leads">&#9733; <span>Leads</span></button>
             <button type="button" class="admin-nav-button" data-admin-target="referrers">&#9831; <span>Rakan Rujukan</span></button>
             <button type="button" class="admin-nav-button" data-admin-target="rewards">&#9672; <span>Ganjaran</span></button>
             <p class="admin-sidebar-label">Urusan</p>
@@ -170,19 +171,6 @@
         <p id="sync-sheet-result" class="mt-3 hidden rounded-lg px-3 py-2 text-sm" role="status"></p>
       </section>
 
-      <section class="h-full rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 class="text-lg font-bold text-brand">Leads Referral</h2>
-        <p class="text-sm text-slate-500">Senarai lead referral yang masuk — rujuk terus di Google Drive. Sekadar untuk admin ambil tahu; tiada kawalan/edit di sini.</p>
-        <form id="leads-link-form" class="mt-4 flex flex-col gap-3">
-          <label class="block text-sm font-semibold flex-1">Link Google Drive
-            <input id="leads-link-input" type="url" placeholder="https://drive.google.com/..." class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-brand">
-          </label>
-          <button type="submit" class="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold hover:bg-slate-50 disabled:opacity-60">Simpan Link</button>
-        </form>
-        <p id="leads-link-error" class="mt-2 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
-        <p id="leads-link-ok" class="mt-2 hidden rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700" role="status">Link disimpan!</p>
-        <a id="leads-link-open" href="#" target="_blank" rel="noopener" class="mt-4 hidden inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-2.5 text-white font-bold hover:bg-brand-light">📂 Buka Senarai Leads →</a>
-      </section>
 
       <section class="h-full rounded-2xl border border-slate-200 bg-white p-5">
         <h2 class="text-lg font-bold text-brand">Push OTP Manual</h2>
@@ -240,6 +228,54 @@
           <p id="referral-empty" class="hidden px-4 py-8 text-center text-slate-500">Takde referral lagi.</p>
         </div>
         <div id="referral-pagination" class="mt-3 flex items-center justify-center gap-3"></div>
+      </section>
+
+      <section data-admin-view="leads" class="admin-page rounded-2xl border border-slate-200 bg-white p-5">
+        <div class="flex items-end justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-brand">Leads Referral</h2>
+            <p class="text-sm text-slate-500">Senarai lead yang masuk, ditarik terus dari tab "Referral" di Google Sheet. Sekadar untuk admin ambil tahu — tiada kawalan/edit di sini.</p>
+          </div>
+          <button id="leads-refresh-btn" type="button" class="shrink-0 rounded-xl bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-light disabled:opacity-60">🔄 Papar Leads</button>
+        </div>
+
+        <details class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <summary class="cursor-pointer text-sm font-semibold text-slate-600">Tetapan link Google Sheet</summary>
+          <form id="leads-link-form" class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
+            <label class="block flex-1 text-sm font-semibold">Link Google Sheet
+              <input id="leads-link-input" type="url" placeholder="https://docs.google.com/spreadsheets/d/..." class="mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-normal outline-none focus:border-brand">
+            </label>
+            <button type="submit" class="shrink-0 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold hover:bg-slate-50 disabled:opacity-60">Simpan Link</button>
+          </form>
+          <p class="mt-2 text-xs text-slate-400">Sheet kena dikongsi "Anyone with link can view", dan ada satu tab bernama "Referral" — sistem auto detect tab tu, tak kira link mana-mana bahagian sheet pun admin bagi.</p>
+          <p id="leads-link-error" class="mt-2 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+          <p id="leads-link-ok" class="mt-2 hidden rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700" role="status">Link disimpan!</p>
+        </details>
+
+        <p id="leads-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+
+        <label class="mt-3 block text-sm font-semibold">Cari
+          <input id="leads-search" placeholder="Nama parent, phone, nama anak..." class="mt-1 w-64 rounded-xl border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-brand">
+        </label>
+
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-4 py-3">Rujukan Awam</th>
+                <th class="px-3 py-3">Nama Parent</th>
+                <th class="px-3 py-3">Phone</th>
+                <th class="px-3 py-3">Nama Anak</th>
+                <th class="px-3 py-3">Umur Anak</th>
+                <th class="px-3 py-3">Bahasa</th>
+                <th class="px-3 py-3">Keperluan Sokongan</th>
+                <th class="px-3 py-3">UTM Term</th>
+              </tr>
+            </thead>
+            <tbody id="leads-rows" class="divide-y divide-slate-100"></tbody>
+          </table>
+          <p id="leads-empty" class="hidden px-4 py-8 text-center text-slate-500">Belum ada leads lagi. Tekan "Papar Leads" untuk tarik data terkini.</p>
+        </div>
       </section>
 
       <section data-admin-view="referrers" class="admin-page rounded-2xl border border-slate-200 bg-white p-5">
@@ -527,6 +563,7 @@
     let materials = [];
     let infoPosts = [];
     let rewardCodes = [];
+    let leads = [];
 
     // Kata laluan disimpan dalam sessionStorage: hilang bila tab ditutup.
     const pwStore = {
@@ -583,13 +620,18 @@
     }
 
     let currentAdminView = 'overview';
-    const adminViewTitles = { overview: 'Ringkasan', referrals: 'Referral', referrers: 'Rakan Rujukan', rewards: 'Ganjaran', support: 'Sokongan', community: 'Komuniti', funnel: 'Analitik', tools: 'Alat Admin' };
+    const adminViewTitles = { overview: 'Ringkasan', referrals: 'Referral', leads: 'Leads', referrers: 'Rakan Rujukan', rewards: 'Ganjaran', support: 'Sokongan', community: 'Komuniti', funnel: 'Analitik', tools: 'Alat Admin' };
+    let leadsLoadedOnce = false;
     function setAdminView(view) {
       currentAdminView = adminViewTitles[view] ? view : 'overview';
       document.querySelectorAll('#app [data-admin-view]').forEach((el) => el.classList.toggle('is-active', el.dataset.adminView === currentAdminView));
       document.querySelectorAll('#app .admin-nav-button[data-admin-target]').forEach((el) => el.classList.toggle('is-active', el.dataset.adminTarget === currentAdminView));
       $('admin-view-title').textContent = adminViewTitles[currentAdminView];
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (currentAdminView === 'leads' && !leadsLoadedOnce) {
+        leadsLoadedOnce = true;
+        loadLeads();
+      }
     }
     $('app').addEventListener('click', (e) => {
       const button = e.target.closest('[data-admin-target]');
@@ -708,6 +750,48 @@
           ${notifyButtons(r)}
         </td>
       </tr>`).join('');
+    }
+
+    function filterLeads() {
+      const q = $('leads-search').value.trim().toLowerCase();
+      if (!q) return leads;
+      return leads.filter((l) => {
+        const hay = [l.public_reference, l.parent_name, l.phone_e164, l.child_name, l.child_age_range, l.preferred_language, l.support_needs, l.utm_term]
+          .join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
+    function renderLeads() {
+      const filtered = filterLeads();
+      $('leads-empty').classList.toggle('hidden', filtered.length > 0);
+      $('leads-rows').innerHTML = filtered.map((l) => `<tr>
+        <td class="px-4 py-3 font-mono text-xs">${esc(l.public_reference || '—')}</td>
+        <td class="px-3 py-3">${esc(l.parent_name || '—')}</td>
+        <td class="px-3 py-3 tabular-nums">${esc(fmtPhone(l.phone_e164) || '—')}</td>
+        <td class="px-3 py-3">${esc(l.child_name || '—')}</td>
+        <td class="px-3 py-3">${esc(l.child_age_range || '—')}</td>
+        <td class="px-3 py-3">${esc(l.preferred_language || '—')}</td>
+        <td class="px-3 py-3">${esc(l.support_needs || '—')}</td>
+        <td class="px-3 py-3">${esc(l.utm_term || '—')}</td>
+      </tr>`).join('');
+    }
+
+    async function loadLeads() {
+      const btn = $('leads-refresh-btn');
+      btn.disabled = true;
+      $('leads-error').classList.add('hidden');
+      try {
+        const data = await call({ action: 'get-leads' });
+        leads = data.leads || [];
+        renderLeads();
+      } catch (err) {
+        if (err.status === 401) return showLogin('Kata laluan salah.');
+        $('leads-error').textContent = err.message;
+        $('leads-error').classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
     }
 
     function waMessage(r) {
@@ -1255,8 +1339,6 @@
         if (!document.activeElement || document.activeElement.id !== 'leads-link-input') {
           $('leads-link-input').value = data.leadsReferralLink || '';
         }
-        $('leads-link-open').classList.toggle('hidden', !data.leadsReferralLink);
-        if (data.leadsReferralLink) $('leads-link-open').href = data.leadsReferralLink;
         renderCards(data.funnel);
         renderAdminOverview();
         renderFunnel();
@@ -1285,6 +1367,9 @@
       page.referral = 1;
       renderReferrals();
     });
+
+    $('leads-search').addEventListener('input', renderLeads);
+    $('leads-refresh-btn').addEventListener('click', loadLeads);
     ['referrer-search', 'referrer-status-filter'].forEach((id) => {
       $(id).addEventListener('input', () => { page.referrer = 1; renderReferrers(); });
     });

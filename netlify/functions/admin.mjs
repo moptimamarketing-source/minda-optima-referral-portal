@@ -364,6 +364,76 @@ async function syncGoogleSheet() {
   return json(200, { synced, skipped, backfilled, rowsProcessed: rows.length, unknownCodes: [...unknownCodes] });
 }
 
+// Leads Referral: paparan terus dalam admin panel (live fetch, tiada storan/table
+// baru) daripada tab/sheet bernama "Referral" dalam Google Sheet yang admin bagi.
+// Guna endpoint gviz supaya boleh fetch ikut NAMA tab terus, tak payah tahu gid.
+const LEAD_TAB_NAME_CANDIDATES = ['Referral', 'referral', 'Referrals', 'REFERRAL', 'Leads Referral', 'Leads'];
+const LEAD_HEADERS = {
+  id: ['id'],
+  public_reference: ['publicreference'],
+  parent_name: ['parentname'],
+  phone_e164: ['phonee164'],
+  child_name: ['childname'],
+  child_age_range: ['childagerange'],
+  preferred_language: ['preferredlanguage'],
+  support_needs: ['supportneeds'],
+  utm_term: ['utmterm'],
+};
+
+function findLeadColumns(headerRow) {
+  const normalized = headerRow.map(normalizeHeader);
+  const out = {};
+  for (const [field, candidates] of Object.entries(LEAD_HEADERS)) {
+    out[field] = normalized.findIndex((h) => candidates.includes(h));
+  }
+  return out;
+}
+
+async function fetchLeadsSheetCsv(spreadsheetId) {
+  for (const name of LEAD_TAB_NAME_CANDIDATES) {
+    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (/^\s*<(!doctype|html)/i.test(text)) continue;
+      return { csv: text, tabName: name };
+    } catch {
+      // cuba nama tab seterusnya
+    }
+  }
+  return null;
+}
+
+async function getLeads() {
+  const setRes = await sb('settings?select=value&key=eq.leads_referral_link');
+  const link = setRes.ok ? setRes.data?.[0]?.value : '';
+  if (!link) return json(400, { error: 'Sila simpan link Google Sheet leads dahulu.' });
+
+  const info = extractSheetInfo(link);
+  if (!info) return json(400, { error: 'Link Google Sheet tak sah.' });
+
+  const found = await fetchLeadsSheetCsv(info.id);
+  if (!found) {
+    return json(502, { error: 'Gagal jumpa tab "Referral" dalam sheet ni. Pastikan sheet dikongsi "Anyone with link can view" dan ada tab bernama Referral.' });
+  }
+
+  const allRows = parseCsv(found.csv);
+  const headerRow = allRows[0] || [];
+  const dataRows = allRows.slice(1).filter((r) => r.some((c) => String(c ?? '').trim()));
+  const col = findLeadColumns(headerRow);
+
+  const leads = dataRows.map((row) => {
+    const out = {};
+    for (const field of Object.keys(LEAD_HEADERS)) {
+      out[field] = col[field] >= 0 ? String(row[col[field]] ?? '').trim() : '';
+    }
+    return out;
+  });
+
+  return json(200, { leads, tabName: found.tabName });
+}
+
 async function setStatus(body) {
   const id = Number(body.id);
   if (!Number.isInteger(id) || !STATUSES.includes(body.status)) return json(422, { error: 'Data status tak sah.' });
@@ -1338,6 +1408,7 @@ export default async (req) => {
     if (body.action === 'list') return await list();
     if (body.action === 'add') return await add(body);
     if (body.action === 'sync-google-sheet') return await syncGoogleSheet();
+    if (body.action === 'get-leads') return await getLeads();
     if (body.action === 'status') return await setStatus(body);
     if (body.action === 'sessions') return await setSessions(body);
     if (body.action === 'verify-referrer') return await verifyReferrer(body);
