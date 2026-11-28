@@ -49,6 +49,7 @@ const SETTINGS_KEYS = [
   'google_sheet_url',
   'user_manual_link',
   'welcome_audio_enabled', 'welcome_audio_url', 'welcome_audio_label',
+  'leads_referral_link',
 ];
 const COMMUNITY_COLORS = ['telegram', 'whatsapp', 'brand'];
 const REQUIRED_IMAGE_SETTINGS = [
@@ -62,7 +63,7 @@ const OPTIONAL_IMAGE_SETTINGS = [
   'reward_email_header_image', 'reward_email_image1', 'reward_email_image2',
   'reward_poster_rebat_yuran', 'reward_poster_voucher_buku', 'reward_poster_tng',
 ];
-const OPTIONAL_URL_SETTINGS = ['video_url', 'video2_url', 'privacy_policy_link', 'user_manual_link', 'welcome_audio_url'];
+const OPTIONAL_URL_SETTINGS = ['video_url', 'video2_url', 'privacy_policy_link', 'user_manual_link', 'welcome_audio_url', 'leads_referral_link'];
 const OPTIONAL_TEXT_SETTINGS = [
   'video_title', 'video_desc', 'reward_terms_rebat_yuran', 'reward_terms_voucher_buku', 'reward_terms_tng',
   'reward_email_heading_rebat_yuran', 'reward_email_subtitle_rebat_yuran',
@@ -171,7 +172,7 @@ function detectClashes(referrerRows) {
 }
 
 async function list() {
-  const [funnel, referrals, unknown, referrers, supportRequests, materials, infoPosts, googleSheetSetting, rewardCodes] = await Promise.all([
+  const [funnel, referrals, unknown, referrers, supportRequests, materials, infoPosts, googleSheetSetting, rewardCodes, leadsLinkSetting] = await Promise.all([
     sb('referral_funnel?select=*&order=registrations.desc,landings.desc'),
     sb('referrals?select=id,code,referee_name,referee_phone,status,sessions_attended,rejected_reason,reward,registered_at,referrers(name,phone,email)&order=registered_at.desc&limit=500'),
     sb('referral_events?select=code,created_at&referrer_id=is.null&order=created_at.desc&limit=20'),
@@ -181,6 +182,7 @@ async function list() {
     sb('community_info?select=*&order=created_at.desc&limit=200'),
     sb('settings?select=value&key=eq.google_sheet_url'),
     sb('reward_codes?select=*,referrers(name,phone,email),referrals(referee_name,referee_phone)&order=created_at.desc&limit=500'),
+    sb('settings?select=value&key=eq.leads_referral_link'),
   ]);
 
   if (!funnel.ok) {
@@ -214,6 +216,7 @@ async function list() {
     infoPosts: infoPosts.ok ? infoPosts.data : [],
     googleSheetUrl: googleSheetSetting.ok ? (googleSheetSetting.data?.[0]?.value ?? '') : '',
     rewardCodes: rewardCodes.ok ? rewardCodes.data : [],
+    leadsReferralLink: leadsLinkSetting.ok ? (leadsLinkSetting.data?.[0]?.value ?? '') : '',
   });
 }
 
