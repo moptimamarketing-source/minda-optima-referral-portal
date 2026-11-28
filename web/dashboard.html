@@ -365,8 +365,8 @@
     </div>
   </dialog>
 
-  <!-- Audio Mesej Selamat Datang (auto-play, admin boleh on/off di Content Editor) -->
-  <div id="welcome-audio-widget" class="hidden fixed bottom-4 right-4 z-40 flex items-center gap-3 rounded-2xl bg-white shadow-lg border border-slate-200 px-3 py-2 max-w-[280px]">
+  <!-- Audio Mesej Selamat Datang (auto-play, boleh drag pindah kedudukan, admin boleh on/off di Content Editor) -->
+  <div id="welcome-audio-widget" class="hidden fixed z-40 flex items-center gap-3 rounded-2xl bg-white shadow-lg border border-slate-200 px-3 py-2 max-w-[280px] select-none" style="touch-action:none;">
     <button id="welcome-audio-toggle" type="button" class="relative shrink-0 flex h-11 w-11 items-center justify-center rounded-full bg-brand text-white ring-2 ring-gold">
       <span id="welcome-audio-icon">▶</span>
     </button>
@@ -822,8 +822,75 @@
         widget.classList.add('hidden');
       });
 
+      // --- Boleh drag pindah kedudukan (supaya tak ganggu paparan di phone) ---
+      var POS_KEY = 'mo_audio_widget_pos';
+      function clampPos(x, y) {
+        var r = widget.getBoundingClientRect();
+        var maxX = Math.max(8, window.innerWidth - r.width - 8);
+        var maxY = Math.max(8, window.innerHeight - r.height - 8);
+        return { x: Math.min(Math.max(x, 8), maxX), y: Math.min(Math.max(y, 8), maxY) };
+      }
+      function applyPos(x, y) {
+        widget.style.left = x + 'px';
+        widget.style.top = y + 'px';
+        widget.style.right = 'auto';
+        widget.style.bottom = 'auto';
+      }
+      function setDefaultPos() {
+        var r = widget.getBoundingClientRect();
+        var p = clampPos(window.innerWidth - r.width - 16, window.innerHeight - r.height - 16);
+        applyPos(p.x, p.y);
+      }
+      function loadPos() {
+        try {
+          var saved = JSON.parse(localStorage.getItem(POS_KEY) || 'null');
+          if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
+            var p = clampPos(saved.x, saved.y);
+            applyPos(p.x, p.y);
+            return true;
+          }
+        } catch { /* ignore */ }
+        return false;
+      }
+      function savePos(x, y) {
+        try { localStorage.setItem(POS_KEY, JSON.stringify({ x: x, y: y })); } catch { /* ignore */ }
+      }
+
+      var dragging = false, startX = 0, startY = 0, origX = 0, origY = 0;
+      widget.style.cursor = 'grab';
+      widget.addEventListener('pointerdown', function (e) {
+        if (e.target.closest('button')) return;
+        dragging = true;
+        startX = e.clientX; startY = e.clientY;
+        var r = widget.getBoundingClientRect();
+        origX = r.left; origY = r.top;
+        widget.setPointerCapture(e.pointerId);
+        widget.style.cursor = 'grabbing';
+      });
+      widget.addEventListener('pointermove', function (e) {
+        if (!dragging) return;
+        var p = clampPos(origX + (e.clientX - startX), origY + (e.clientY - startY));
+        applyPos(p.x, p.y);
+      });
+      function endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        widget.style.cursor = 'grab';
+        var r = widget.getBoundingClientRect();
+        savePos(r.left, r.top);
+      }
+      widget.addEventListener('pointerup', endDrag);
+      widget.addEventListener('pointercancel', endDrag);
+      window.addEventListener('resize', function () {
+        if (widget.classList.contains('hidden')) return;
+        var r = widget.getBoundingClientRect();
+        var p = clampPos(r.left, r.top);
+        applyPos(p.x, p.y);
+      });
+
       widget.addEventListener('mo-audio-ready', function () {
         widget.classList.remove('hidden');
+        if (!loadPos()) setDefaultPos();
         audio.play().catch(function () {
           // Autoplay disekat browser — widget tetap papar, parent boleh tekan play sendiri.
         });
