@@ -365,11 +365,12 @@
     </div>
   </dialog>
 
-  <!-- Audio Mesej Selamat Datang (auto-play, bulatan kecil boleh drag, admin boleh on/off di Content Editor) -->
-  <div id="welcome-audio-widget" class="hidden fixed z-40 select-none" style="touch-action:none; width:3.5rem; height:3.5rem;">
+  <!-- Audio Mesej Selamat Datang (auto-play, bulatan kecil boleh drag bebas, admin boleh on/off di Content Editor) -->
+  <div id="welcome-audio-widget" class="hidden fixed z-40 select-none" style="touch-action:none; -webkit-user-drag:none; width:3.5rem; height:3.5rem;">
+    <span id="welcome-audio-pulse" class="hidden pointer-events-none absolute inset-0 rounded-full ring-4 ring-brand/50 animate-ping"></span>
     <button id="welcome-audio-toggle" type="button" title="Mesej dari Minda Optima"
-            class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-white shadow-lg ring-2 ring-brand">
-      <img src="/logo-mindaoptima.webp" alt="Mesej dari Minda Optima" class="h-full w-full object-cover">
+            class="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-white shadow-lg ring-2 ring-brand">
+      <img src="/logo-mindaoptima.webp" alt="Mesej dari Minda Optima" draggable="false" class="h-full w-full object-cover pointer-events-none" style="-webkit-user-drag:none;">
     </button>
     <span id="welcome-audio-icon" class="pointer-events-none absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] text-white ring-2 ring-white">▶</span>
     <button id="welcome-audio-close" type="button" aria-label="Tutup" class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-700 text-xs leading-none text-white shadow">×</button>
@@ -793,12 +794,15 @@
       var widget = document.getElementById('welcome-audio-widget');
       var audio = document.getElementById('welcome-audio-el');
       var icon = document.getElementById('welcome-audio-icon');
+      var pulse = document.getElementById('welcome-audio-pulse');
       var closeBtn = document.getElementById('welcome-audio-close');
       if (!widget || !audio) return;
 
-      audio.addEventListener('play', function () { icon.textContent = '⏸'; });
-      audio.addEventListener('pause', function () { icon.textContent = '▶'; });
-      audio.addEventListener('ended', function () { icon.textContent = '▶'; });
+      widget.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+      audio.addEventListener('play', function () { icon.textContent = '🔊'; pulse.classList.remove('hidden'); });
+      audio.addEventListener('pause', function () { icon.textContent = '▶'; pulse.classList.add('hidden'); });
+      audio.addEventListener('ended', function () { icon.textContent = '▶'; pulse.classList.add('hidden'); });
 
       closeBtn.addEventListener('click', function (e) {
         e.stopPropagation();
