@@ -810,7 +810,9 @@
         widget.classList.add('hidden');
       });
 
-      // --- Bulatan kecil, boleh drag pindah kedudukan (tak ganggu paparan di phone).
+      // --- Bulatan kecil, boleh drag ikut jari semasa tarik, tapi lepas lepas
+      // tangan ia SNAP balik ke tepi kiri/kanan skrin je (tak boleh terapung
+      // tengah-tengah menutup kandungan) — macam chat-head Messenger.
       // Tekan tanpa gerak = toggle play/pause; tekan + tarik = pindah kedudukan.
       var POS_KEY = 'mo_audio_widget_pos';
       function clampPos(x, y) {
@@ -818,6 +820,13 @@
         var maxX = Math.max(8, window.innerWidth - r.width - 8);
         var maxY = Math.max(8, window.innerHeight - r.height - 8);
         return { x: Math.min(Math.max(x, 8), maxX), y: Math.min(Math.max(y, 8), maxY) };
+      }
+      function edgeX(x) {
+        var r = widget.getBoundingClientRect();
+        var centerX = x + r.width / 2;
+        var leftEdge = 8;
+        var rightEdge = Math.max(8, window.innerWidth - r.width - 8);
+        return centerX < window.innerWidth / 2 ? leftEdge : rightEdge;
       }
       function applyPos(x, y) {
         widget.style.left = x + 'px';
@@ -828,14 +837,14 @@
       function setDefaultPos() {
         var r = widget.getBoundingClientRect();
         var p = clampPos(window.innerWidth - r.width - 16, window.innerHeight - r.height - 16);
-        applyPos(p.x, p.y);
+        applyPos(edgeX(p.x), p.y);
       }
       function loadPos() {
         try {
           var saved = JSON.parse(localStorage.getItem(POS_KEY) || 'null');
           if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
             var p = clampPos(saved.x, saved.y);
-            applyPos(p.x, p.y);
+            applyPos(edgeX(p.x), p.y);
             return true;
           }
         } catch { /* ignore */ }
@@ -868,11 +877,15 @@
         if (!dragging) return;
         dragging = false;
         widget.style.cursor = 'grab';
-        var r = widget.getBoundingClientRect();
-        savePos(r.left, r.top);
         if (!moved) {
           if (audio.paused) audio.play().catch(function () {}); else audio.pause();
+          return;
         }
+        var r = widget.getBoundingClientRect();
+        var p = clampPos(r.left, r.top);
+        var snappedX = edgeX(p.x);
+        applyPos(snappedX, p.y);
+        savePos(snappedX, p.y);
       }
       widget.addEventListener('pointerup', endDrag);
       widget.addEventListener('pointercancel', endDrag);
@@ -880,7 +893,7 @@
         if (widget.classList.contains('hidden')) return;
         var r = widget.getBoundingClientRect();
         var p = clampPos(r.left, r.top);
-        applyPos(p.x, p.y);
+        applyPos(edgeX(p.x), p.y);
       });
 
       widget.addEventListener('mo-audio-ready', function () {
